@@ -1,0 +1,6 @@
+{
+  "name": "apigee-services",
+  "description": "Basic Service Locator Framework",
+  "main": "lib/services.js",
+  "version": "0.0.1"
+}

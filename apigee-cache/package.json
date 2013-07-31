@@ -1,0 +1,9 @@
+{
+  "name": "apigee-cache",
+  "description": "Pluggable caching API",
+  "main": "lib/cache.js",
+  "version": "0.0.1",
+  "dependencies": {
+    "apigee-services": "x.x.x"
+  }
+}
