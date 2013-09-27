@@ -17,29 +17,35 @@ module.exports.ApiKey = ApiKey;
  * Error object if the validation fails for some reason. Second is the application record, as defined
  * in ApiDnaData.
  *
- * If the API key is valid, then "cb" will be called with (undefined, app)
- * If the API key is not valid, then "cb" will be called with (undefined, undefined)
- * If there is another error, then "cb" will be called with (error, undefined)
- * TODO options:
- *   retrieveDeveloper
- *   retrieveAttributes
+ * If "options" is specified, then it can have two options:
+ *   getDeveloper: Whether to include "developer" information with the result. Default false.
+ *   getAttributes: Whether to include application attributes with the result. Default true.
+ *   (See the "apidna-data" package for a definition of these options as well.)
  *
- * argo.use(new ApiKey({queryParam: apikey, header: ApiKey, function: { return request.q.apiKey } }))
+ * The callback has two options: an error and a result.
+ *
+ * If the API key is valid, then "cb" will be called with (undefined, result).
+ *   "result" will contain a field called "application" which will contain the app's name and attributes.
+ * If the API key is not valid, then "cb" will be called with (undefined, result)
+ *   "result" will contain a field called "error" which will contain two attributes: "code" and "message"
+ * If there is another error, then "cb" will be called with (error, undefined)
+ *   "Error" in this case will be an "Error" object
  */
 ApiKey.prototype.verify = function(key, options, cb) {
-  // Test for optional options
-  data.getAppByKey(key, function(err, app) {
+  if (typeof options === 'function') {
+    cb = options;
+    options = undefined;
+  }
+  this.data.getAppByKey(key, options, function(err, app) {
     if (err) {
       // Some sort of error
       cb(err);
     } else if (app) {
       // Valid API key
-      cb(undefined, app);
+      cb(undefined, { application: app });
     } else {
       // Invalid API key
-      // TODO return an object that indicates that
-      // { error: { foo }, app: { bar }}
-      cb();
+      cb(undefined, { error: { code: 'InvalidAPIKey', message: 'API key is not valid' }});
     }
   });
 };

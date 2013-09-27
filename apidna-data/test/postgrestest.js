@@ -4,6 +4,7 @@ var uuid = require('uuid');
 
 describe('Postgres', function() {
   var data;
+  var developer;
   var firstApp;
   var secondApp;
 
@@ -16,13 +17,55 @@ describe('Postgres', function() {
     });
   });
 
+  it('Insert developer', function(done) {
+    var dev = {
+      email: 'joe@schmoe.net',
+      fullName: 'Joe Schmoe'
+    };
+
+    data.insertDeveloper(dev, function(err, inserted) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      assert(inserted);
+      assert.equal(dev.email, inserted.email);
+      assert.equal(dev.fullName, inserted.fullName);
+      developer = inserted;
+      done();
+    });
+  });
+
+  it('Get developer', function(done) {
+    data.getDeveloper(developer.uuid, function(err, found) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      assert(found);
+      assert.deepEqual(developer, found);
+      done();
+    });
+  });
+
+  it('Get missing developer', function(done) {
+    data.getDeveloper(uuid.v4(), function(err, found) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      assert(!found);
+      done();
+    });
+  });
+
   it('Insert app', function(done) {
     var app = {
       name: 'TestApp',
       displayName: 'App For Testing',
       key: uuid.v4(),
       secret: uuid.v4(),
-      developer: { uuid: '56b64cb7-c050-4451-969e-ed7189d9d651' }
+      developer: { uuid: developer.uuid }
     };
 
     data.insertApp(app, function(err, inserted) {
@@ -37,7 +80,7 @@ describe('Postgres', function() {
   });
 
   it('Get App', function(done) {
-    data.getApp(firstApp.uuid, function(err, data) {
+    data.getApp(firstApp.uuid, { getDeveloper: true, getAttributes: true}, function(err, data) {
       if (err) {
         console.error(err);
       }
@@ -48,12 +91,45 @@ describe('Postgres', function() {
   });
 
   it('Get App by key', function(done) {
-    data.getAppByKey(firstApp.key, function(err, data) {
+    data.getAppByKey(firstApp.key, { getDeveloper: true, getAttributes: true}, function(err, data) {
       if (err) {
         console.error(err);
       }
       assert(!err);
       compareApps(firstApp, data);
+      done();
+    });
+  });
+
+  it('Get App Defaults', function(done) {
+    data.getApp(firstApp.uuid, function(err, data) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      assert.equal(firstApp.uuid, data.uuid);
+      assert.equal(firstApp.name, data.name);
+      assert.equal(firstApp.displayName, data.displayName);
+      assert.equal(firstApp.key, data.key);
+      assert.equal(firstApp.secret, data.secret);
+      assert.deepEqual(firstApp.attributes, data.attributes);
+      done();
+    });
+  });
+
+  it('Get App No Attributes', function(done) {
+    data.getApp(firstApp.uuid, { getDeveloper: true, getAttributes: false }, function(err, data) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      assert.equal(firstApp.uuid, data.uuid);
+      assert.equal(firstApp.name, data.name);
+      assert.equal(firstApp.displayName, data.displayName);
+      assert.equal(firstApp.key, data.key);
+      assert.equal(firstApp.secret, data.secret);
+      assert.equal(firstApp.developer.uuid, data.developer.uuid);
+      assert(!data.attributes);
       done();
     });
   });
@@ -108,7 +184,7 @@ describe('Postgres', function() {
   });
 
   it('Get App with Attributes', function(done) {
-    data.getApp(secondApp.uuid, function(err, data) {
+    data.getApp(secondApp.uuid, { getDeveloper: true, getAttributes: true}, function(err, data) {
       if (err) {
         console.error(err);
       }
@@ -120,6 +196,16 @@ describe('Postgres', function() {
 
   it('Delete app with attributes', function(done) {
     data.deleteApp(secondApp.uuid, function(err) {
+      if (err) {
+        console.error(err);
+      }
+      assert(!err);
+      done();
+    });
+  });
+
+  it('Delete developer', function(done) {
+    data.deleteDeveloper(developer.uuid, function(err) {
       if (err) {
         console.error(err);
       }
