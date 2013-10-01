@@ -1,0 +1,5 @@
+{
+  "name": "Apigee Runtime SPI",
+  "version": "0.0.1",
+  "main": "lib/apigeeruntime.js"
+}

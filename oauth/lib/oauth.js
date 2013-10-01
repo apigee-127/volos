@@ -5,10 +5,20 @@ var GrantTypeFunctions = {
   client_credentials: clientCredentialsGrant
 };
 
-function OAuth(options) {
+/*
+ * Options:
+ *   validGrantTypes: An array of OAuth 2.0 grant types that will be supported. If not specified, only
+ *      "authorization_code" will be supported.
+ *   tokenLifetime: The default length of time, in milliseconds, that a token will survive until being expired.
+ *     Optional.
+ */
+
+function OAuth(spi, options) {
   options = applyModuleDefaults(options);
 
+  this.spi = spi;
   this.validGrantTypes = options.validGrantTypes;
+  this.tokenLifetime = options.tokenLifetime;
 }
 module.exports.OAuth = OAuth;
 
@@ -17,9 +27,13 @@ var DefaultOptions = {
 };
 
 function applyModuleDefaults(options) {
+  if (!options) {
+    return DefaultOptions;
+  }
   if (!options.validGrantTypes) {
     options.validGrantTypes = DefaultOptions.validGrantTypes;
   }
+  return options;
 }
 
 OAuth.prototype.generateAuthCode = function(queryString, authorizeHeader, attributes, cb) {
@@ -41,6 +55,8 @@ OAuth.prototype.generateAuthCode = function(queryString, authorizeHeader, attrib
  * "body" must be the body of the POST request made by the client. This is required.
  * Options is optional and may include:
  *   authorizeHeader: if an Authorize header was on the request, include it here
+ *   tokenLifetime: The time, in milliseconds, when the token should expire. If not specified,
+ *     taken from the parent, otherwise it uses a system-level default
  */
 OAuth.prototype.generateToken = function(body, options, cb) {
   // From RFC6749
@@ -65,6 +81,8 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     throw makeError('unsupported_grant_type', 'Unsupported grant type');
   }
 
+  options = applyTokenDefaults(this, options);
+
   // 2.3.1: Client id and secret may be in Basic format, or in the request body
   var clientId;
   var clientSecret;
@@ -81,22 +99,42 @@ OAuth.prototype.generateToken = function(body, options, cb) {
   }
 
   if (GrantTypeFunctions[parsedBody.grant_type]) {
-    GrantTypeFunctions[parsedBody.grant_type](parsedBody, clientId, clientSecret, options, cb);
+    GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, clientId, clientSecret, options, cb);
   } else {
     throw makeError('unsupported_grant_type', 'Unsupported grant type');
   }
 };
 
+var GenerateTokenDefaults = {
+};
+function applyTokenDefaults(self, o) {
+  if (!o) {
+    o = {};
+  }
+  if (!o.tokenLifetime) {
+    o.tokenLifetime = self.tokenLifetime;
+  }
+  return o;
+}
+
 /*
  * Given a parsed request body, client ID, and secret, generate an access token.
  */
-function clientCredentialsGrant(parsedBody, clientId, clientSecret, cb) {
+function clientCredentialsGrant(self, parsedBody, clientId, clientSecret, options, cb) {
   var gr = {
     clientId: clientId,
     clientSecret: clientSecret,
-    scope: parsedBody.scope
+    scope: parsedBody.scope,
+    tokenLifetime: options.tokenLifetime
   };
 
+  spi.createTokenClientCredentials(gr, function(err, result) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, result);
+    }
+  });
 }
 
 OAuth.prototype.refreshToken = function(body, authorizeHeader, cb) {

@@ -1,0 +1,264 @@
+/**
+ * This module implements the management SPI interface using the Apigee API.
+ *
+ * Objects supported:
+ *
+ * developer: {
+ *   email (string)
+ *   id: (string)
+ *   userName: (string)
+ *   firstName: (string)
+ *   lastName: (string)
+ *   status: (string)
+ *   attributes: (object)
+ * }
+ *
+ * application: {
+ *   name: (string)
+ *   id: (string)
+ *   status: (string)
+ *   callbackUrl: (string)
+ *   developerId: (string)
+ *   attributes: (object)
+ *   credentials: (credentials object)
+ * }
+ *
+ * credentials: {
+ *   key: (string)
+ *   secret: (string)
+ *   status: (string)
+ *   attributes: (object)
+ * }
+ *
+ * To create an instance of this module, the following must be set on the "options" object:
+ *   organization (string): Apigee Organization name
+ *   user: (string) Apigee user name
+ *   password: (string) Password for Apigee user
+ *   managementUri: (string) optional URI for Apigee API endpoint to happen -- otherwise it hits api.enterprise.apigee.com.
+ */
+
+var url = require('url');
+var path = require('path');
+var http = require('http');
+var https = require('https');
+
+var DefaultApigeeURI = 'https://api.enterprise.apigee.com/v1';
+
+function ApigeeManagementSpi(options) {
+  if (!options.organization) {
+    throw new Error('organization must be specified');
+  }
+  if (!options.user) {
+    throw new Error('user must be specified');
+  }
+  if (!options.password) {
+    throw new Error('password must be specified');
+  }
+
+  this.organization = options.organization;
+  this.auth = 'Basic ' + (new Buffer(options.user + ':' + options.password).toString('base64'));
+
+  this.uri = (options.managementUri ? options.uri : DefaultApigeeURI);
+}
+module.exports = ApigeeManagementSpi;
+
+// Operations on developers
+
+ApigeeManagementSpi.prototype.createDeveloper = function(developer, cb) {
+  makeRequest(this, 'POST', '/developers', makeDeveloper(developer), function(err, created) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseDeveloper(created));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.getDeveloper = function(uuid, cb) {
+  makeRequest(this, 'GET', path.join('/developers', uuid), function(err, dev) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseDeveloper(dev));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.updateDeveloper = function(developer, cb) {
+  makeRequest(this, 'PUT', path.join('/developers', developer.uuid),
+              makeDeveloper(developer), function(err, created) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseDeveloper(created));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
+  makeRequest(this, 'DELETE', path.join('/developers', uuid), function(err) {
+    cb(err);
+  });
+};
+
+function makeDeveloper(d) {
+  return {
+    email: d.email,
+    userName: d.userName,
+    firstName: d.firstName,
+    lastName: d.lastName,
+    status: d.status,
+    attributes: d.attributes
+  }
+}
+
+function parseDeveloper(o) {
+  return {
+    email: o.email,
+    userName: o.userName,
+    id: o.developerId,
+    firstName: o.firstName,
+    lastName: o.lastName,
+    status: o.status,
+    attributes: o.attributes
+  }
+}
+
+ApigeeManagementSpi.prototype.createApp = function(app, cb) {
+  var ar = {
+    name: app.name,
+    status: app.status,
+    callbackUrl: app.callbackUrl,
+    attributes: app.attributes
+  };
+  makeRequest(this, 'POST', path.join('/developers', app.developerId, '/apps'), ar, function(err, newApp) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseApp(newApp));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.getApp = function(uuid, cb) {
+  makeRequest(this, 'GET', path.join('/apps', uuid), function(err, app) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseApp(app));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.deleteApp = function(uuid, cb) {
+  // First we have to get the app because the API is weird and I can't delete it directly
+  var self = this;
+  this.getApp(uuid, function(err, app) {
+    if (err) {
+      cb(err);
+    } else {
+      makeRequest(self, 'DELETE', path.join('/developers', app.developerId, '/apps', app.name), function(err) {
+        if (err) {
+          cb(err);
+        } else {
+          cb();
+        }
+      });
+    }
+  });
+};
+
+function parseApp(a) {
+  var app = {
+    id: a.appId,
+    name: a.name,
+    status: a.status,
+    developerId: a.developerId,
+    callbackUrl: a.callbackUrl,
+    attributes: a.attributes,
+    credentials: []
+  };
+  for (i in a.credentials) {
+    var nc = {
+      key: a.credentials[i].consumerKey,
+      secret: a.credentials[i].consumerSecret,
+      status: a.credentials[i].status
+      // TODO attributes
+    };
+    app.credentials.push(nc);
+  }
+  return app;
+}
+
+function makeRequest(self, verb, uriPath, o, cb) {
+  if (typeof o === 'function') {
+    cb = o;
+    o = undefined;
+  }
+
+  var finalUri = self.uri + path.join('/o', self.organization, uriPath);
+  //console.log('%s %s', verb, finalUri);
+
+  var r = url.parse(finalUri);
+  r.headers = {
+    Authorization: self.auth,
+    Accept: 'application/json'
+  };
+  r.method = verb;
+  if (o) {
+    r.headers['Content-Type'] = 'application/json';
+  }
+  //console.log('%j', r);
+
+  var req;
+  if (r.protocol === 'http:') {
+    req = http.request(r, function(resp) {
+      requestComplete(req, resp, cb);
+    });
+  } else if (r.protocol === 'https:') {
+    req = https.request(r, function(resp) {
+      requestComplete(req, resp, cb);
+    });
+  } else {
+    cb(new Error('Unsupported protocol ' + r.protocol));
+    return;
+  }
+
+  req.on('error', function(err) {
+    cb(err);
+  });
+  if (o) {
+    //console.log('%j', o);
+    req.end(JSON.stringify(o));
+  } else {
+    req.end();
+  }
+}
+
+function requestComplete(req, resp, cb) {
+  resp.on('error', function(err) {
+    cb(err);
+  });
+
+  var respData = '';
+  resp.on('readable', function() {
+    var d;
+    do {
+      d = resp.read();
+      if (d) {
+        respData += d;
+      }
+    } while (d);
+  });
+
+  resp.on('end', function() {
+    if (resp.statusCode >= 300) {
+      var err = new Error('Error on HTTP request');
+      err.statusCode = resp.statusCode;
+      err.message = respData;
+      cb(err);
+    } else {
+      cb(undefined, JSON.parse(respData));
+    }
+  });
+}

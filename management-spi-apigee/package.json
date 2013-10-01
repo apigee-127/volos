@@ -1,0 +1,5 @@
+{
+  "name": "Apigee Management SPI",
+  "version": "0.0.1",
+  "main": "lib/apigeemgmt.js"
+}
