@@ -1,0 +1,5 @@
+{
+  "name": "Apigee OAuth",
+  "version": "0.0.1",
+  "main": "lib/oauth.js"
+}

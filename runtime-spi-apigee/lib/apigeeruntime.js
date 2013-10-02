@@ -213,6 +213,37 @@ spi.prototype.invalidateToken = function(options, cb) {
     });
 };
 
+/*
+ * Validate an access token. Specify just the token and we are fine.
+ */
+spi.prototype.verifyToken = function(token, cb) {
+  var r = url.parse(this.uri + '/tokentypes/all/verify');
+  r.headers = {
+    Authorization: 'Bearer ' + token
+  };
+  r.headers['x-DNA-Api-Key'] = this.key;
+  r.method = 'GET';
+
+  var req;
+  if (r.protocol === 'http:') {
+    req = http.request(r, function(resp) {
+      verifyRequestComplete(resp, cb);
+    });
+  } else if (r.protocol === 'https:') {
+    req = https.request(r, function(resp) {
+      verifyRequestComplete(resp, cb);
+    });
+  } else {
+    cb(new Error('Unsupported protocol ' + r.protocol));
+    return;
+  }
+
+  req.on('error', function(err) {
+    cb(err);
+  });
+  req.end();
+};
+
 function makeRequest(self, verb, uriPath, body, options, cb) {
   if (typeof o === 'function') {
     cb = o;
@@ -220,7 +251,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
   }
 
   var finalUri = self.uri + uriPath;
-  console.log('%s %s', verb, finalUri);
 
   var r = url.parse(finalUri);
   r.headers = {
@@ -234,7 +264,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
   if (body) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
-  //console.log('%j', r);
 
   var req;
   if (r.protocol === 'http:') {
@@ -254,7 +283,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
     cb(err);
   });
   if (body) {
-    //console.log('%j', o);
     req.end(body);
   } else {
     req.end();
@@ -263,7 +291,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
 
 function makeGetRequest(self, uriPath, qs, options, cb) {
   var finalUri = self.uri + uriPath + '?' + qs;
-  console.log('%s %s', 'GET', finalUri);
 
   var r = url.parse(finalUri);
   r.headers = {};
@@ -319,17 +346,15 @@ function requestComplete(resp, options, cb) {
       cb(err);
     } else {
       try {
-        var sr = JSON.parse(respData);
-        var ret = {
-          access_token: sr.access_token,
-          refresh_token: sr.refresh_token,
-          // TODO this should be returned by Apigee!
-          token_type: options.grantType,
-          scope: sr.scope,
-          expires_in: parseInt(sr.expires_in)
-        };
+        var ret = JSON.parse(respData);
+        if (ret.expires_in) {
+          ret.expires_in = parseInt(ret.expires_in);
+        }
+        if (options.grantType) {
+          ret.token_type = options.grantType;
+        }
         cb(undefined, ret);
-      } catch (SyntaxError) {
+      } catch (e) {
         // The response might not be JSON -- not everything returns it
         cb();
       }
@@ -355,6 +380,28 @@ function getRequestComplete(resp, options, cb) {
       cb(err);
     } else {
       cb(undefined, resp.headers.location);
+    }
+  });
+}
+
+function verifyRequestComplete(resp, cb) {
+  resp.on('error', function(err) {
+    cb(err);
+  });
+
+  var respData = '';
+  resp.on('readable', function() {
+    respData = readResponse(resp, respData);
+  });
+
+  resp.on('end', function() {
+    if (resp.statusCode !== 200) {
+      var err = new Error('Error on HTTP request');
+      err.statusCode = resp.statusCode;
+      err.message = respData;
+      cb(err);
+    } else {
+      cb(undefined, querystring.parse(respData));
     }
   });
 }

@@ -127,6 +127,17 @@ describe('Apigee Runtime SPI', function() {
     });
   });
 
+  it('Verify token', function(done) {
+    runtime.verifyToken(accessToken, function(err, result) {
+      if (err) {
+        console.error('%j', err);
+      }
+      assert(!err);
+      console.log('Verified token: %j', result);
+      done();
+    });
+  });
+
   it('Invalidate token', function(done) {
     var tr = {
       clientId: app.credentials[0].key,
