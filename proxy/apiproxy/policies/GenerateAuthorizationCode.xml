@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OAuthV2 name="GenerateAuthorizationCode">
+    <DisplayName>GenerateAuthorizationCode</DisplayName>
+    <Operation>GenerateAuthorizationCode</Operation>
+    <GenerateResponse enabled="true"/>
+</OAuthV2>

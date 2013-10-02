@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OAuthV2 async="false" continueOnError="true" enabled="true" name="InvalidateRefreshToken">
+    <DisplayName>InvalidateRefreshToken</DisplayName>
+    <Operation>InvalidateToken</Operation>
+    <GenerateResponse enabled="true"/>
+    <Tokens>
+      <Token type="refreshtoken" cascade="true">invalidate.token</Token>
+    </Tokens>
+</OAuthV2>

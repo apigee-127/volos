@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OAuthV2 name="RefreshToken">
+    <DisplayName>RefreshToken</DisplayName>
+    <Operation>RefreshAccessToken</Operation>
+    <ExpiresIn ref="request.header.x-DNA-Token-Lifetime">36000</ExpiresIn>
+    <GenerateResponse enabled="true"/>
+</OAuthV2>

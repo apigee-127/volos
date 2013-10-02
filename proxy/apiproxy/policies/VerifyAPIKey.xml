@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<VerifyAPIKey name="VerifyAPIKey">
+    <DisplayName>VerifyAPIKey</DisplayName>
+    <APIKey ref="request.header.x-DNA-Api-Key"/>
+</VerifyAPIKey>

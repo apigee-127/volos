@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="adapterproxy">
+    <ConfigurationVersion minorVersion="0" majorVersion="4"/>
+    <CreatedAt>1380326262468</CreatedAt>
+    <CreatedBy>greg@brail.org</CreatedBy>
+    <Description></Description>
+    <DisplayName>AdapterProxy</DisplayName>
+    <LastModifiedAt>1380326262648</LastModifiedAt>
+    <LastModifiedBy>greg@brail.org</LastModifiedBy>
+    <Policies>
+        <Policy>ExtractInvalidateParams</Policy>
+        <Policy>GenerateAuthorizationCode</Policy>
+        <Policy>GenerateTokenAuthoriationCode</Policy>
+        <Policy>GenerateTokenClientCredentials</Policy>
+        <Policy>GenerateTokenImplicit</Policy>
+        <Policy>GenerateTokenPasswordCredentials</Policy>
+        <Policy>GenerateVerifyResponse</Policy>
+        <Policy>InvalidateRefreshToken</Policy>
+        <Policy>InvalidateToken</Policy>
+        <Policy>RefreshToken</Policy>
+        <Policy>Return404</Policy>
+        <Policy>SetEmptyResponse</Policy>
+        <Policy>VerifyAPIKey</Policy>
+        <Policy>VerifyToken</Policy>
+    </Policies>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints/>
+    <validate>false</validate>
+</APIProxy>

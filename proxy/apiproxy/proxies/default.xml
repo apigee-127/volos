@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxyEndpoint name="default">
+    <PreFlow name="PreFlow">
+        <Request>
+            <Step>
+                <FaultRules/>
+                <Name>VerifyAPIKey</Name>
+            </Step>
+        </Request>
+        <Response/>
+    </PreFlow>
+    <Flows>
+        <Flow name="Client Credentials Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateTokenClientCredentials</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/client/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="Password Credentials Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateTokenPasswordCredentials</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/password/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="Get Authorization Code">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateAuthorizationCode</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/authcode/authcodes&quot;) and (request.verb = &quot;GET&quot;)</Condition>
+        </Flow>
+        <Flow name="Authorization Code Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateTokenAuthoriationCode</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/authcode/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="Implicit Grant Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateTokenImplicit</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/implicit/tokens&quot;) and (request.verb = &quot;GET&quot;)</Condition>
+        </Flow>
+        <Flow name="Refresh Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>RefreshToken</Name>
+                </Step>
+            </Request>
+            <Response/>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/all/refresh&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="Invalidate Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>ExtractInvalidateParams</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Name>InvalidateToken</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Name>InvalidateRefreshToken</Name>
+                </Step>
+            </Request>
+            <Response>
+                <Step>
+                    <FaultRules/>
+                    <Name>SetEmptyResponse</Name>
+                </Step>
+            </Response>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/all/invalidate&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="Verify Tokens">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>VerifyToken</Name>
+                </Step>
+            </Request>
+            <Response>
+                <Step>
+                    <FaultRules/>
+                    <Name>GenerateVerifyResponse</Name>
+                </Step>
+            </Response>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/all/verify&quot;) and (request.verb = &quot;GET&quot;)</Condition>
+        </Flow>
+      <Flow name="FallThrough">
+        <Request>
+          <Step><Name>Return404</Name></Step>
+        </Request>
+      </Flow>
+    </Flows>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <HTTPProxyConnection>
+        <BasePath>/adapterproxy</BasePath>
+        <Properties/>
+        <VirtualHost>default</VirtualHost>
+        <VirtualHost>secure</VirtualHost>
+    </HTTPProxyConnection>
+    <RouteRule name="noroute"/>
+</ProxyEndpoint>

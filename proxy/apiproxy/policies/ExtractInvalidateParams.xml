@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="ExtractInvalidateParams">
+    <DisplayName>ExtractInvalidateParams</DisplayName>
+    <FormParam name="token">
+      <Pattern>{token}</Pattern>
+    </FormParam>
+    <FormParam name="hint">
+      <Pattern>{token_type_hint}</Pattern>
+    </FormParam>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <Source clearPayload="false">request</Source>
+    <VariablePrefix>invalidate</VariablePrefix>
+</ExtractVariables>
