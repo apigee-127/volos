@@ -258,6 +258,9 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
   });
 }
 
+/*
+ * Refresh an access token or a refresh token. Parse the body as in the regular OAuth spec.
+ */
 OAuth.prototype.refreshToken = function(body, options, cb) {
   if (typeof body !== 'string') {
     throw new Error('body must be a string');
@@ -297,6 +300,9 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
   });
 };
 
+/*
+ * Invalidate a token based on the spec.
+ */
 OAuth.prototype.invalidateToken = function(body, options, cb) {
   if (typeof body !== 'string') {
     throw new Error('body must be a string');
@@ -319,7 +325,7 @@ OAuth.prototype.invalidateToken = function(body, options, cb) {
     token: parsedBody.token
   };
   if (parsedBody.token_type_hint) {
-    gr.token_type_hint = parsedBody.token_type_hint;
+    gr.tokenTypeHint = parsedBody.token_type_hint;
   }
 
   this.spi.invalidateToken(gr, function(err, result) {
@@ -331,19 +337,32 @@ OAuth.prototype.invalidateToken = function(body, options, cb) {
   });
 };
 
-OAuth.prototype.verifyToken = function(authorizationHeader, cb) {
-  var hdr = /Bearer ([^\\w]+)/.exec(authorizationHeader);
+/*
+ * Verify a token given an authorization header, plus optional path and
+ * verb. Some implementations may use those in order to do additional checks.
+ */
+OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, cb) {
+  if (typeof verb === 'function') {
+    cb = verb;
+    verb = undefined;
+  } else if (typeof path === 'function') {
+    cb = path;
+    path = undefined;
+  }
+
+  var hdr = /Bearer (.+)/.exec(authorizationHeader);
   if (!hdr || (hdr.length < 2)) {
     cb(makeError('invalid_request', 'Invalid Authorization header'));
     return;
   }
 
-  this.spi.verifyToken(hdr[1], function(err, result) {
-    if (err) {
-      cb(makeError('invalid_token', err.message));
-    } else {
-      cb(undefined, result);
-    }
+  this.spi.verifyToken(hdr[1], verb, path,
+    function(err, result) {
+      if (err) {
+        cb(makeError('invalid_token', err.message));
+      } else {
+        cb(undefined, result);
+      }
   });
 };
 
@@ -367,7 +386,7 @@ function getIdAndSecret(authorizeHeader, parsedBody) {
   var clientId;
   var clientSecret;
   if (authorizeHeader) {
-    var parsedHeader = /Basic ([^\\w]+)/.exec(authorizeHeader);
+    var parsedHeader = /Basic (.+)/.exec(authorizeHeader);
     if (!parsedHeader) {
       return null;
     }

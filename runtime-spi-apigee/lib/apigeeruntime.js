@@ -197,13 +197,11 @@ spi.prototype.refreshToken = function(options, cb) {
  *   accessToken: same
  */
 spi.prototype.invalidateToken = function(options, cb) {
-  var qs = {};
-  if (options.refreshToken) {
-    qs.token = options.refreshToken;
-    qs.token_type_hint = 'refresh_token';
-  } else {
-    qs.token = options.accessToken;
-    qs.token_type_hint = 'access_token';
+  var qs = {
+    token: options.token
+  };
+  if (options.tokenTypeHint) {
+    qs.tokenTypeHint = options.tokenTypeHint;
   }
   var body = querystring.stringify(qs);
 
@@ -216,7 +214,7 @@ spi.prototype.invalidateToken = function(options, cb) {
 /*
  * Validate an access token. Specify just the token and we are fine.
  */
-spi.prototype.verifyToken = function(token, cb) {
+spi.prototype.verifyToken = function(token, verb, path, cb) {
   var r = url.parse(this.uri + '/tokentypes/all/verify');
   r.headers = {
     Authorization: 'Bearer ' + token
@@ -252,9 +250,11 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
 
   var finalUri = self.uri + uriPath;
 
+  //console.log('makeRequest options = %j', options);
+
   var r = url.parse(finalUri);
   r.headers = {
-    Authorization: new Buffer(options.clientId + ':' + options.clientSecret).toString('base64')
+    Authorization: 'Basic ' + new Buffer(options.clientId + ':' + options.clientSecret).toString('base64')
   };
   r.headers['x-DNA-Api-Key'] = self.key;
   if (options.tokenLifetime) {
@@ -264,6 +264,8 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
   if (body) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
+
+  //console.log('request: %j', r);
 
   var req;
   if (r.protocol === 'http:') {
