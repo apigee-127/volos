@@ -1,5 +1,15 @@
 var querystring = require('querystring');
 
+var debug;
+if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('OAuth: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
+
 // Map grant type names to functions so we can avoid a big if / then / else
 var GrantTypeFunctions = {
   client_credentials: clientCredentialsGrant,
@@ -25,6 +35,16 @@ function OAuth(spi, options) {
 }
 module.exports = OAuth;
 
+OAuth.prototype.argoMiddleware = function(options) {
+  var mw = require('./oauth-argo');
+  return new mw(this, options);
+};
+
+OAuth.prototype.expressMiddleware = function(options) {
+  var mw = require('./oauth-express');
+  return new mw(this, options)
+};
+
 var DefaultOptions = {
   validGrantTypes: [ 'authorization_code' ]
 };
@@ -45,7 +65,17 @@ function applyModuleDefaults(options) {
  * to the request. This request handles both the authorization_code and implicit grant types.
  */
 OAuth.prototype.authorize = function(queryString, cb) {
-  var q = querystring.parse(queryString);
+  if (debugEnabled) {
+    debug('authorize: ' + JSON.stringify(queryString));
+  }
+  var q;
+  if (typeof queryString === 'string') {
+    q = querystring.parse(queryString);
+  } else if (typeof querystring === 'object') {
+    q = queryString;
+  } else {
+    cb(makeError('invalid_request', 'Query string must be a string or an object'));
+  }
 
   if (q.response_type === 'code') {
     if (!isSupportedGrantType(this, 'authorization_code')) {
@@ -103,7 +133,7 @@ function doAuthorize(self, grantType, q, cb) {
       }
     });
   } else {
-    throw new Error('Invalid grant');
+    cb(makeError('invalid_grant', 'Invalid grant'));
   }
 }
 
@@ -123,10 +153,15 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     options = undefined;
   }
 
-  if (typeof body !== 'string') {
-    throw new Error('body must be a string');
+  var parsedBody;
+  if (typeof body === 'object') {
+    parsedBody = body;
+  } else if (typeof body === 'string') {
+    parsedBody = querystring.parse(body);
+  } else {
+    cb(makeError('invalid_request', 'body must be a string or object'));
+    return;
   }
-  var parsedBody = querystring.parse(body);
 
   // Reject anything that does not match the valid grant types specified when the object was created
   if (!parsedBody.grant_type) {
@@ -263,7 +298,8 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
  */
 OAuth.prototype.refreshToken = function(body, options, cb) {
   if (typeof body !== 'string') {
-    throw new Error('body must be a string');
+    cb(makeError('invalid_request', 'body must be a string'));
+    return;
   }
   var parsedBody = querystring.parse(body);
 
@@ -305,7 +341,8 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
  */
 OAuth.prototype.invalidateToken = function(body, options, cb) {
   if (typeof body !== 'string') {
-    throw new Error('body must be a string');
+    cb(makeError('invalid_request', 'body must be a string'));
+    return;
   }
   var parsedBody = querystring.parse(body);
 
@@ -357,6 +394,28 @@ OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, cb) {
   }
 
   this.spi.verifyToken(hdr[1], verb, path,
+    function(err, result) {
+      if (err) {
+        cb(makeError('invalid_token', err.message));
+      } else {
+        cb(undefined, result);
+      }
+  });
+};
+
+/*
+ * Verify an API key, which could have come from various places.
+ */
+OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
+  if (typeof verb === 'function') {
+    cb = verb;
+    verb = undefined;
+  } else if (typeof path === 'function') {
+    cb = path;
+    path = undefined;
+  }
+
+  this.spi.verifyApiKey(apiKey, verb, path,
     function(err, result) {
       if (err) {
         cb(makeError('invalid_token', err.message));
