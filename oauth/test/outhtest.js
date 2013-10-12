@@ -1,14 +1,12 @@
 var oauthModule = require('..');
 var mgmtSpi = require('../../management-spi-apigee');
 var runtimeSpi = require('../../runtime-spi-apigee');
+var fixtures = require('../../common/createfixtures');
 var testOpts = require('../../common/testConfig');
 
 var assert = require('assert');
 var url = require('url');
 var querystring = require('querystring');
-
-var TestDeveloperId = 'joe3@schmoe.io';
-var TestAppName = 'APIDNA-OAuth-Test';
 
 var DefaultTokenLifetime = 3600000;
 var DefaultRedirectUri = 'http://example.org';
@@ -31,7 +29,6 @@ describe('Apigee Runtime SPI', function() {
   this.timeout(10000);
 
   before(function(done) {
-    mgmt = new mgmtSpi(testOpts);
     runtime = new runtimeSpi(testOpts);
     oauth = new oauthModule(runtime, {
       validGrantTypes: [ 'authorization_code', 'implicit_grant', 'password', 'client_credentials' ],
@@ -40,41 +37,18 @@ describe('Apigee Runtime SPI', function() {
       }
     });
 
-    // Step 1 -- clean up
-    mgmt.deleteDeveloper(TestDeveloperId, function(err) {
+    var creator = new fixtures();
+    creator.createFixtures(function(err, newApp) {
       if (err) {
-        console.log('Error deleting test developer -- but this is OK');
+        console.error('Error creating fixtures: %j', err);
       }
-
-      // Step 2 -- re-create sample developer and app
-      console.log('Creating developer %s', TestDeveloperId);
-      mgmt.createDeveloper({
-        firstName: 'Joe', lastName: 'Schmoe', email: TestDeveloperId, userName: 'jschmoe2'
-      }, function(err, newDev) {
-        if (err) {
-          throw err;
-        }
-        developer = newDev;
-
-        console.log('Creating application %s for developer %s', TestAppName, developer.id);
-        // Delay because this is an eventually-consistent world
-        setTimeout(function() {
-          mgmt.createApp({
-            name: TestAppName, developerId: developer.id
-          }, function(err, newApp) {
-            if (err) {
-              throw err;
-            }
-            console.log('Created app %s', newApp.id);
-            app = newApp;
-            key = app.credentials[0].key;
-            secret = app.credentials[0].secret;
-            authHeader = 'Basic ' + (new Buffer(key + ':' + secret).toString('base64'));
-            setTimeout(done(), 1000);
-          });
-        }, 1000);
-        });
-      });
+      assert(!err);
+      app = newApp;
+      key = app.credentials[0].key;
+      secret = app.credentials[0].secret;
+      authHeader = 'Basic ' + (new Buffer(key + ':' + secret).toString('base64'));
+      done();
+    });
   });
 
   it('Generate authorization code', function(done) {
@@ -224,22 +198,6 @@ describe('Apigee Runtime SPI', function() {
       assert(result);
       assert(result.access_token);
       done();
-    });
-  });
-
-  after(function(done) {
-    console.log('Cleanup -- deleting app %s', app.id);
-    mgmt.deleteApp(app.id, function(err) {
-      if (err) {
-        console.error('Error deleting app: %j', err);
-      }
-      console.log('Deleting developer %s', developer.id);
-      mgmt.deleteDeveloper(developer.id, function(err) {
-        if (err) {
-          console.error('Error deleting developer: %j', err);
-        }
-        done();
-      });
     });
   });
 });

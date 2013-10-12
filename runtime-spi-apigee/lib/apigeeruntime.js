@@ -12,6 +12,17 @@ var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
 
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Apigee: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
+
 var spi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
@@ -299,6 +310,10 @@ function makeGetRequest(self, uriPath, qs, options, cb) {
   r.headers['x-DNA-Api-Key'] = self.key;
   r.method = 'GET';
 
+  if (debugEnabled) {
+    debug('GET ' + finalUri);
+  }
+
   var req;
   if (r.protocol === 'http:') {
     req = http.request(r, function(resp) {
@@ -403,7 +418,9 @@ function verifyRequestComplete(resp, cb) {
       err.message = respData;
       cb(err);
     } else {
-      cb(undefined, querystring.parse(respData));
+      if (cb) {
+        cb(undefined, querystring.parse(respData));
+      }
     }
   });
 }

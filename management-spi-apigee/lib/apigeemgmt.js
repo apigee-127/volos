@@ -42,6 +42,17 @@ var path = require('path');
 var http = require('http');
 var https = require('https');
 
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Apigee: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
+
 var DefaultApigeeURI = 'https://api.enterprise.apigee.com/v1';
 
 function ApigeeManagementSpi(options) {
@@ -58,7 +69,7 @@ function ApigeeManagementSpi(options) {
   this.organization = options.organization;
   this.auth = 'Basic ' + (new Buffer(options.user + ':' + options.password).toString('base64'));
 
-  this.uri = (options.managementUri ? options.uri : DefaultApigeeURI);
+  this.uri = (options.managementUri ? options.managementUri : DefaultApigeeURI);
 }
 module.exports = ApigeeManagementSpi;
 
@@ -150,6 +161,16 @@ ApigeeManagementSpi.prototype.getApp = function(uuid, cb) {
   });
 };
 
+ApigeeManagementSpi.prototype.getDeveloperApp = function(developerName, appName, cb) {
+  makeRequest(this, 'GET', path.join('/developers', developerName, '/apps', appName), function(err, app) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseApp(app));
+    }
+  });
+};
+
 ApigeeManagementSpi.prototype.deleteApp = function(uuid, cb) {
   // First we have to get the app because the API is weird and I can't delete it directly
   var self = this;
@@ -196,8 +217,10 @@ function makeRequest(self, verb, uriPath, o, cb) {
     o = undefined;
   }
 
-  var finalUri = self.uri + path.join('/o', self.organization, uriPath);
-  //console.log('%s %s', verb, finalUri);
+  var finalUri = self.uri + path.join('/v1/o', self.organization, uriPath);
+  if (debugEnabled) {
+    debug(verb + ' ' + finalUri);
+  }
 
   var r = url.parse(finalUri);
   r.headers = {
@@ -208,7 +231,9 @@ function makeRequest(self, verb, uriPath, o, cb) {
   if (o) {
     r.headers['Content-Type'] = 'application/json';
   }
-  //console.log('%j', r);
+  if (debugEnabled) {
+    debug(JSON.stringify(r));
+  }
 
   var req;
   if (r.protocol === 'http:') {
@@ -225,6 +250,9 @@ function makeRequest(self, verb, uriPath, o, cb) {
   }
 
   req.on('error', function(err) {
+    if (debugEnabled) {
+      debug('Error: ' + JSON.stringify(err));
+    }
     cb(err);
   });
   if (o) {
