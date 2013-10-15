@@ -2,7 +2,7 @@ var oauthModule = require('..');
 var mgmtSpi = require('../../management-spi-apigee');
 var runtimeSpi = require('../../runtime-spi-apigee');
 var fixtures = require('../../common/createfixtures');
-var testOpts = require('../../common/testConfig');
+var testOpts = require('../../common/testconfig');
 
 var assert = require('assert');
 var url = require('url');

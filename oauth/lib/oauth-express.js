@@ -1,4 +1,5 @@
 var debug;
+var debugEnabled;
 if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
   debug = function(x) {
     console.log('OAuth: ' + x);

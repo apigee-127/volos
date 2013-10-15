@@ -1,5 +1,6 @@
 var url = require('url');
 
+var debugEnabled;
 var debug;
 if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
   debug = function(x) {
