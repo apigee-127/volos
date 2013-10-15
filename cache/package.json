@@ -1,0 +1,5 @@
+{
+  "name": "apigene-cache",
+  "version": "0.0.1",
+  "main": "lib/cache.js"
+}

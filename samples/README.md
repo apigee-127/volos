@@ -86,10 +86,13 @@ Once you have run this script, then you can invoke the proxy at the URL:
 If you call this URL right now, you should get a 401 (Unauthorized) error because you didn't
 supply an API key. If deployment failed, however, then you will get a 404.
 
-### Copy the Files
+### Install the modules
 
-The samples could run with "real" modules from NPM, but to run them from this repo, run "sync.sh."
-That copies files from elsewhere in the repo into "node_modules" so that you can run them directly.
+If you didn't run "npm" in the parent directory in order to install the dependencies required by
+these modules, now is a great time:
+
+    cd ..
+    npm update
 
 ### Create config.js
 

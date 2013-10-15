@@ -1,6 +1,6 @@
 var oauthModule = require('..');
-var mgmtSpi = require('../../management-spi-apigee');
-var runtimeSpi = require('../../runtime-spi-apigee');
+var mgmtSpi = require('../../apigee-management');
+var runtimeSpi = require('../../apigee-runtime');
 var fixtures = require('../../common/createfixtures');
 var testOpts = require('../../common/testconfig');
 

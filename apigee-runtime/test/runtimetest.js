@@ -1,5 +1,5 @@
 var spi = require('..');
-var mgmtSpi = require('../../management-spi-apigee');
+var mgmtSpi = require('../../apigee-management');
 var testOpts = require('../../common/testConfig');
 var assert = require('assert');
 var url = require('url');

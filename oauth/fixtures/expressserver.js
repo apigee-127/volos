@@ -1,5 +1,5 @@
 var express = require('express');
-var spi = require('../../runtime-spi-apigee');
+var spi = require('../../apigee-runtime');
 var oauth = require('..');
 var opts = require('../../common/testconfig');
 

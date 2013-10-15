@@ -1,6 +1,8 @@
 var argo = require('argo');
-var spi = require('runtime-spi-apigee');
-var oauth = require('apigee-oauth');
+
+// In a real deployment, you would replace these with the real NPM module names.
+var spi = require('../apigee-runtime');
+var oauth = require('../oauth');
 var opts = require('./config');
 
 var port = 10010;

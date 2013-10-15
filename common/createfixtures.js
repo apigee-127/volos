@@ -2,7 +2,7 @@
  * Create a developer and app so that we can have them for the rest of the tests.
  */
 
-var mgmtSpi = require('../management-spi-apigee');
+var mgmtSpi = require('../apigee-management');
 var opts = require('./testconfig');
 
 var TestDeveloper='dyniss@example.org';

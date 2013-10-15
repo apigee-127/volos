@@ -1,5 +1,5 @@
 {
-  "name": "Apigee Management SPI",
+  "name": "apigene-apigee-management",
   "version": "0.0.1",
   "main": "lib/apigeemgmt.js"
 }

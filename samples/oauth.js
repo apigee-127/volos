@@ -1,8 +1,9 @@
 var http = require('http');
 var url = require('url');
 
-var oauth = require('apigee-oauth');
-var spi = require('runtime-spi-apigee');
+// In a real deployment, you would replace these with the real NPM module names.
+var oauth = require('../oauth');
+var spi = require('../apigee-runtime');
 var opts = require('./config');
 
 var port = 10010;
