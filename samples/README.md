@@ -55,12 +55,13 @@ Now we can create an app:
 2) Click on the "+ Developer App" button
 3) Enter a "Display Name"
 4) Select a developer from the drop-down
-5) Select an API product from the drop-down
-6) Click on the little "check" box so that it works
-7) Click on "Save"
+5) Click on the "+ Product" button
+6) Select an API product from the drop-down
+7) Click on the little "check" box so that it works
+8) Click on "Save"
 
-Once the app has been created, you'll need the "public key" and "secret key" to run the proxy. You can
-view them in the API, although they're not shown by default -- you have to press a button to do so.
+Once the app has been created, you'll need the "Consumer Key" and "Consumer Secret" to run the proxy. You can
+view them in the console, although they're not shown by default -- you have to press the 'show' button.
 
 ### Deploy the Proxy
 
@@ -77,7 +78,7 @@ Once "apigeetool" is deployed, you can deploy the proxy to your "test" environme
     apigeetool deployproxy -o ORGANIZATION -e test -u USERNAME -p PASSWORD \
                            -n adapterproxy -d ../proxy
 
-(Of course, replace ORGANIZATION, USERNAME, and PASSWORD) with the stuff that you gathered above.
+(Replace ORGANIZATION, USERNAME, and PASSWORD with your Apigee account info)
 
 Once you have run this script, then you can invoke the proxy at the URL:
 
@@ -97,16 +98,18 @@ these modules, now is a great time:
 ### Create config.js
 
 Second, copy the file "sampleconfig.js" to a file called "config.js" and enter in the Apigee
-provisioning information from your Apigee deployment. For instance, when done, your config.js might look like this.
-You'll need to know your organization name from the first step, as well as the keys that you got when you
-created the app.
+provisioning information from your Apigee deployment. For instance, when done, your config.js might look like this:
 
     module.exports = {
       organization: 'ORGANIZATION',
       uri: 'https://ORGANIZATION-test.apigee.net/adapterproxy'
-      key: 'PUBLIC KEY',
-      secret: 'SECRET KEY'
+      key: 'CONSUMER KEY',
+      secret: 'CONSUMER SECRET'
     };
+
+Just fill in your organization name from the first step, as well as the Consumer Key and Consumer Secret
+that you got when you created the app. (If you don't have it, go to the Publish...Developer Apps, select
+your app and click the 'show' buttons next to your Product values.)
 
 ### Done
 
