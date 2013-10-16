@@ -1,3 +1,28 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2013 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+"use strict";
+
 /**
  * This module implements the management SPI interface using the Apigee API.
  *
@@ -53,7 +78,7 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var DefaultApigeeURI = 'https://api.enterprise.apigee.com/v1';
+var DefaultApigeeURI = 'https://api.enterprise.apigee.com';
 
 function ApigeeManagementSpi(options) {
   if (!options.organization) {
@@ -120,7 +145,7 @@ function makeDeveloper(d) {
     lastName: d.lastName,
     status: d.status,
     attributes: d.attributes
-  }
+  };
 }
 
 function parseDeveloper(o) {
@@ -132,7 +157,7 @@ function parseDeveloper(o) {
     lastName: o.lastName,
     status: o.status,
     attributes: o.attributes
-  }
+  };
 }
 
 ApigeeManagementSpi.prototype.createApp = function(app, cb) {
@@ -199,7 +224,7 @@ function parseApp(a) {
     attributes: a.attributes,
     credentials: []
   };
-  for (i in a.credentials) {
+  for (var i = 0; i < a.credentials.length; i++) {
     var nc = {
       key: a.credentials[i].consumerKey,
       secret: a.credentials[i].consumerSecret,

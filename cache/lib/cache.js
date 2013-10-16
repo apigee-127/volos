@@ -1,3 +1,28 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2013 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+"use strict";
+
 // apigee-cache
 //
 // This is a basic caching library, which can be used by a number of higher-level modules.
@@ -53,7 +78,7 @@ function convertValue(value, encoding) {
 
 function convertNumber(value, name) {
   if (typeof value === 'string') {
-    return parseInt(value);
+    return parseInt(value, 10);
   } else if (typeof value === 'number') {
     return value;
   } else {
@@ -141,8 +166,10 @@ Cache.prototype.delete = function(key, callback) {
 // the error as the first element.
 Cache.prototype.clear = function(callback) {
   // Since cache entries are shared, we can't just let them get GCed -- we have to go through and clean up.
-  for (e in this.entries) {
-    delete e;
+  for (var e in this.entries) {
+    if (this.entries.hasOwnProperty(e)) {
+      delete this.entries[e];
+    }
   }
   if (callback) {
     callback();

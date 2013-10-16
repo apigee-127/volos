@@ -1,3 +1,28 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2013 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+"use strict";
+
 /*
  * This module implements the runtime SPI by talking to a proxy that is hosted inside Apigee.
  *
@@ -132,7 +157,7 @@ spi.prototype.generateAuthorizationCode = function(options, cb) {
     client_id: options.clientId
   };
   if (options.redirectUri) {
-    qs.redirect_uri = options.redirectUri
+    qs.redirect_uri = options.redirectUri;
   }
   if (options.scope) {
     qs.scope = options.scope;
@@ -162,7 +187,7 @@ spi.prototype.createTokenImplicitGrant = function(options, cb) {
     client_id: options.clientId
   };
   if (options.redirectUri) {
-    qs.redirect_uri = options.redirectUri
+    qs.redirect_uri = options.redirectUri;
   }
   if (options.scope) {
     qs.scope = options.scope;
@@ -365,7 +390,7 @@ function requestComplete(resp, options, cb) {
       try {
         var ret = JSON.parse(respData);
         if (ret.expires_in) {
-          ret.expires_in = parseInt(ret.expires_in);
+          ret.expires_in = parseInt(ret.expires_in, 10);
         }
         if (options.grantType) {
           ret.token_type = options.grantType;
@@ -390,7 +415,7 @@ function getRequestComplete(resp, options, cb) {
   });
 
   resp.on('end', function() {
-    if (resp.statusCode != 302) {
+    if (resp.statusCode !== 302) {
       var err = new Error('Error on HTTP request');
       err.statusCode = resp.statusCode;
       err.message = respData;
