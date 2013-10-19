@@ -52,7 +52,7 @@ OAuthArgo.prototype.package = function(argo) {
     name: 'OAuth',
     install: function() {
       if (self.options.authorizeUri) {
-        console.log('authorize = %s', self.options.authorizeUri);
+        if (debugEnabled) { debug('authorize = ' + self.options.authorizeUri); }
         argo.route(self.options.authorizeUri, { methods: ['GET'] },
           function(handle) {
             handle('request', function(env, next) {
@@ -62,11 +62,21 @@ OAuthArgo.prototype.package = function(argo) {
         );
       }
       if (self.options.accessTokenUri) {
-        console.log('access token = %s', self.options.accessTokenUri);
+        if (debugEnabled) { debug('access token = ' + self.options.accessTokenUri); }
         argo.route(self.options.accessTokenUri, { methods: ['POST'] },
           function(handle) {
             handle('request', function(env, next) {
               self.accessToken(env, next);
+            });
+          }
+        );
+      }
+      if (self.options.refreshTokenUri) {
+        if (debugEnabled) { debug('refresh token = ' + self.options.refreshTokenUri); }
+        argo.route(self.options.refreshTokenUri, { methods: ['POST'] },
+          function(handle) {
+            handle('request', function(env, next) {
+              self.refreshToken(env, next);
             });
           }
         );
@@ -157,6 +167,39 @@ OAuthArgo.prototype.authenticate = function(env, next) {
   }
 };
 
+OAuthArgo.prototype.refreshToken = function(env, next) {
+  debug('Argo refreshToken');
+  var self = this;
+  env.request.getBody(function(bodyErr, body) {
+    if (bodyErr) {
+      makeError(bodyErr, env);
+      env._oauthAuthenticated = true;
+      next(env);
+      return;
+    }
+
+    if (body instanceof Buffer) {
+      body = body.toString('ascii');
+    }
+    if (debugEnabled) {
+      debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
+    }
+    self.oauth.refreshToken(body, { authorizeHeader: env.request.headers.authorization },
+      function(err, result) {
+        if (err) {
+          if (debugEnabled) {
+            debug('Access token error: ' + err);
+          }
+          makeError(err, env);
+        } else {
+          env.response.body = result;
+        }
+        env._oauthAuthenticated = true;
+        next(env);
+      });
+  });
+};
+
 function makeError(err, env) {
   env.response.body = {
     error_description: err.message
@@ -166,5 +209,5 @@ function makeError(err, env) {
   } else {
     env.response.body.error_code = 'unknown_error';
   }
-  env.response.statusCode = 500;
+  env.response.statusCode = err.statusCode;
 }

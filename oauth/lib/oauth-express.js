@@ -174,6 +174,5 @@ function makeError(err, resp) {
   } else {
     rb.error_code = 'unknown_error';
   }
-  // TODO proper response code
-  resp.json(500, rb);
+  resp.json(err.statusCode, rb);
 }

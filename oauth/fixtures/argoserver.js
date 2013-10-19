@@ -43,13 +43,14 @@ function checkPassword(username, password) {
   return true;
 }
 
-argo()
+var argo = argo();
+argo
   .get('/dogs', function(handle) {
-  handle('request', function(env, next) {
-    env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
-    next(env);
-  });
-})
+    handle('request', function(env, next) {
+      env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+      next(env);
+    });
+  })
   .get('/ok', function(handle) {
     handle('request', function(env, next) {
       env.response.body = 'ok';
@@ -59,7 +60,17 @@ argo()
   .use(oauthRuntime.argoMiddleware(
     // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
     { authorizeUri: '^/authorize.*',
-      accessTokenUri: '/accesstoken'
+      accessTokenUri: '/accesstoken',
+      refreshTokenUri: '/refresh'
     }))
   .listen(port);
 
+// supertest expects an address function that returns the port
+// (I couldn't figure out how to get the dynamic port from argo)
+argo.address = function() {
+  var addr = {};
+  addr.port = port;
+  return addr;
+};
+
+module.exports = argo;

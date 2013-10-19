@@ -28,8 +28,6 @@ var spi = require('../../apigee-runtime');
 var oauth = require('..');
 var opts = require('../../common/testconfig');
 
-var port = 10010;
-
 var runtime = new spi(opts);
 
 var oOpts = {
@@ -61,5 +59,4 @@ app.get('/ok', function(req, resp) {
   resp.send(200, 'ok');
 });
 
-console.log('Going to listen on %d', port);
-app.listen(port);
+module.exports = app;

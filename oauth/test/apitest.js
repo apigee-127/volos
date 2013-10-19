@@ -23,46 +23,51 @@
  ****************************************************************************/
 "use strict";
 
-var assert = require('assert');
-var apieasy = require('api-easy');
+var request = require('supertest');
 var querystring = require('querystring');
-var config = require('../../common/testconfig.js');
 var fixtures = require('../../common/createfixtures');
+var server = require('../fixtures/expressserver.js');
 
-var suite = apieasy.describe('OAuth API');
+describe('Api', function() {
 
-var app;
-var key;
-var secret;
-var authHeader;
+  this.timeout(5000);
 
-var creator = new fixtures();
-      creator.createFixtures(function(err, newApp) {
-        if (err) {
-          console.error('Error creating fixtures: %j', err);
-        }
-        app = newApp;
-        key = app.credentials[0].key;
-        secret = app.credentials[0].secret;
-        authHeader = 'Basic ' + (new Buffer(key + ':' + secret).toString('base64'));
+  var key;
+  var secret;
+
+  before(function(done) {
+    var creator = new fixtures();
+    creator.createFixtures(function(err, app) {
+      if (err) {
+        console.error('Error creating fixtures: %j', err);
+      }
+      key = app.credentials[0].key;
+      secret = app.credentials[0].secret;
+      done();
+    });
+  });
+
+  it('get without token', function(done) {
+    request(server)
+      .get('/dogs')
+      .expect(400, done);
+  });
+
+  it('get with valid token', function(done) {
+    request(server)
+      .post('/accesstoken')
+      .send(querystring.stringify(
+        { client_id: key, client_secret: secret, grant_type: 'client_credentials' }))
+      .expect(200)
+      .expect(/access_token/)
+      .end(function(err, res){
+        if (err) { return done(err); }
+        var access_token = res.body.access_token;
+
+        request(server)
+          .get('/dogs')
+          .set('Authorization', 'Bearer ' + access_token)
+          .expect(200, done);
       });
-
-function runTests(host, port, shutdown) {
-  suite.use(host, port)
-    .get('/dogs')
-    .expect(401)
-    .post('/accesstoken', querystring.stringify({ hello: 'World'}))
-    .expect(401)
-    .post('/accesstoken', querystring.stringify(
-      { client_id: key, client_secret: secret,
-        grant_type: 'client_credentials' }))
-    .expect(200)
-    .expect('Access token set', function(err, res, body) {
-      console.log('TOken set: %j', body);
-    })
-    .export(module);
-}
-
-runTests('localhost', 10010, function() {
-  console.log('done');
+  });
 });

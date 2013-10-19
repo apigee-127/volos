@@ -208,10 +208,15 @@ OAuth.prototype.generateToken = function(body, options, cb) {
   }
 
   if (GrantTypeFunctions[parsedBody.grant_type]) {
+    if (debugEnabled) { debug("grant_type: " + parsedBody.grant_type); }
     GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, idSecret[0], idSecret[1],
                                               options, function(err, result) {
         if (err) {
-          cb(makeError('error', err.message));
+          if (err.errorCode) { // use spi's errorCode if present
+            cb(makeError(err.errorCode, err.message));
+          } else {
+            cb(makeError('error', err.message));
+          }
         } else {
           cb(undefined, result);
         }
@@ -457,6 +462,18 @@ OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
 function makeError(code, message) {
   var err = new Error(message);
   err.code = code;
+  switch(code) {
+    case "invalid_request":
+    case "invalid_client":
+    case "invalid_grant":
+    case "unauthorized_client":
+    case "unsupported_grant_type":
+    case "invalid_scope":
+      err.statusCode = 400;
+      break;
+    default:
+      err.statusCode = 500;
+  }
   return err;
 }
 

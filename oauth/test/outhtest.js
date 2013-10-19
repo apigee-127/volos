@@ -124,7 +124,6 @@ describe('Apigee Runtime SPI', function() {
       }
       assert(!err);
       assert(result);
-      console.log('Verify result: %j', result);
       done();
     });
   });
@@ -155,7 +154,6 @@ describe('Apigee Runtime SPI', function() {
       }
       assert(!err);
       assert(result);
-      console.log('Verify result: %j', result);
       done();
     });
   });

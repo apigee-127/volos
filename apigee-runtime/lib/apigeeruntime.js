@@ -32,7 +32,6 @@
  */
 
 var url = require('url');
-var path = require('path');
 var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
@@ -384,7 +383,15 @@ function requestComplete(resp, options, cb) {
     if (resp.statusCode >= 300) {
       var err = new Error('Error on HTTP request');
       err.statusCode = resp.statusCode;
-      err.message = respData;
+      if (resp.statusCode === 400 || resp.statusCode === 401) { // oauth return
+        var ret = JSON.parse(respData);
+        if (ret.errorCode !== null) {
+          err.errorCode = ret.ErrorCode;
+          err.message = ret.Error;
+        }
+      } else {
+        err.message = respData;
+      }
       cb(err);
     } else {
       try {
