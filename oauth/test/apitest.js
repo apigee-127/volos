@@ -25,8 +25,11 @@
 
 var request = require('supertest');
 var querystring = require('querystring');
-var fixtures = require('../../common/createfixtures');
 var server = require('../fixtures/expressserver.js');
+
+// todo: make config dynamic
+var config = require('../../common/testconfig-apigee.js');
+var creator = config.fixtureCreator;
 
 describe('Api', function() {
 
@@ -36,7 +39,6 @@ describe('Api', function() {
   var secret;
 
   before(function(done) {
-    var creator = new fixtures();
     creator.createFixtures(function(err, app) {
       if (err) {
         console.error('Error creating fixtures: %j', err);

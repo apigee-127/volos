@@ -27,14 +27,11 @@
  * Create a developer and app so that we can have them for the rest of the tests.
  */
 
-var mgmtSpi = require('../apigee-management');
-var opts = require('./testconfig');
-
 var TestDeveloper='dyniss@example.org';
 var TestApp='ApigeenTestApp';
 
-function Creator() {
-  this.spi = new mgmtSpi(opts);
+function Creator(management) {
+  this.management = management;
 }
 Creator.TestDeveloper = TestDeveloper;
 Creator.TestApp = TestApp;
@@ -45,7 +42,7 @@ Creator.prototype.createFixtures = function(cb) {
 };
 
 function checkDeveloper(self, cb) {
-  self.spi.getDeveloper(TestDeveloper, function(err, dev) {
+  self.management.getDeveloper(TestDeveloper, function(err, dev) {
     if (err) {
       if (err.statusCode === 404) {
         createDeveloper(self, cb);
@@ -66,7 +63,7 @@ function createDeveloper(self, cb) {
       email: 'dyniss@example.org',
       userName: 'dyniss'
     };
-  self.spi.createDeveloper(dev, function(err, dev) {
+  self.management.createDeveloper(dev, function(err, dev) {
     if (err) {
       cb(err);
     } else {
@@ -76,7 +73,7 @@ function createDeveloper(self, cb) {
 }
 
 function checkApp(self, cb) {
-  self.spi.getDeveloperApp(TestDeveloper, TestApp, function(err, app) {
+  self.management.getDeveloperApp(TestDeveloper, TestApp, function(err, app) {
     if (err) {
       if (err.statusCode === 404) {
         createApp(self, cb);
@@ -95,7 +92,7 @@ function createApp(self, cb) {
     name: TestApp,
     developerId: TestDeveloper
   };
-  self.spi.createApp(app, function(err, app) {
+  self.management.createApp(app, function(err, app) {
     if (err) {
       cb(err);
     } else {

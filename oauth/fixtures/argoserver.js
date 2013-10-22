@@ -24,13 +24,12 @@
 "use strict";
 
 var argo = require('argo');
-var spi = require('../../apigee-runtime');
 var oauth = require('..');
-var opts = require('../../common/testconfig');
+
+var config = require('../../common/testconfig-apigee');
+var runtime = config.management.runtime;
 
 var port = 10011;
-
-var runtime = new spi(opts);
 
 var oOpts = {
   validGrantTypes: [ 'client_credentials', 'authorization_code',

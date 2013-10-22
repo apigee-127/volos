@@ -27,7 +27,10 @@ var assert = require('assert');
 var url = require('url');
 var request = require('supertest');
 var querystring = require('querystring');
-var fixtures = require('../../common/createfixtures');
+
+// todo: make config dynamic
+var config = require('../../common/testconfig-apigee');
+var creator = config.fixtureCreator;
 
 exports.verifyOauth = function(server){
 
@@ -46,7 +49,6 @@ exports.verifyOauth = function(server){
     var secret;
 
     before(function(done) {
-      var creator = new fixtures();
       creator.createFixtures(function(err, app) {
         if (err) {
           console.error('Error creating fixtures: %j', err);

@@ -23,7 +23,9 @@
  ****************************************************************************/
 "use strict";
 
-module.exports = {
+/** copy this file to testconfig-apigee.js and replace the config attributes */
+
+var config = {
   organization: 'ORG',
   user: 'USER',
   password: 'PASS',
@@ -31,3 +33,14 @@ module.exports = {
   key: 'KEY'
 };
 
+var Management = require('../apigee-management');
+var management = new Management(config);
+
+var CreateFixtures = require('./createfixtures');
+var fixtureCreator = new CreateFixtures(management);
+
+module.exports = {
+  management: management,
+  fixtureCreator: fixtureCreator,
+  config: config
+};

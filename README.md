@@ -87,9 +87,12 @@ about the app which allows for better analytics, stronger SLAs, and better perfo
 Test scripts are written using "mocha."
 
 1) Run "npm install" in this directory to pull down dependencies used by all the modules.
-2) "npm install -g mocha" to install mocha on your machine
-3) Install the "proxy" module on an Apigee organization that you control, and create an API product, developer, and app.
+2) "npm install -g mocha" to install mocha on your machine.
+
+To test Apigee provider:
+
+1) Install the "proxy" module on an Apigee organization that you control, and create an API product, developer, and app.
 See the instructions in the "samples" directory for details.
-3) In the "common" directory, copy "testconfig-sample.js" to "testconfig.js" and edit the values. You will
+2) In the "common" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. You will
 need to specify where your proxy was deployed and the key and secret for the app that you created.
 3) Run mocha in each directory that has a "tests" subdirectory in order to run the tests for that module.

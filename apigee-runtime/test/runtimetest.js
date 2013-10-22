@@ -23,9 +23,9 @@
  ****************************************************************************/
 "use strict";
 
-var spi = require('..');
-var mgmtSpi = require('../../apigee-management');
-var testOpts = require('../../common/testConfig');
+var testOpts = require('../../common/testconfig-apigee');
+var mgmt = testOpts.management;
+var runtime = mgmt.runtime;
 var assert = require('assert');
 var url = require('url');
 
@@ -36,9 +36,6 @@ var DefaultTokenLifetime = 3600000;
 var DefaultRedirectUri = 'http://example.org';
 
 describe('Apigee Runtime SPI', function() {
-  var mgmt;
-  var runtime;
-
   var developer;
   var app;
   var authCode;
@@ -46,9 +43,6 @@ describe('Apigee Runtime SPI', function() {
   var accessToken;
 
   before(function(done) {
-    mgmt = new mgmtSpi(testOpts);
-    runtime = new spi(testOpts);
-
     // Step 1 -- clean up
     mgmt.deleteDeveloper(TestDeveloperId, function(err) {
       if (err) {

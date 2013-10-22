@@ -23,11 +23,12 @@
  ****************************************************************************/
 "use strict";
 
-var oauthModule = require('..');
-var mgmtSpi = require('../../apigee-management');
-var runtimeSpi = require('../../apigee-runtime');
-var fixtures = require('../../common/createfixtures');
-var testOpts = require('../../common/testconfig');
+var OAuthModule = require('..');
+
+// todo: make config dynamic
+var config = require('../../common/testconfig-apigee');
+var runtime = config.management.runtime;
+var creator = config.fixtureCreator;
 
 var assert = require('assert');
 var url = require('url');
@@ -37,8 +38,6 @@ var DefaultTokenLifetime = 3600000;
 var DefaultRedirectUri = 'http://example.org';
 
 describe('Apigee Runtime SPI', function() {
-  var mgmt;
-  var runtime;
   var oauth;
 
   var developer;
@@ -54,15 +53,13 @@ describe('Apigee Runtime SPI', function() {
   this.timeout(10000);
 
   before(function(done) {
-    runtime = new runtimeSpi(testOpts);
-    oauth = new oauthModule(runtime, {
+    oauth = new OAuthModule(runtime, {
       validGrantTypes: [ 'authorization_code', 'implicit_grant', 'password', 'client_credentials' ],
       passwordCheck: function(user, pass) {
         return (user === 'foo') && (pass === 'bar');
       }
     });
 
-    var creator = new fixtures();
     creator.createFixtures(function(err, newApp) {
       if (err) {
         console.error('Error creating fixtures: %j', err);

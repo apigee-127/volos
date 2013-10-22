@@ -24,7 +24,7 @@
 "use strict";
 
 var spi = require('..');
-var testOpts = require('../../common/testconfig');
+var testOpts = require('../../common/testconfig-apigee');
 var assert = require('assert');
 
 // We delete this ID on every test -- be careful about that!
@@ -37,7 +37,7 @@ describe('Apigee Management SPI', function() {
   var app;
 
   before(function() {
-    mgmt = new spi(testOpts);
+    mgmt = testOpts.management;
 
     // Clean up old test data
     mgmt.deleteDeveloper(TestDeveloperId, function(err) {

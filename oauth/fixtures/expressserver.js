@@ -26,9 +26,9 @@
 var express = require('express');
 var spi = require('../../apigee-runtime');
 var oauth = require('..');
-var opts = require('../../common/testconfig');
 
-var runtime = new spi(opts);
+var config = require('../../common/testconfig-apigee');
+var runtime = config.management.runtime;
 
 var oOpts = {
   validGrantTypes: [ 'client_credentials', 'authorization_code',
