@@ -1,5 +1,5 @@
 {
-  "name": "apigene-quota",
+  "name": "volos-quota",
   "version": "0.0.1",
   "main": "lib/quota.js"
 }

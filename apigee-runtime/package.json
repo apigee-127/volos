@@ -1,5 +1,5 @@
 {
-  "name": "apigene-apigee-runtime",
+  "name": "volos-apigee-runtime",
   "version": "0.0.1",
   "main": "lib/apigeeruntime.js"
 }

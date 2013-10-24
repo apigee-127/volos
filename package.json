@@ -1,11 +1,10 @@
 {
-  "name": "Apigene",
+  "name": "Volos",
   "version": "0.0.1",
   "comments": "This package.json is here so we can get dependencies to run tests",
   "dependencies":  {
     "express": "3.4.x",
     "argo": "x.x.x",
-    "api-easy": "x.x.x",
-    "supertest" : "*"
+    "supertest" : "x.x.x",
   }
 }
