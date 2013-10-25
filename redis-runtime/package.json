@@ -1,0 +1,5 @@
+{
+  "name": "volos-redis-runtime",
+  "version": "0.0.1",
+  "main": "lib/redisruntime.js"
+}

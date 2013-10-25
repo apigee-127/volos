@@ -1,0 +1,284 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2013 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+"use strict";
+
+/*
+schema:
+application_id -> application
+developer_id -> developer
+credentials[i].key -> application_id
+developer_email:application_name -> application_id
+ */
+
+/**
+ * This module implements the management SPI interface using redis.
+ *
+ * Objects supported:
+ *
+ * developer: {
+ *   email (string)
+ *   id: (string)
+ *   userName: (string)
+ *   firstName: (string)
+ *   lastName: (string)
+ *   status: (string)
+ *   attributes: (object)
+ * }
+ *
+ * application: {
+ *   name: (string)
+ *   id: (string)
+ *   status: (string)
+ *   callbackUrl: (string)
+ *   developerId: (string)
+ *   attributes: (object)
+ *   credentials: [(credentials object)]
+ * }
+ *
+ * credentials: {
+ *   key: (string)
+ *   secret: (string)
+ *   status: (string)
+ *   attributes: (object)
+ * }
+ */
+
+var CRYPTO_BYTES = 256 / 8;
+
+var crypto = require('crypto');
+var uuid = require('node-uuid');
+var redis = require("redis");
+var Runtime = require('../../redis-runtime');
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Apigee: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
+
+function RedisManagementSpi(options) {
+  var port = options.port || 6379;
+  var host = options.host || '127.0.0.1';
+  var ropts = options.options || {};
+  this.client = redis.createClient(port, host, ropts);
+  this.runtime = new Runtime(options, this);
+}
+module.exports = RedisManagementSpi;
+
+// Operations on developers
+
+RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
+  if (!developer.id) { developer.id = developer.uuid; }
+  if (!developer.id) {
+    developer.id = developer.uuid = uuid.v4();
+  }
+  var dev = makeDeveloper(developer);
+  this.client.set(dev.uuid, JSON.stringify(dev), function(err, reply) {
+    if (err) { return cb(err); }
+    cb(undefined, dev);
+  });
+};
+
+RedisManagementSpi.prototype.getDeveloper = function(uuid, cb) {
+  getWith404(this.client, uuid, function(err, reply) {
+    if (err) { return cb(err); }
+    var dev = makeDeveloper(reply);
+    cb(undefined, dev);
+  });
+};
+
+RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
+  this.createDeveloper(developer, cb);
+};
+
+RedisManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
+  this.client.del(uuid, function(err, reply) {
+    if (err) { return cb(err); }
+    cb(undefined, reply);
+  });
+};
+
+function makeDeveloper(d) {
+  return {
+    id: d.uuid,
+    uuid: d.uuid,
+    email: d.email,
+    userName: d.userName,
+    firstName: d.firstName,
+    lastName: d.lastName,
+    status: d.status,
+    attributes: d.attributes
+  };
+}
+
+// Operations on applications
+
+RedisManagementSpi.prototype.createApp = function(app, cb) {
+  app.uuid = uuid.v4();
+  var credentials = {
+    key: genSecureToken(),
+    secret: genSecureToken(),
+    status: 'valid'
+  };
+  var application = {
+    id: app.uuid,
+    uuid: app.uuid,
+    name: app.name,
+    status: app.status,
+    developerId: app.developerId,
+    callbackUrl: app.callbackUrl,
+    attributes: app.attributes,
+    credentials: [credentials]
+  };
+  var self = this;
+  this.client.get(app.developerId, function(err, reply) {
+    if (err) { return cb(err); }
+    var developer = JSON.parse(reply);
+    saveApplication(self.client, application, developer, function(err, reply) {
+      if (err) { return cb(err); }
+      cb(undefined, application);
+    });
+  });
+};
+
+RedisManagementSpi.prototype.getApp = function(key, cb) {
+  getWith404(this.client, key, cb);
+};
+
+RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName, cb) {
+  var self = this;
+  var key = developerEmail + ':' + appName;
+  this.client.get(key, function(err, reply) {
+    if (err) { return cb(err); }
+    if (reply) {
+      getWith404(self.client, reply, cb);
+    } else {
+      cb(make404());
+    }
+  });
+};
+
+RedisManagementSpi.prototype.getAppIdForClientId = function(key, cb) {
+  this.client.get(key, cb);
+};
+
+RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
+  var self = this;
+  self.getAppIdForClientId(key, function(err, reply) {
+    if (err) { return cb(err); }
+    self.getApp(reply, cb);
+  });
+};
+
+RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, cb) {
+  this.getAppForClientId(clientId, function(err, reply) {
+    if (err) { return cb(err); }
+    cb(null, redirectUri !== reply.callbackUrl);
+  });
+};
+
+RedisManagementSpi.prototype.deleteApp = function(uuid, cb) {
+  deleteApplication(this.client, uuid, cb);
+};
+
+RedisManagementSpi.prototype.getAppIdForCredentials = function(key, secret, cb) {
+  this.client.get(key + ':' + secret, cb);
+};
+
+// utility functions
+
+function getWith404(client, key, cb) {
+  client.get(key, function(err, reply) {
+    if (err) { return cb(err); }
+    if (reply) {
+      reply = JSON.parse(reply);
+      cb(null, reply);
+    } else {
+      cb(make404());
+    }
+  });
+}
+
+function make404() {
+  var err = new Error('entity not found');
+  err.statusCode = 404;
+  return err;
+}
+
+function saveApplication(client, application, developer, cb) {
+  var multi = client.multi();
+
+  // application_id: -> application
+  multi.set(application.uuid, JSON.stringify(application));
+
+  // developer_name:application_name -> application_id
+  multi.set(developer.email + ':' + application.name, application.id);
+
+  // credentials[i].key -> application_id
+  // credentials[i].key:credentials[i].secret -> application_id
+  for (var i = 0; i < application.credentials.length; i++) {
+    multi.set(application.credentials[i].key, application.id);
+    multi.set(application.credentials[i].key + ':' + application.credentials[i].secret, application.id);
+  }
+
+  multi.exec(cb);
+}
+
+// must match saveApplication for deleting created keys
+function deleteApplication(client, uuid, cb) {
+  getWith404(client, uuid, function(err, application) {
+    if (err) { return cb(err); }
+
+    var multi = client.multi();
+
+    // developer_name:application_name -> application_id
+    getWith404(client, uuid, function(err, dev) {
+      if (err) { return cb(err); }
+      if (dev) {
+        multi.del(dev.email + ':' + application.name);
+      }
+    });
+
+    // credentials[i].key:credentials[i].secret -> application_id
+    // credentials[i].key:credentials[i].secret -> application_id
+    for (var i = 0; i < application.credentials.length; i++) {
+      multi.del(application.credentials[i].key);
+      multi.del(application.credentials[i].key + ':' + application.credentials[i].secret);
+    }
+
+    // application_id: -> application
+    multi.del(uuid);
+
+    multi.exec(cb);
+  });
+}
+
+function genSecureToken() {
+  return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
+}

@@ -95,3 +95,10 @@ See the instructions in the "samples" directory for details.
 2) In the "common" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. You will
 need to specify where your proxy was deployed and the key and secret for the app that you created.
 3) Run mocha in each directory that has a "tests" subdirectory in order to run the tests for that module.
+
+To test Redis provider:
+
+1) Install and start redis server.
+2) In the "common" directory, copy "testconfig-redis-sample.js" to "testconfig-redis.js" and edit the values if
+necessary.
+3) Run mocha in each directory that has a "tests" subdirectory in order to run the tests for that module.
