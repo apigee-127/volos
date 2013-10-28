@@ -1,5 +1,5 @@
 {
-  "name": "volos-apigee-management",
+  "name": "volos-management-apigee",
   "version": "0.0.1",
   "main": "lib/apigeemgmt.js"
 }

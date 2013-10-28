@@ -1,5 +1,5 @@
 {
-  "name": "volos-redis-management",
+  "name": "volos-management-redis",
   "version": "0.0.1",
   "main": "lib/redismgmt.js"
 }

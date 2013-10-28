@@ -67,7 +67,7 @@ var path = require('path');
 var http = require('http');
 var https = require('https');
 
-var Runtime = require('../../apigee-runtime');
+var Runtime = require('../../../../oauth/providers/apigee'); // todo: npm path?
 var runtime;
 
 var debug;

@@ -26,7 +26,7 @@
 var argo = require('argo');
 
 // In a real deployment, you would replace these with the real NPM module names.
-var spi = require('../apigee-runtime');
+var spi = require('../oauth/providers/apigee');
 var oauth = require('../oauth');
 var opts = require('./config');
 

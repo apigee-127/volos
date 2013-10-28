@@ -69,7 +69,7 @@ var CRYPTO_BYTES = 256 / 8;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 var redis = require("redis");
-var Runtime = require('../../redis-runtime');
+var Runtime = require('../../../../oauth/providers/redis'); // todo: npm path?
 
 var debug;
 var debugEnabled;

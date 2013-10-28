@@ -31,7 +31,7 @@ var config = {
   options: {}
 };
 
-var Management = require('../redis-management');
+var Management = require('.');
 var management = new Management(config);
 
 var CreateFixtures = require('./createfixtures');

@@ -1,5 +1,5 @@
 {
-  "name": "volos-redis-runtime",
+  "name": "volos-oauth-redis",
   "version": "0.0.1",
   "main": "lib/redisruntime.js"
 }

@@ -24,7 +24,7 @@
 "use strict";
 
 var assert = require('assert');
-var config = require('../../common/testconfig-redis');
+var config = require('../../../../common/testconfig-redis');
 var mgmt = config.management;
 
 // We delete this ID on every test -- be careful about that!

@@ -24,7 +24,7 @@
 "use strict";
 
 var express = require('express');
-var spi = require('../../apigee-runtime');
+var spi = require('.');
 var oauth = require('..');
 
 var config = require('../../common/testconfig-apigee');

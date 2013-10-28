@@ -23,18 +23,17 @@
  ****************************************************************************/
 "use strict";
 
+var testOpts = require('../../../../common/testconfig-apigee');
+var mgmt = testOpts.management;
+var runtime = mgmt.runtime;
 var assert = require('assert');
 var url = require('url');
 
-var config = require('../../common/testconfig-redis');
-var mgmt = config.management;
-var runtime = mgmt.runtime;
+var TestDeveloperId = 'joe2@schmoe.io';
+var TestAppName = 'APIDNA-Runtime-Test';
 
-var TEST_DEVELOPER_NAME = 'joe2@schmoe.io';
-var TEST_APP_NAME = 'APIDNA-Runtime-Test';
-
-var DEFAULT_TOKEN_LIFETIME = 3600000;
-var DEFAULT_REDIRECT_URL = 'http://example.org';
+var DefaultTokenLifetime = 3600000;
+var DefaultRedirectUri = 'http://example.org';
 
 describe('Apigee Runtime SPI', function() {
   var developer;
@@ -45,24 +44,24 @@ describe('Apigee Runtime SPI', function() {
 
   before(function(done) {
     // Step 1 -- clean up
-    mgmt.deleteDeveloper(TEST_DEVELOPER_NAME, function(err) {
+    mgmt.deleteDeveloper(TestDeveloperId, function(err) {
       if (err) {
         console.log('Error deleting test developer -- but this is OK');
       }
 
       // Step 2 -- re-create sample developer and app
-      console.log('Creating developer %s', TEST_DEVELOPER_NAME);
+      console.log('Creating developer %s', TestDeveloperId);
       mgmt.createDeveloper({
-        firstName: 'Joe', lastName: 'Schmoe', email: TEST_DEVELOPER_NAME, userName: 'jschmoe2'
+        firstName: 'Joe', lastName: 'Schmoe', email: TestDeveloperId, userName: 'jschmoe2'
       }, function(err, newDev) {
         if (err) {
           throw err;
         }
         developer = newDev;
 
-        console.log('Creating application %s for developer %s', TEST_APP_NAME, developer.id);
+        console.log('Creating application %s for developer %s', TestAppName, developer.id);
         mgmt.createApp({
-          name: TEST_APP_NAME, developerId: developer.id
+          name: TestAppName, developerId: developer.id
         }, function(err, newApp) {
           if (err) {
             throw err;
@@ -79,7 +78,7 @@ describe('Apigee Runtime SPI', function() {
     var tr = {
       clientId: app.credentials[0].key,
       clientSecret: app.credentials[0].secret,
-      tokenLifetime: DEFAULT_TOKEN_LIFETIME
+      tokenLifetime: DefaultTokenLifetime
     };
     console.log('Create client credentials: %j', tr);
 
@@ -93,7 +92,7 @@ describe('Apigee Runtime SPI', function() {
       assert(result.access_token);
       assert(!result.refresh_token);
       assert.equal(result.token_type, 'client_credentials');
-      assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+      assert(result.expires_in <= (DefaultTokenLifetime / 1000));
       done();
     });
   });
@@ -102,7 +101,7 @@ describe('Apigee Runtime SPI', function() {
     var tr = {
       clientId: app.credentials[0].key,
       clientSecret: app.credentials[0].secret,
-      tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+      tokenLifetime: DefaultTokenLifetime,
       username: 'notchecking',
       password: 'likeisaid'
     };
@@ -118,7 +117,7 @@ describe('Apigee Runtime SPI', function() {
       assert(result.access_token);
       assert(result.refresh_token);
       assert.equal(result.token_type, 'password');
-      assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+      assert(result.expires_in <= (DefaultTokenLifetime / 1000));
       refreshToken = result.refresh_token;
       done();
     });
@@ -128,7 +127,7 @@ describe('Apigee Runtime SPI', function() {
     var tr = {
       clientId: app.credentials[0].key,
       clientSecret: app.credentials[0].secret,
-      tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+      tokenLifetime: DefaultTokenLifetime,
       refreshToken: refreshToken
     };
     console.log('Refresh token: %j', tr);
@@ -140,7 +139,7 @@ describe('Apigee Runtime SPI', function() {
       assert(!err);
       assert(result);
       console.log('Refreshed token: %j', result);
-      assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+      assert(result.expires_in <= (DefaultTokenLifetime / 1000));
       assert(result.access_token);
       accessToken = result.access_token;
       done();
@@ -148,7 +147,7 @@ describe('Apigee Runtime SPI', function() {
   });
 
   it('Verify token', function(done) {
-    runtime.verifyToken(accessToken, null, null, function(err, result) {
+    runtime.verifyToken(accessToken, function(err, result) {
       if (err) {
         console.error('%j', err);
       }
@@ -178,7 +177,7 @@ describe('Apigee Runtime SPI', function() {
   it('Create authorization code', function(done) {
     var tr = {
       clientId: app.credentials[0].key,
-      redirectUri: DEFAULT_REDIRECT_URL
+      redirectUri: DefaultRedirectUri
     };
     console.log('Create authorization code: %j', tr);
 
@@ -200,8 +199,8 @@ describe('Apigee Runtime SPI', function() {
       clientId: app.credentials[0].key,
       clientSecret: app.credentials[0].secret,
       code: authCode,
-      redirectUri: DEFAULT_REDIRECT_URL,
-      tokenLifetime: DEFAULT_TOKEN_LIFETIME
+      redirectUri: DefaultRedirectUri,
+      tokenLifetime: DefaultTokenLifetime
     };
     console.log('Create client credentials: %j', tr);
 
@@ -215,7 +214,7 @@ describe('Apigee Runtime SPI', function() {
       assert(result.access_token);
       assert(result.refresh_token);
       assert.equal(result.token_type, 'authorization_code');
-      assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+      assert(result.expires_in <= (DefaultTokenLifetime / 1000));
       done();
     });
   });
@@ -224,8 +223,8 @@ describe('Apigee Runtime SPI', function() {
     var tr = {
       clientId: app.credentials[0].key,
       clientSecret: app.credentials[0].secret,
-      tokenLifetime: DEFAULT_TOKEN_LIFETIME,
-      redirectUri: DEFAULT_REDIRECT_URL
+      tokenLifetime: DefaultTokenLifetime,
+      redirectUri: DefaultRedirectUri
     };
     console.log('Create implicit: %j', tr);
 

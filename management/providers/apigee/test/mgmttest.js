@@ -24,7 +24,7 @@
 "use strict";
 
 var spi = require('..');
-var testOpts = require('../../common/testconfig-apigee');
+var testOpts = require('../../../../common/testconfig-apigee');
 var assert = require('assert');
 
 // We delete this ID on every test -- be careful about that!
