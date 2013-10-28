@@ -23,11 +23,12 @@
  ****************************************************************************/
 "use strict";
 
-var argo = require('../fixtures/argoserver.js');
-var remoteTest = require('./remotesharedtest.js');
+var config = require('../../../../common/testconfig-apigee');
+var commonTest = require('../../test/oauthtest');
 
-describe('Argo', function () {
+describe('Apigee', function() {
 
-  remoteTest.verifyOauth(argo);
+  this.timeout(10000);
+  commonTest.testOauth(config);
 
 });

@@ -23,11 +23,11 @@
  ****************************************************************************/
 "use strict";
 
-var argo = require('../fixtures/argoserver.js');
-var remoteTest = require('./remotesharedtest.js');
+var config = require('../../../../common/testconfig-redis');
+var commonTest = require('../../test/oauthtest');
 
-describe('Argo', function () {
+describe('Redis', function() {
 
-  remoteTest.verifyOauth(argo);
+  commonTest.testOauth(config);
 
 });
