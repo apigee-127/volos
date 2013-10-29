@@ -51,6 +51,14 @@ OAuthArgo.prototype.package = function(argo) {
   return {
     name: 'OAuth',
     install: function() {
+      argo.use(function(handle) {
+        handle('request', function(env, next) {
+          env.oauth = {
+            authenticate: self.authenticate.bind(self)
+          };
+          next(env);
+        });
+      });
       if (self.options.authorizeUri) {
         if (debugEnabled) { debug('authorize = ' + self.options.authorizeUri); }
         argo.route(self.options.authorizeUri, { methods: ['GET'] },
@@ -81,11 +89,6 @@ OAuthArgo.prototype.package = function(argo) {
           }
         );
       }
-      argo.use(function(handle) {
-        handle('request', function(env, next) {
-          self.authenticate(env, next);
-        });
-      });
       // TODO the existing OAuth package overrides the default argo "route" method -- why?
     }
   };
@@ -201,6 +204,7 @@ OAuthArgo.prototype.refreshToken = function(env, next) {
 };
 
 function makeError(err, env) {
+  env.oauth.error = err;
   env.response.body = {
     error_description: err.message
   };

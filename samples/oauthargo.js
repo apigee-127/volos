@@ -26,37 +26,42 @@
 var argo = require('argo');
 
 // In a real deployment, you would replace these with the real NPM module names.
-var spi = require('../oauth/providers/apigee');
-var oauth = require('../oauth');
-var opts = require('./config');
+var ApigeeRuntime = require('../oauth/providers/apigee');
+var OAuth = require('../oauth');
+var config = require('./config');
 
 var port = 10010;
 
-var runtime = new spi(opts);
+var runtime = new ApigeeRuntime(config);
 
-var oOpts = {
+var options = {
   validGrantTypes: [ 'client_credentials', 'authorization_code',
                      'implicit_grant', 'password' ],
-  passwordCheck: checkPassword
+  passwordCheck: function() { return true; }
 };
-var oauthRuntime = new oauth(runtime, oOpts);
+
+var oauthFactory = new OAuth(runtime, options);
+var oauth = oauthFactory.argoMiddleware({
+  authorizeUri: '^/authorize.*',
+  accessTokenUri: '/accesstoken'
+});
 
 console.log('Initialized OAuth runtime');
 
-function checkPassword(username, password) {
-  return true;
-}
+argo()
+  .use(oauth)
+  .get('/dogs', function(handle) {
+    handle('request', function(env, next) {
+      env.oauth.authenticate(env, function(env) {
+        if (env.oauth.error) {
+          return next(env);
+        }
 
-argo().get('/dogs', function(handle) {
-  handle('request', function(env, next) {
-    env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
-    next(env);
-  });
-}).use(oauthRuntime.argoMiddleware(
-    // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
-    { authorizeUri: '^/authorize.*',
-      accessTokenUri: '/accesstoken'
-    }))
+        env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+        next(env);
+      });
+    });
+  })
   .listen(port);
 
 console.log('Listening on %d', port);
