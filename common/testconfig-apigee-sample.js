@@ -33,7 +33,7 @@ var config = {
   key: 'KEY'
 };
 
-var Management = require('.');
+var Management = require('../management/providers/apigee/lib/apigeemgmt');
 var management = new Management(config);
 
 var CreateFixtures = require('./createfixtures');
