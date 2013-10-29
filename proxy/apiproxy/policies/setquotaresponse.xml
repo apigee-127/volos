@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="setquotaresponse">
+    <DisplayName>SetQuotaResponse</DisplayName>
+    <Remove>
+      <FormParams/>
+    </Remove>
+    <Set>
+      <FormParams>
+        <FormParam name="allowed">{ratelimit.distributedquota.allowed.count}</FormParam>
+        <FormParam name="used">{ratelimit.distributedquota.used.count}</FormParam>
+        <FormParam name="exceeded">{ratelimit.distributedquota.exceed.count}</FormParam>
+        <FormParam name="available">{ratelimit.distributedquota.available.count}</FormParam>
+        <FormParam name="failed">{ratelimit.failed}</FormParam>
+      </FormParams>
+    </Set>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" type="response"/>
+</AssignMessage>

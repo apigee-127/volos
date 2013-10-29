@@ -22,6 +22,9 @@
         <Policy>SetEmptyResponse</Policy>
         <Policy>VerifyAPIKey</Policy>
         <Policy>VerifyToken</Policy>
+        <Policy>distributedquota</Policy>
+        <Policy>extractquotaparams</Policy>
+        <Policy>setquotaresponse</Policy>
     </Policies>
     <ProxyEndpoints>
         <ProxyEndpoint>default</ProxyEndpoint>

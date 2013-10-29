@@ -116,11 +116,33 @@
             </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/all/verify&quot;) and (request.verb = &quot;GET&quot;)</Condition>
         </Flow>
-      <Flow name="FallThrough">
-        <Request>
-          <Step><Name>Return404</Name></Step>
-        </Request>
-      </Flow>
+        <Flow name="Distributed Quota">
+            <Description/>
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>extractquotaparams</Name>
+                </Step>
+                <Step>
+                    <Name>distributedquota</Name>
+                </Step>
+            </Request>
+            <Response>
+                <Step>
+                    <FaultRules/>
+                    <Name>setquotaresponse</Name>
+                </Step>
+            </Response>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/quotas/distributed&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="FallThrough">
+            <Request>
+                <Step>
+                    <Name>Return404</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
     </Flows>
     <PostFlow name="PostFlow">
         <Request/>

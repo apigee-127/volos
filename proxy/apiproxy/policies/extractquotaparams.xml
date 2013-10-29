@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="extractquotaparams">
+    <DisplayName>ExtractQuotaParams</DisplayName>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <Source clearPayload="false">request</Source>
+    <VariablePrefix>quota</VariablePrefix>
+    <FormParam name="identifier">
+      <Pattern>{identifier}</Pattern>
+    </FormParam>
+    <FormParam name="weight">
+      <Pattern>{weight}</Pattern>
+    </FormParam>
+    <FormParam name="allow">
+      <Pattern>{allow}</Pattern>
+    </FormParam>
+      <FormParam name="interval">
+      <Pattern>{interval}</Pattern>
+    </FormParam>
+    <FormParam name="unit">
+      <Pattern>{unit}</Pattern>
+    </FormParam>
+</ExtractVariables>

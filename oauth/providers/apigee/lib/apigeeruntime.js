@@ -278,9 +278,9 @@ spi.prototype.verifyToken = function(token, verb, path, cb) {
 };
 
 function makeRequest(self, verb, uriPath, body, options, cb) {
-  if (typeof o === 'function') {
-    cb = o;
-    o = undefined;
+  if (typeof options === 'function') {
+    cb = options;
+    options = undefined;
   }
 
   var finalUri = self.uri + uriPath;
@@ -376,7 +376,7 @@ function requestComplete(resp, options, cb) {
 
   var respData = '';
   resp.on('readable', function() {
-    respData = readResponse(resp, respData);
+    respData += readResponse(resp, respData);
   });
 
   resp.on('end', function() {
