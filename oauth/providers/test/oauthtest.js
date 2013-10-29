@@ -28,6 +28,10 @@ var url = require('url');
 
 var TEST_DEVELOPER_NAME = 'joe2@schmoe.io';
 var TEST_APP_NAME = 'APIDNA-Runtime-Test';
+var TEST_SCOPED_APP_NAME = 'APIDNA-Runtime-Test-Scoped';
+var DEFAULT_SCOPE = 'default';
+var OTHER_SCOPE = 'other';
+var VALID_SCOPES = [DEFAULT_SCOPE, OTHER_SCOPE];
 
 var DEFAULT_TOKEN_LIFETIME = 3600000;
 var DEFAULT_REDIRECT_URL = 'http://example.org';
@@ -40,6 +44,7 @@ exports.testOauth = function(config) {
   describe('OAuth SPI', function() {
     var developer;
     var app;
+    var scopedApp;
     var authCode;
     var refreshToken;
     var accessToken;
@@ -47,81 +52,218 @@ exports.testOauth = function(config) {
     before(function(done) {
       // Step 1 -- clean up
       mgmt.deleteDeveloper(TEST_DEVELOPER_NAME, function(err) {
-        if (err) {
-          console.log('Error deleting test developer -- but this is OK');
-        }
+        if (err) { console.log('Error deleting test developer -- but this is OK'); }
 
         // Step 2 -- re-create sample developer and app
         console.log('Creating developer %s', TEST_DEVELOPER_NAME);
         mgmt.createDeveloper({
           firstName: 'Joe', lastName: 'Schmoe', email: TEST_DEVELOPER_NAME, userName: 'jschmoe2'
         }, function(err, newDev) {
-          if (err) {
-            throw err;
-          }
+          if (err) { throw err; }
           developer = newDev;
 
           console.log('Creating application %s for developer %s', TEST_APP_NAME, developer.id);
           mgmt.createApp({
             name: TEST_APP_NAME, developerId: developer.id
           }, function(err, newApp) {
-            if (err) {
-              throw err;
-            }
+            if (err) { throw err; }
             console.log('Created app %s', newApp.id);
             app = newApp;
-            done();
+
+            mgmt.createApp({
+              name: TEST_SCOPED_APP_NAME, developerId: developer.id, defaultScope: DEFAULT_SCOPE, validScopes: VALID_SCOPES
+            }, function(err, newApp) {
+              if (err) { throw err; }
+              console.log('Created app %s', newApp.id);
+              scopedApp = newApp;
+            });
+
+            var tr = {
+              clientId: app.credentials[0].key,
+              clientSecret: app.credentials[0].secret,
+              username: 'notchecking',
+              password: 'likeisaid'
+            };
+            runtime.createTokenPasswordCredentials(tr, function(err, result) {
+              assert(!err);
+              assert(result.access_token);
+              assert(result.refresh_token);
+              accessToken = result.access_token;
+              refreshToken = result.refresh_token;
+
+              done();
+            });
           });
         });
       });
     });
 
-    it('Create Client Credentials Token', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        clientSecret: app.credentials[0].secret,
-        tokenLifetime: DEFAULT_TOKEN_LIFETIME
-      };
-      console.log('Create client credentials: %j', tr);
-
-      runtime.createTokenClientCredentials(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        assert(result);
-        console.log('New token: %j', result);
-        assert(result.access_token);
-        assert(!result.refresh_token);
-        assert.equal(result.token_type, 'client_credentials');
-        assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
-        done();
+    after(function(done) {
+      console.log('Cleanup -- deleting app %s', app.id);
+      mgmt.deleteApp(app.id, function(err) {
+        if (err) { console.error('Error deleting app: %j', err); }
+        console.log('Deleting developer %s', developer.id);
+        mgmt.deleteDeveloper(developer.id, function(err) {
+          if (err) { console.error('Error deleting developer: %j', err); }
+          done();
+        });
       });
     });
 
-    it('Create Password Credentials Token', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        clientSecret: app.credentials[0].secret,
-        tokenLifetime: DEFAULT_TOKEN_LIFETIME,
-        username: 'notchecking',
-        password: 'likeisaid'
-      };
-      console.log('Create password: %j', tr);
 
-      runtime.createTokenPasswordCredentials(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        assert(result);
-        console.log('New token: %j', result);
-        assert(result.access_token);
-        assert(result.refresh_token);
-        assert.equal(result.token_type, 'password');
-        assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
-        refreshToken = result.refresh_token;
-        done();
+    describe('Create Client Credentials Token', function() {
+
+      it('Successfully', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          clientSecret: app.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME
+        };
+        console.log('Create client credentials: %j', tr);
+
+        runtime.createTokenClientCredentials(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+          console.log('New token: %j', result);
+          assert(result.access_token);
+          assert(!result.refresh_token);
+          assert(!result.scope);
+          assert.equal(result.token_type, 'client_credentials');
+          assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+
+          // verify token
+          runtime.verifyToken(result.access_token, null, null, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+
+            // invalidate token
+            tr.accessToken = result.accessToken;
+            runtime.invalidateToken(tr, function(err, result) {
+              if (err) { console.error('%j', err); }
+              assert(!err);
+
+              // verify token again - should fail now
+              runtime.verifyToken(result.access_token, null, null, function(err, result) {
+                assert(err);
+              });
+            });
+          });
+
+          done();
+        });
+      });
+
+      it('Invalid Scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          scope: 'foo'
+        };
+        console.log('Create client credentials: %j', tr);
+
+        runtime.createTokenClientCredentials(tr, function(err, result) {
+          assert(err);
+          assert(err.message === 'invalid_scope');
+          done();
+        });
+      });
+
+      it('Default Scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME
+        };
+        console.log('Create client credentials: %j', tr);
+
+        runtime.createTokenClientCredentials(tr, function(err, result) {
+          assert(!err);
+          assert(result);
+          console.log('New token: %j', result);
+          assert(result.access_token);
+          assert(!result.refresh_token);
+          assert.equal(result.token_type, 'client_credentials');
+          assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+          assert(result.scope === DEFAULT_SCOPE);
+          done();
+        });
+      });
+    });
+
+    describe('Create Password Credentials Token', function() {
+
+      it('Successfully', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          clientSecret: app.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          username: 'notchecking',
+          password: 'likeisaid'
+        };
+        console.log('Create password: %j', tr);
+
+        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+          console.log('New token: %j', result);
+          assert(result.access_token);
+          assert(result.refresh_token);
+          assert.equal(result.token_type, 'password');
+          assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+
+          // verify token
+          runtime.verifyToken(result.access_token, null, null, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+          });
+
+          done();
+        });
+      });
+
+      it('Invalid scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          username: 'notchecking',
+          password: 'likeisaid',
+          scope: 'foo'
+        };
+        console.log('Create password: %j', tr);
+
+        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+          assert(err);
+          assert(err.message === 'invalid_scope');
+          done();
+        });
+      });
+
+      it('Default Scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          username: 'notchecking',
+          password: 'likeisaid'
+        };
+        console.log('Create password: %j', tr);
+
+        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+          console.log('New token: %j', result);
+          assert(result.access_token);
+          assert(result.refresh_token);
+          assert.equal(result.token_type, 'password');
+          assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+          assert(result.scope === DEFAULT_SCOPE);
+          done();
+        });
       });
     });
 
@@ -135,127 +277,212 @@ exports.testOauth = function(config) {
       console.log('Refresh token: %j', tr);
 
       runtime.refreshToken(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
+        if (err) { console.error('%j', err); }
         assert(!err);
         assert(result);
         console.log('Refreshed token: %j', result);
         assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
         assert(result.access_token);
-        accessToken = result.access_token;
         done();
       });
     });
 
-    it('Verify token', function(done) {
-      runtime.verifyToken(accessToken, null, null, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        console.log('Verified token: %j', result);
-        done();
+    describe('Authorization code', function() {
+
+      it('Create code & token', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          state: 'mystate'
+        };
+        console.log('Create authorization code: %j', tr);
+
+        runtime.generateAuthorizationCode(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+          var pr = url.parse(result, true);
+          console.log('Result: %s', result);
+          assert(pr.query.state === 'mystate');
+          var authCode = pr.query.code;
+          assert(authCode);
+
+          // create token
+          tr = {
+            clientId: app.credentials[0].key,
+            clientSecret: app.credentials[0].secret,
+            code: authCode,
+            redirectUri: DEFAULT_REDIRECT_URL,
+            tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          };
+          console.log('Create client credentials: %j', tr);
+
+          runtime.createTokenAuthorizationCode(tr, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+            assert(result);
+            console.log('New token: %j', result);
+            assert(result.access_token);
+            assert(result.refresh_token);
+            assert.equal(result.token_type, 'authorization_code');
+            assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+
+            // verify token
+            runtime.verifyToken(result.access_token, null, null, function(err, result) {
+              if (err) { console.error('%j', err); }
+              assert(!err);
+            });
+
+            done();
+          });
+        });
       });
-    });
 
-    it('Invalidate token', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        clientSecret: app.credentials[0].secret,
-        accessToken: accessToken
-      };
-      console.log('InvalidateToken token: %j', tr);
+      it ('Invalid scope', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          scope: 'foo'
+        };
+        console.log('Create authorization code: %j', tr);
 
-      runtime.invalidateToken(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        done();
-      });
-    });
-
-    it('Create authorization code', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        redirectUri: DEFAULT_REDIRECT_URL
-      };
-      console.log('Create authorization code: %j', tr);
-
-      runtime.generateAuthorizationCode(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        assert(result);
-        var pr = url.parse(result, true);
-        console.log('Result: %s', result);
-        authCode = pr.query.code;
-        done();
-      });
-    });
-
-    it('Create Authorization Code Token', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        clientSecret: app.credentials[0].secret,
-        code: authCode,
-        redirectUri: DEFAULT_REDIRECT_URL,
-        tokenLifetime: DEFAULT_TOKEN_LIFETIME
-      };
-      console.log('Create client credentials: %j', tr);
-
-      runtime.createTokenAuthorizationCode(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        assert(result);
-        console.log('New token: %j', result);
-        assert(result.access_token);
-        assert(result.refresh_token);
-        assert.equal(result.token_type, 'authorization_code');
-        assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
-        done();
-      });
-    });
-
-    it('Create Implicit Token', function(done) {
-      var tr = {
-        clientId: app.credentials[0].key,
-        clientSecret: app.credentials[0].secret,
-        tokenLifetime: DEFAULT_TOKEN_LIFETIME,
-        redirectUri: DEFAULT_REDIRECT_URL
-      };
-      console.log('Create implicit: %j', tr);
-
-      runtime.createTokenImplicitGrant(tr, function(err, result) {
-        if (err) {
-          console.error('%j', err);
-        }
-        assert(!err);
-        assert(result);
-        var pr = url.parse(result, true);
-        console.log('New token: %j', pr);
-        done();
-      });
-    });
-
-    after(function(done) {
-      console.log('Cleanup -- deleting app %s', app.id);
-      mgmt.deleteApp(app.id, function(err) {
-        if (err) {
-          console.error('Error deleting app: %j', err);
-        }
-        console.log('Deleting developer %s', developer.id);
-        mgmt.deleteDeveloper(developer.id, function(err) {
-          if (err) {
-            console.error('Error deleting developer: %j', err);
-          }
+        runtime.generateAuthorizationCode(tr, function(err, result) {
+          assert(err);
+          assert(err.message === 'invalid_scope');
           done();
         });
       });
+
+      it ('Valid scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          scope: OTHER_SCOPE
+        };
+        console.log('Create authorization code: %j', tr);
+
+        runtime.generateAuthorizationCode(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+          var pr = url.parse(result, true);
+          assert(pr.query.scope === OTHER_SCOPE);
+          var authCode = pr.query.code;
+
+          // create token
+          tr = {
+            clientId: scopedApp.credentials[0].key,
+            clientSecret: scopedApp.credentials[0].secret,
+            code: authCode,
+            redirectUri: DEFAULT_REDIRECT_URL,
+            tokenLifetime: DEFAULT_TOKEN_LIFETIME
+          };
+          console.log('Create client credentials: %j', tr);
+
+          runtime.createTokenAuthorizationCode(tr, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+            assert(result);
+            console.log('New token: %j', result);
+            assert(result.access_token);
+            assert(result.refresh_token);
+            assert.equal(result.token_type, 'authorization_code');
+            assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
+            assert(result.scope === OTHER_SCOPE);
+
+            // verify token
+            runtime.verifyToken(result.access_token, null, null, function(err, result) {
+              if (err) { console.error('%j', err); }
+              assert(!err);
+            });
+
+            done();
+          });
+        });
+      });
+    });
+
+    describe('Implicit Token', function() {
+
+      it('Create and Validate', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          clientSecret: app.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          state: 'mystate'
+        };
+        console.log('Create implicit: %j', tr);
+
+        runtime.createTokenImplicitGrant(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+
+          result = result.replace('#', '?');
+          var pr = url.parse(result, true);
+          assert(pr.query.state === 'mystate');
+          console.log('New token: %j', pr);
+
+          // verify token
+          runtime.verifyToken(pr.query.access_token, null, null, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+          });
+
+          done();
+        });
+      });
+
+      it('Invalid Scope', function(done) {
+        var tr = {
+          clientId: app.credentials[0].key,
+          clientSecret: app.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          scope: 'foo'
+        };
+        console.log('Create implicit: %j', tr);
+
+        runtime.createTokenImplicitGrant(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(err);
+          assert(err.message === 'invalid_scope');
+
+          done();
+        });
+      });
+
+      it('Valid Scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          redirectUri: DEFAULT_REDIRECT_URL,
+          scope: OTHER_SCOPE
+        };
+        console.log('Create implicit: %j', tr);
+
+        runtime.createTokenImplicitGrant(tr, function(err, result) {
+          if (err) { console.error('%j', err); }
+          assert(!err);
+          assert(result);
+
+          result = result.replace('#', '?');
+          var pr = url.parse(result, true);
+          assert(pr.query.scope === OTHER_SCOPE);
+          console.log('New token: %j', pr);
+
+          // verify token
+          runtime.verifyToken(pr.query.access_token, null, null, function(err, result) {
+            if (err) { console.error('%j', err); }
+            assert(!err);
+          });
+
+          done();
+        });
+      });
+
     });
   });
-}
+};

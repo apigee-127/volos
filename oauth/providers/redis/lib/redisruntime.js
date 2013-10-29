@@ -32,8 +32,6 @@
  *   options: redis options (optional, default = {})
  */
 
-// todo: scope handling
-
 /*
 schema:
 token -> application_id
@@ -41,8 +39,7 @@ client_id:auth_code -> client_id
 */
 
 var CRYPTO_BYTES = 256 / 8;
-var DEFAULT_SCOPE = 'SCOPE';
-var DEFAULT_LIFETIME = 60 * 60 * 24; // 1 day
+var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
 var REFRESH_TYPE = 'refresh';
 var BEARER_TYPE = 'bearer';
 var AUTH_TTL = 60 * 5; // 5 minutes
@@ -114,10 +111,10 @@ RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb)
  */
 RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   var self = this;
-  consumeAuthCode(self.client, options.clientId, options.code, function(err, uri) {
+  consumeAuthCode(self.client, options.clientId, options.code, function(err, hash) {
     if (err) { return cb(err); }
-    if (options.redirectUri !== uri) { return cb(invalidRequestError()); }
-    options = extend(options, { type: 'authorization_code', refresh: true });
+    if (options.redirectUri !== hash.redirectUri) { return cb(invalidRequestError()); }
+    options = extend(options, { type: 'authorization_code', refresh: true, scope: hash.scope });
     createAndStoreToken(self, options, cb);
   });
 };
@@ -133,16 +130,18 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
  * 4.1.2
  */
 RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
-  var client = this.client;
+  var self = this;
   var redirectUri = options.redirectUri;
-  this.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, reply) {
+  self.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
-    createAndStoreAuthCode(client, options.clientId, redirectUri, function(err, reply) {
+    createAndStoreAuthCode(self, options.clientId, options.scope, redirectUri, function(err, reply) {
       if (err) { return cb(err); }
-      var qs = { code: reply, state: options.state };
+      var qs = { code: reply };
+      if (options.state) { qs.state = options.state; }
+      if (options.scope) { qs.scope = options.scope; }
       var uri = redirectUri + '?' + querystring.stringify(qs);
-      cb(null, uri);
+      return cb(null, uri);
     });
   });
 };
@@ -164,10 +163,11 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
     options = extend(options, { type: 'authorization_code', refresh: false});
     createAndStoreToken(self, options, function(err, reply) {
       if (err) { return cb(err); }
-      var qs = { access_token: reply.access_token, token_type: BEARER_TYPE, expires_in: reply.expires_in,
-                 scope: options.scope, state: options.state };
+      var qs = { access_token: reply.access_token, token_type: BEARER_TYPE, expires_in: reply.expires_in };
+      if (options.scope) { qs.scope = options.scope; }
+      if (options.state) { qs.state = options.state; }
       var uri = options.redirectUri + '#' + querystring.stringify(qs);
-      cb(null, uri);
+      return cb(null, uri);
     });
   });
 };
@@ -181,11 +181,8 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
-  // check clientId, clientSecret
-  self.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
-    if (err) { return cb(err); }
-    if (!reply) { cb(invalidRequestError()); }
-  });
+  console.log('-storeRefreshToken: ' + options.refreshToken);
+
   self.client.get(options.refreshToken, function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
@@ -194,13 +191,12 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
         createAndStoreToken(self, options, function(err, reply) {
           if (err) { return cb(err); }
           self.client.del(options.refreshToken, redis.print);
-          cb(null, reply);
+          return cb(null, reply);
         });
       }
     } else {
       return cb(invalidRequestError());
     }
-    return false;
   });
 };
 
@@ -215,11 +211,11 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
   // check clientId, clientSecret
   this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
     if (err) { return cb(err); }
-    if (!reply) { cb(invalidRequestError()); }
+    if (!reply) { return cb(invalidRequestError()); }
   });
   if (options.token) { this.client.del(options.token); }
   if (options.refreshToken) { this.client.del(options.refreshToken); }
-  cb(null, 'OK');
+  return cb(null, 'OK');
 };
 
 /*
@@ -228,31 +224,40 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
   this.client.exists(token, function(err, reply) {
     if (err || !reply) {
-      cb(invalidRequestError());
+      return cb(invalidRequestError());
     } else {
-      cb(null, true);
+      return cb(null, true);
     }
   });
 };
 
 // utility functions
 
-function createAndStoreAuthCode(client, clientId, redirectUri, cb) {
-  var code = genSecureToken();
-  client.set(clientId + code, redirectUri, function(err, reply) {
+function createAndStoreAuthCode(self, clientId, scope, redirectUri, cb) {
+  self.mgmt.getAppForClientId(clientId, function(err, app) {
     if (err) { return cb(err); }
-    client.expire(code, AUTH_TTL, function(err, reply) {
-      cb(err, code);
+
+    parseAndValidateScope(scope, app, function(err, scope) {
+      if (err) { return cb(err); }
+
+      var code = genSecureToken();
+      var hash = JSON.stringify({ redirectUri: redirectUri, scope: scope });
+      self.client.set(clientId + code, hash, function(err, reply) {
+        if (err) { return cb(err); }
+        self.client.expire(code, AUTH_TTL, function(err, reply) {
+          return cb(err, code);
+        });
+      });
     });
   });
 }
 
 function consumeAuthCode(client, clientId, code, cb) {
-  client.get(clientId + code, function(err, redirectUri) {
+  client.get(clientId + code, function(err, hash) {
     if (err) { return cb(err); }
-    if (!redirectUri) { return cb(invalidRequestError()); }
+    if (!hash) { return cb(invalidRequestError()); }
     client.del(code, function(err, reply) {
-      cb(err, redirectUri);
+      return cb(err, JSON.parse(hash));
     });
   });
 }
@@ -267,28 +272,43 @@ function consumeAuthCode(client, clientId, code, cb) {
  *   }
  */
 function createAndStoreToken(self, options, cb) {
-  // check clientId, clientSecret
-  self.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
+  self.mgmt.getAppForCredentials(options.clientId, options.clientSecret, function(err, app) {
     if (err) { return cb(err); }
-    if (!reply) { cb(invalidRequestError()); }
-  });
-  var scope = options.scope || DEFAULT_SCOPE;
-  var ttl = options.tokenLifetime ? (options.tokenLifetime / 1000) : DEFAULT_LIFETIME;
-  var token = genSecureToken();
-  storeToken(self.client, token, options.type, options.clientId, ttl, function(err, reply) {
-    var tokenResponse = reply;
-    if (err) { return cb(err); }
-    if (options.refresh) {
-      var refreshToken = genSecureToken();
-      storeRefreshToken(self.client, refreshToken, options.clientId, function(err, reply) {
+    if (!app) { return cb(invalidRequestError()); }
+
+    parseAndValidateScope(options.scope, app, function(err, scope) {
+      if (err) { return cb(err); }
+
+      var ttl = options.tokenLifetime ? (options.tokenLifetime / 1000) : DEFAULT_TOKEN_LIFETIME;
+      var token = genSecureToken();
+      storeToken(self.client, token, options.type, options.clientId, ttl, scope, function(err, reply) {
+        var tokenResponse = reply;
         if (err) { return cb(err); }
-        tokenResponse.refresh_token = refreshToken;
-        cb(null, tokenResponse);
+        if (options.refresh) {
+          var refreshToken = genSecureToken();
+          storeRefreshToken(self.client, refreshToken, options.clientId, function(err, reply) {
+            if (err) { return cb(err); }
+            tokenResponse.refresh_token = refreshToken;
+            return cb(null, tokenResponse);
+          });
+        } else {
+          return cb(null, tokenResponse);
+        }
       });
-    } else {
-      cb(null, tokenResponse);
-    }
+    });
   });
+}
+
+function parseAndValidateScope(scope, app, cb) {
+  if (!scope) { return cb(null, app.defaultScope); }
+  var scopes = scope.split(' ');
+  // check known scopes (slow, true: but simple, and we shouldn't have to check many)
+  for (var i = 0; i < scopes.length; i++) {
+    if (app.validScopes.indexOf(scopes[i]) < 0) {
+      return cb(new Error('invalid_scope'));
+    }
+  }
+  return cb(null, scope);
 }
 
 function invalidRequestError() {
@@ -299,24 +319,26 @@ function genSecureToken() {
   return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
 }
 
-function storeToken(client, token, type, clientId, ttl, cb) {
+function storeToken(client, token, type, clientId, ttl, scope, cb) {
   var response = {
     access_token: token,
     token_type: type,
-    expires_in: ttl
+    expires_in: ttl,
   };
+  if (scope) { response.scope = scope; }
   client.set(token, JSON.stringify(response), function(err, reply) {
     if (err) { return cb(err); }
     if (ttl) {
       client.expire(token, ttl, function(err, reply) {
-        cb(err, response);
+        return cb(err, response);
       });
     } else {
-      cb(null, response);
+      return cb(null, response);
     }
   });
 }
 
 function storeRefreshToken(client, token, clientId, cb) {
-  storeToken(client, token, REFRESH_TYPE, clientId, null, cb);
+  console.log('storeRefreshToken: ' + token);
+  storeToken(client, token, REFRESH_TYPE, clientId, null, null, cb);
 }

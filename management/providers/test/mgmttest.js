@@ -93,14 +93,43 @@ exports.testManagement = function(config) {
         developerId: developer.id
       };
       mgmt.createApp(na, function(err, newApp) {
-        if (err) {
-          console.error('%j', err);
-        }
+        if (err) { console.error('%j', err); }
         assert(!err);
         assert.equal(na.name, newApp.name);
         assert.equal(na.developerId, newApp.developerId);
         assert(newApp.id);
         app = newApp;
+        done();
+      });
+    });
+
+    it('Create App With Valid Scopes', function(done) {
+      var na = {
+        name: TEST_APP_NAME,
+        developerId: developer.id,
+        defaultScope: 'default',
+        validScopes: 'other default'
+      };
+      mgmt.createApp(na, function(err, newApp) {
+        if (err) { console.error('%j', err); }
+        assert(!err);
+        assert.equal(na.defaultScope, newApp.defaultScope);
+        assert.deepEqual(na.validScopes, newApp.validScopes);
+        assert(newApp.id);
+        done();
+      });
+    });
+
+    it('Create App With Invalid defaultScope', function(done) {
+      var na = {
+        name: TEST_APP_NAME,
+        developerId: developer.id,
+        defaultScope: 'default',
+        validScopes: 'other'
+      };
+      mgmt.createApp(na, function(err, newApp) {
+        assert(err);
+        assert(err.message === 'invalid defaultScope');
         done();
       });
     });

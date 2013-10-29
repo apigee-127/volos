@@ -53,7 +53,9 @@ developer_email:application_name -> application_id
  *   callbackUrl: (string)
  *   developerId: (string)
  *   attributes: (object)
- *   credentials: [(credentials object)]
+ *   credentials: [(credentials object)],
+ *   defaultScope: (string),  (if specified, must also be in validScopes list)
+ *   validScopes: [(string)]
  * }
  *
  * credentials: {
@@ -101,7 +103,7 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
   var dev = makeDeveloper(developer);
   this.client.set(dev.uuid, JSON.stringify(dev), function(err, reply) {
     if (err) { return cb(err); }
-    cb(undefined, dev);
+    return cb(undefined, dev);
   });
 };
 
@@ -109,7 +111,7 @@ RedisManagementSpi.prototype.getDeveloper = function(uuid, cb) {
   getWith404(this.client, uuid, function(err, reply) {
     if (err) { return cb(err); }
     var dev = makeDeveloper(reply);
-    cb(undefined, dev);
+    return cb(undefined, dev);
   });
 };
 
@@ -120,7 +122,7 @@ RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
 RedisManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
   this.client.del(uuid, function(err, reply) {
     if (err) { return cb(err); }
-    cb(undefined, reply);
+    return cb(undefined, reply);
   });
 };
 
@@ -140,6 +142,11 @@ function makeDeveloper(d) {
 // Operations on applications
 
 RedisManagementSpi.prototype.createApp = function(app, cb) {
+  // check scopes
+  if (!app.validScopes) { app.validScopes = []; }
+  if (app.defaultScope && app.validScopes.indexOf(app.defaultScope) < 0) {
+    return cb(new Error("invalid defaultScope"));
+  }
   app.uuid = uuid.v4();
   var credentials = {
     key: genSecureToken(),
@@ -154,15 +161,17 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     developerId: app.developerId,
     callbackUrl: app.callbackUrl,
     attributes: app.attributes,
-    credentials: [credentials]
+    credentials: [credentials],
+    validScopes: app.validScopes,
+    defaultScope: app.defaultScope
   };
   var self = this;
-  this.client.get(app.developerId, function(err, reply) {
+  self.client.get(app.developerId, function(err, reply) {
     if (err) { return cb(err); }
     var developer = JSON.parse(reply);
     saveApplication(self.client, application, developer, function(err, reply) {
       if (err) { return cb(err); }
-      cb(undefined, application);
+      return cb(undefined, application);
     });
   });
 };
@@ -179,7 +188,7 @@ RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName,
     if (reply) {
       getWith404(self.client, reply, cb);
     } else {
-      cb(make404());
+      return cb(make404());
     }
   });
 };
@@ -199,7 +208,7 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
 RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, cb) {
   this.getAppForClientId(clientId, function(err, reply) {
     if (err) { return cb(err); }
-    cb(null, redirectUri !== reply.callbackUrl);
+    return cb(null, redirectUri !== reply.callbackUrl);
   });
 };
 
@@ -208,7 +217,16 @@ RedisManagementSpi.prototype.deleteApp = function(uuid, cb) {
 };
 
 RedisManagementSpi.prototype.getAppIdForCredentials = function(key, secret, cb) {
-  this.client.get(key + ':' + secret, cb);
+  var id = key + ':' + secret;
+  this.client.get(id, cb);
+};
+
+RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
+  var self = this;
+  self.getAppIdForCredentials(key, secret, function(err, reply) {
+    if (err) { return cb(err); }
+    getWith404(self.client, reply, cb);
+  });
 };
 
 // utility functions
@@ -218,9 +236,9 @@ function getWith404(client, key, cb) {
     if (err) { return cb(err); }
     if (reply) {
       reply = JSON.parse(reply);
-      cb(null, reply);
+      return cb(null, reply);
     } else {
-      cb(make404());
+      return cb(make404());
     }
   });
 }
@@ -257,15 +275,7 @@ function deleteApplication(client, uuid, cb) {
 
     var multi = client.multi();
 
-    // developer_name:application_name -> application_id
-    getWith404(client, uuid, function(err, dev) {
-      if (err) { return cb(err); }
-      if (dev) {
-        multi.del(dev.email + ':' + application.name);
-      }
-    });
-
-    // credentials[i].key:credentials[i].secret -> application_id
+    // credentials[i].key -> application_id
     // credentials[i].key:credentials[i].secret -> application_id
     for (var i = 0; i < application.credentials.length; i++) {
       multi.del(application.credentials[i].key);
@@ -275,7 +285,15 @@ function deleteApplication(client, uuid, cb) {
     // application_id: -> application
     multi.del(uuid);
 
-    multi.exec(cb);
+    // developer_name:application_name -> application_id
+    getWith404(client, uuid, function(err, dev) {
+      if (dev) {
+        multi.del(dev.email + ':' + application.name);
+      }
+
+      // must do here instead of outside because of async callback
+      multi.exec(cb);
+    });
   });
 }
 
