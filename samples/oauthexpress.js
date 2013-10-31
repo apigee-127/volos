@@ -25,27 +25,10 @@
 
 var express = require('express');
 
-// In a real deployment, you would replace these with the real NPM module names.
-var spi = require('../oauth/providers/apigee');
-var oauth = require('../oauth');
-var opts = require('./config');
-
-var port = 10010;
-
-var runtime = new spi(opts);
-
-var oOpts = {
-  validGrantTypes: [ 'client_credentials', 'authorization_code',
-                     'implicit_grant', 'password' ],
-  passwordCheck: checkPassword
-};
-var oauthRuntime = new oauth(runtime, oOpts);
+var config = require('./config');
+var oauthRuntime = config.oauth;
 
 console.log('Initialized OAuth runtime');
-
-function checkPassword(username, password) {
-  return true;
-}
 
 var app = express();
 
@@ -63,6 +46,5 @@ app.get('/dogs',
 
 console.log(app.routes);
 
-console.log('Listening on %d', port);
-app.listen(port);
-
+console.log('Listening on %d', config.localPort);
+app.listen(config.localPort);

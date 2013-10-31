@@ -25,31 +25,16 @@
 
 var argo = require('argo');
 
-// In a real deployment, you would replace these with the real NPM module names.
-var ApigeeRuntime = require('../oauth/providers/apigee');
-var OAuth = require('../oauth');
 var config = require('./config');
+var oauthRuntime = config.oauth;
 
-var port = 10010;
-
-var runtime = new ApigeeRuntime(config);
-
-var options = {
-  validGrantTypes: [ 'client_credentials', 'authorization_code',
-                     'implicit_grant', 'password' ],
-  passwordCheck: function() { return true; }
-};
-
-var oauthFactory = new OAuth(runtime, options);
-var oauth = oauthFactory.argoMiddleware({
+var middleware = oauthRuntime.argoMiddleware({
   authorizeUri: '^/authorize.*',
   accessTokenUri: '/accesstoken'
 });
 
-console.log('Initialized OAuth runtime');
-
 argo()
-  .use(oauth)
+  .use(middleware)
   .get('/dogs', function(handle) {
     handle('request', function(env, next) {
       env.oauth.authenticate(env, function(env) {
@@ -62,6 +47,6 @@ argo()
       });
     });
   })
-  .listen(port);
+  .listen(config.localPort);
 
-console.log('Listening on %d', port);
+console.log('Listening on %d', config.localPort);

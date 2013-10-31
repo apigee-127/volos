@@ -28,17 +28,28 @@
 var config = {
   host: '127.0.0.1',
   port: 6379,
-  options: {}
+  options: {},
+
+  validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
+  passwordCheck: checkPassword
 };
 
-var Management = require('../management/providers/redis/lib/redismgmt');
+function checkPassword(username, password) {
+  return true;
+}
+
+var Management = require('volos-management-redis');
 var management = new Management(config);
+
+var OAuth = require('volos-oauth-redis');
+var oauth = OAuth.create(config);
 
 var CreateFixtures = require('./createfixtures');
 var fixtureCreator = new CreateFixtures(management);
 
 module.exports = {
   management: management,
+  oauth: oauth,
   fixtureCreator: fixtureCreator,
   config: config
 };

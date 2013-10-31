@@ -23,7 +23,7 @@
  ****************************************************************************/
 "use strict";
 
-var argo = require('../fixtures/argoserver.js');
+var argo = require('./fixtures/argoserver.js');
 var remoteTest = require('./remotesharedtest.js');
 
 describe('Argo', function () {

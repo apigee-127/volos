@@ -26,31 +26,14 @@
 var http = require('http');
 var url = require('url');
 
-// In a real deployment, you would replace these with the real NPM module names.
-var oauth = require('../oauth');
-var spi = require('../oauth/providers/apigee');
-var opts = require('./config');
-
-var port = 10010;
-
-var runtime = new spi(opts);
-
-var oOpts = {
-  validGrantTypes: [ 'client_credentials', 'authorization_code',
-                     'implicit_grant', 'password' ],
-  passwordCheck: checkPassword
-}
-var oauthRuntime = new oauth(runtime, oOpts);
+var config = require('./config');
+var oauthRuntime = config.oauth;
 
 console.log('Initialized OAuth runtime');
 
-function checkPassword(username, password) {
-  return true;
-}
-
 var server = http.createServer(onRequest);
-server.listen(port, function() {
-  console.log('Listening on %d', port);
+server.listen(config.localPort, function() {
+  console.log('Listening on %d', config.localPort);
 });
 
 function onRequest(req, resp) {
@@ -80,7 +63,7 @@ function onRequest(req, resp) {
 
 function createAccessToken(req, body, resp) {
   var opts = {
-    authorizeHeader: req.headers['authorization']
+    authorizeHeader: req.headers.authorization
   };
   oauthRuntime.generateToken(body, opts, function(err, oauthResult) {
     if (err) {
@@ -109,7 +92,7 @@ function authorize(queryString, resp) {
 
 function refresh(req, body, resp) {
   var opts = {
-    authorizeHeader: req.headers['authorization']
+    authorizeHeader: req.headers.authorization
   };
   oauthRuntime.refreshToken(body, opts, function(err, oauthResult) {
     if (err) {
@@ -125,7 +108,7 @@ function refresh(req, body, resp) {
 
 function invalidate(req, body, resp) {
   var opts = {
-    authorizeHeader: req.headers['authorization']
+    authorizeHeader: req.headers.authorization
   };
   oauthRuntime.invalidateToken(body, opts, function(err, oauthResult) {
     if (err) {

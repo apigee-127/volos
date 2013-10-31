@@ -30,17 +30,28 @@ var config = {
   user: 'USER',
   password: 'PASS',
   uri: 'URI',
-  key: 'KEY'
+  key: 'KEY',
+
+  validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
+  passwordCheck: checkPassword
 };
 
-var Management = require('../management/providers/apigee/lib/apigeemgmt');
+function checkPassword(username, password) {
+  return true;
+}
+
+var Management = require('volos-management-apigee');
 var management = new Management(config);
 
 var CreateFixtures = require('./createfixtures');
 var fixtureCreator = new CreateFixtures(management);
 
+var OAuth = require('volos-oauth-apigee');
+var oauth = OAuth.create(config);
+
 module.exports = {
   management: management,
+  oauth: oauth,
   fixtureCreator: fixtureCreator,
   config: config
 };

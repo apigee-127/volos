@@ -23,53 +23,27 @@
  ****************************************************************************/
 "use strict";
 
-var argo = require('argo');
-var oauth = require('..');
+var express = require('express');
 
-var config = require('../../common/testconfig-apigee');
-var runtime = config.management.runtime;
+var config = require('../../../common/testconfig-apigee');
+var oauthRuntime = config.oauth;
 
-var port = 10011;
+var app = express();
 
-var oOpts = {
-  validGrantTypes: [ 'client_credentials', 'authorization_code',
-                     'implicit_grant', 'password' ],
-  passwordCheck: checkPassword
-};
-var oauthRuntime = new oauth(runtime, oOpts);
+app.get('/authorize', oauthRuntime.expressMiddleware().handleAuthorize());
+app.post('/accesstoken', oauthRuntime.expressMiddleware().handleAccessToken());
+app.post('/invalidate', oauthRuntime.expressMiddleware().invalidateToken());
+app.post('/refresh', oauthRuntime.expressMiddleware().refreshToken());
+app.use(oauthRuntime.expressMiddleware().authenticate());
 
-function checkPassword(username, password) {
-  return true;
-}
+app.get('/dogs',
+  oauthRuntime.expressMiddleware().authenticate(),
+  function(req, resp) {
+  resp.json(['John', 'Paul', 'George', 'Ringo']);
+});
 
-var argo = argo();
-argo
-  .get('/dogs', function(handle) {
-    handle('request', function(env, next) {
-      env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
-      next(env);
-    });
-  })
-  .get('/ok', function(handle) {
-    handle('request', function(env, next) {
-      env.response.body = 'ok';
-      next(env);
-    });
-  })
-  .use(oauthRuntime.argoMiddleware(
-    // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
-    { authorizeUri: '^/authorize.*',
-      accessTokenUri: '/accesstoken',
-      refreshTokenUri: '/refresh'
-    }))
-  .listen(port);
+app.get('/ok', function(req, resp) {
+  resp.send(200, 'ok');
+});
 
-// supertest expects an address function that returns the port
-// (I couldn't figure out how to get the dynamic port from argo)
-argo.address = function() {
-  var addr = {};
-  addr.port = port;
-  return addr;
-};
-
-module.exports = argo;
+module.exports = app;

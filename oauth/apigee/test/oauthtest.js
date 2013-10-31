@@ -20,15 +20,15 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-****************************************************************************/
+ ****************************************************************************/
 "use strict";
 
-var commonTest = require('../../test/mgmttest');
-var testOpts = require('../../../../common/testconfig-apigee');
+var config = require('../../../common/testconfig-apigee');
+var commonTest = require('../../test/oauthtest');
 
 describe('Apigee', function() {
 
   this.timeout(10000);
-  commonTest.testManagement(testOpts);
+  commonTest.testOauth(config);
 
 });

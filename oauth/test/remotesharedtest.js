@@ -28,7 +28,6 @@ var url = require('url');
 var request = require('supertest');
 var querystring = require('querystring');
 
-// todo: make config dynamic
 var config = require('../../common/testconfig-apigee');
 var creator = config.fixtureCreator;
 

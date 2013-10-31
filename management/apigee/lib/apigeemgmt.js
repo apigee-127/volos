@@ -67,9 +67,6 @@ var path = require('path');
 var http = require('http');
 var https = require('https');
 
-var Runtime = require('../../../../oauth/providers/apigee'); // todo: npm path?
-var runtime;
-
 var debug;
 var debugEnabled;
 if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
@@ -97,8 +94,6 @@ function ApigeeManagementSpi(options) {
   this.organization = options.organization;
   this.auth = 'Basic ' + (new Buffer(options.user + ':' + options.password).toString('base64'));
   this.uri = (options.managementUri ? options.managementUri : DefaultApigeeURI);
-
-  this.runtime = new Runtime(options);
 }
 module.exports = ApigeeManagementSpi;
 

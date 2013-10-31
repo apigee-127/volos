@@ -71,7 +71,6 @@ var CRYPTO_BYTES = 256 / 8;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 var redis = require("redis");
-var Runtime = require('../../../../oauth/providers/redis'); // todo: npm path?
 
 var debug;
 var debugEnabled;
@@ -89,7 +88,6 @@ function RedisManagementSpi(options) {
   var host = options.host || '127.0.0.1';
   var ropts = options.options || {};
   this.client = redis.createClient(port, host, ropts);
-  this.runtime = new Runtime(options, this);
 }
 module.exports = RedisManagementSpi;
 

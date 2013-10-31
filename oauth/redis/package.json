@@ -1,0 +1,22 @@
+{
+  "name": "volos-oauth-redis",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "lib/redisruntime.js",
+  "description": "Redis-backed OAuth library in the Volos system.",
+  "homepage": "https://github.com/apigee/volos",
+  "keywords": ["oauth", "redis", "node.js"],
+  "dependencies":  {
+    "redis" : "0.9.x",
+    "node-uuid" : "x.x.x",
+    "volos-oauth-common": "x.x.x",
+    "volos-management-redis": "x.x.x"
+   },
+  "devDependencies": {
+    "supertest" : "x.x.x"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/apigee/volos.git"
+  }
+}

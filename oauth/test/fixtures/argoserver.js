@@ -23,12 +23,40 @@
  ****************************************************************************/
 "use strict";
 
-var config = require('../../../../common/testconfig-apigee');
-var commonTest = require('../../test/oauthtest');
+var argo = require('argo');
+var config = require('../../../common/testconfig-apigee');
+var oauthRuntime = config.oauth;
 
-describe('Apigee', function() {
+var port = 10011;
 
-  this.timeout(10000);
-  commonTest.testOauth(config);
+var argo = argo();
+argo
+  .get('/dogs', function(handle) {
+    handle('request', function(env, next) {
+      env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+      next(env);
+    });
+  })
+  .get('/ok', function(handle) {
+    handle('request', function(env, next) {
+      env.response.body = 'ok';
+      next(env);
+    });
+  })
+  .use(oauthRuntime.argoMiddleware(
+    // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
+    { authorizeUri: '^/authorize.*',
+      accessTokenUri: '/accesstoken',
+      refreshTokenUri: '/refresh'
+    }))
+  .listen(port);
 
-});
+// supertest expects an address function that returns the port
+// (I couldn't figure out how to get the dynamic port from argo)
+argo.address = function() {
+  var addr = {};
+  addr.port = port;
+  return addr;
+};
+
+module.exports = argo;

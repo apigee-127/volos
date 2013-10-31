@@ -20,14 +20,14 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-****************************************************************************/
+ ****************************************************************************/
 "use strict";
 
-var commonTest = require('../../test/mgmttest');
-var testOpts = require('../../../../common/testconfig-redis');
+var config = require('../../../common/testconfig-redis');
+var commonTest = require('../../test/oauthtest');
 
 describe('Redis', function() {
 
-  commonTest.testManagement(testOpts);
+  commonTest.testOauth(config);
 
 });

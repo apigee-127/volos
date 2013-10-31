@@ -25,9 +25,8 @@
 
 var request = require('supertest');
 var querystring = require('querystring');
-var server = require('../fixtures/expressserver.js');
+var server = require('./fixtures/expressserver.js');
 
-// todo: make config dynamic
 var config = require('../../common/testconfig-apigee.js');
 var creator = config.fixtureCreator;
 

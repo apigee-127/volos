@@ -20,43 +20,14 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
- ****************************************************************************/
+****************************************************************************/
 "use strict";
 
-var express = require('express');
-var spi = require('../providers/apigee');
-var oauth = require('..');
+var commonTest = require('../../test/mgmttest');
+var testOpts = require('../../../common/testconfig-redis');
 
-var config = require('../../common/testconfig-apigee');
-var runtime = config.management.runtime;
+describe('Redis', function() {
 
-var oOpts = {
-  validGrantTypes: [ 'client_credentials', 'authorization_code',
-                     'implicit_grant', 'password' ],
-  passwordCheck: checkPassword
-};
-var oauthRuntime = new oauth(runtime, oOpts);
+  commonTest.testManagement(testOpts);
 
-function checkPassword(username, password) {
-  return true;
-}
-
-var app = express();
-
-app.get('/authorize', oauthRuntime.expressMiddleware().handleAuthorize());
-app.post('/accesstoken', oauthRuntime.expressMiddleware().handleAccessToken());
-app.post('/invalidate', oauthRuntime.expressMiddleware().invalidateToken());
-app.post('/refresh', oauthRuntime.expressMiddleware().refreshToken());
-app.use(oauthRuntime.expressMiddleware().authenticate());
-
-app.get('/dogs',
-  oauthRuntime.expressMiddleware().authenticate(),
-  function(req, resp) {
-  resp.json(['John', 'Paul', 'George', 'Ringo']);
 });
-
-app.get('/ok', function(req, resp) {
-  resp.send(200, 'ok');
-});
-
-module.exports = app;

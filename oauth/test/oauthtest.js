@@ -39,7 +39,7 @@ var DEFAULT_REDIRECT_URL = 'http://example.org';
 exports.testOauth = function(config) {
 
   var mgmt = config.management;
-  var runtime = mgmt.runtime;
+  var oauthSpi = config.oauth.spi;
 
   describe('OAuth SPI', function() {
     var developer;
@@ -84,7 +84,7 @@ exports.testOauth = function(config) {
               username: 'notchecking',
               password: 'likeisaid'
             };
-            runtime.createTokenPasswordCredentials(tr, function(err, result) {
+            oauthSpi.createTokenPasswordCredentials(tr, function(err, result) {
               assert(!err);
               assert(result.access_token);
               assert(result.refresh_token);
@@ -121,7 +121,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create client credentials: %j', tr);
 
-        runtime.createTokenClientCredentials(tr, function(err, result) {
+        oauthSpi.createTokenClientCredentials(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -133,18 +133,18 @@ exports.testOauth = function(config) {
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
           // verify token
-          runtime.verifyToken(result.access_token, null, null, function(err, result) {
+          oauthSpi.verifyToken(result.access_token, null, null, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
 
             // invalidate token
             tr.accessToken = result.accessToken;
-            runtime.invalidateToken(tr, function(err, result) {
+            oauthSpi.invalidateToken(tr, function(err, result) {
               if (err) { console.error('%j', err); }
               assert(!err);
 
               // verify token again - should fail now
-              runtime.verifyToken(result.access_token, null, null, function(err, result) {
+              oauthSpi.verifyToken(result.access_token, null, null, function(err, result) {
                 assert(err);
               });
             });
@@ -163,7 +163,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create client credentials: %j', tr);
 
-        runtime.createTokenClientCredentials(tr, function(err, result) {
+        oauthSpi.createTokenClientCredentials(tr, function(err, result) {
           assert(err);
           assert(err.message === 'invalid_scope');
           done();
@@ -178,7 +178,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create client credentials: %j', tr);
 
-        runtime.createTokenClientCredentials(tr, function(err, result) {
+        oauthSpi.createTokenClientCredentials(tr, function(err, result) {
           assert(!err);
           assert(result);
           console.log('New token: %j', result);
@@ -204,7 +204,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create password: %j', tr);
 
-        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+        oauthSpi.createTokenPasswordCredentials(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -215,7 +215,7 @@ exports.testOauth = function(config) {
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
           // verify token
-          runtime.verifyToken(result.access_token, null, null, function(err, result) {
+          oauthSpi.verifyToken(result.access_token, null, null, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
           });
@@ -235,7 +235,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create password: %j', tr);
 
-        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+        oauthSpi.createTokenPasswordCredentials(tr, function(err, result) {
           assert(err);
           assert(err.message === 'invalid_scope');
           done();
@@ -252,7 +252,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create password: %j', tr);
 
-        runtime.createTokenPasswordCredentials(tr, function(err, result) {
+        oauthSpi.createTokenPasswordCredentials(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -276,7 +276,7 @@ exports.testOauth = function(config) {
       };
       console.log('Refresh token: %j', tr);
 
-      runtime.refreshToken(tr, function(err, result) {
+      oauthSpi.refreshToken(tr, function(err, result) {
         if (err) { console.error('%j', err); }
         assert(!err);
         assert(result);
@@ -297,7 +297,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create authorization code: %j', tr);
 
-        runtime.generateAuthorizationCode(tr, function(err, result) {
+        oauthSpi.generateAuthorizationCode(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -317,7 +317,7 @@ exports.testOauth = function(config) {
           };
           console.log('Create client credentials: %j', tr);
 
-          runtime.createTokenAuthorizationCode(tr, function(err, result) {
+          oauthSpi.createTokenAuthorizationCode(tr, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
             assert(result);
@@ -328,7 +328,7 @@ exports.testOauth = function(config) {
             assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
             // verify token
-            runtime.verifyToken(result.access_token, null, null, function(err, result) {
+            oauthSpi.verifyToken(result.access_token, null, null, function(err, result) {
               if (err) { console.error('%j', err); }
               assert(!err);
             });
@@ -346,7 +346,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create authorization code: %j', tr);
 
-        runtime.generateAuthorizationCode(tr, function(err, result) {
+        oauthSpi.generateAuthorizationCode(tr, function(err, result) {
           assert(err);
           assert(err.message === 'invalid_scope');
           done();
@@ -361,7 +361,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create authorization code: %j', tr);
 
-        runtime.generateAuthorizationCode(tr, function(err, result) {
+        oauthSpi.generateAuthorizationCode(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -379,7 +379,7 @@ exports.testOauth = function(config) {
           };
           console.log('Create client credentials: %j', tr);
 
-          runtime.createTokenAuthorizationCode(tr, function(err, result) {
+          oauthSpi.createTokenAuthorizationCode(tr, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
             assert(result);
@@ -391,7 +391,7 @@ exports.testOauth = function(config) {
             assert(result.scope === OTHER_SCOPE);
 
             // verify token
-            runtime.verifyToken(result.access_token, null, null, function(err, result) {
+            oauthSpi.verifyToken(result.access_token, null, null, function(err, result) {
               if (err) { console.error('%j', err); }
               assert(!err);
             });
@@ -414,7 +414,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create implicit: %j', tr);
 
-        runtime.createTokenImplicitGrant(tr, function(err, result) {
+        oauthSpi.createTokenImplicitGrant(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -425,7 +425,7 @@ exports.testOauth = function(config) {
           console.log('New token: %j', pr);
 
           // verify token
-          runtime.verifyToken(pr.query.access_token, null, null, function(err, result) {
+          oauthSpi.verifyToken(pr.query.access_token, null, null, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
           });
@@ -444,7 +444,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create implicit: %j', tr);
 
-        runtime.createTokenImplicitGrant(tr, function(err, result) {
+        oauthSpi.createTokenImplicitGrant(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(err);
           assert(err.message === 'invalid_scope');
@@ -463,7 +463,7 @@ exports.testOauth = function(config) {
         };
         console.log('Create implicit: %j', tr);
 
-        runtime.createTokenImplicitGrant(tr, function(err, result) {
+        oauthSpi.createTokenImplicitGrant(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(!err);
           assert(result);
@@ -474,7 +474,7 @@ exports.testOauth = function(config) {
           console.log('New token: %j', pr);
 
           // verify token
-          runtime.verifyToken(pr.query.access_token, null, null, function(err, result) {
+          oauthSpi.verifyToken(pr.query.access_token, null, null, function(err, result) {
             if (err) { console.error('%j', err); }
             assert(!err);
           });

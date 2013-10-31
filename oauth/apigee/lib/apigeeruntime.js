@@ -35,6 +35,7 @@ var url = require('url');
 var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
+var OAuthCommon = require('volos-oauth-common');
 
 var debug;
 var debugEnabled;
@@ -47,7 +48,14 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var spi = function(options) {
+var create = function(options) {
+  var spi = new RedisRuntimeSpi(options);
+  var oauth = new OAuthCommon(spi, options);
+  return oauth;
+};
+module.exports.create = create;
+
+var RedisRuntimeSpi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
   }
@@ -57,8 +65,9 @@ var spi = function(options) {
 
   this.uri = options.uri;
   this.key = options.key;
+
+  this.oauth = new OAuthCommon(RedisRuntimeSpi, options);
 };
-module.exports = spi;
 
 /*
  * Generate an access token using client_credentials. Parameters:
@@ -69,7 +78,7 @@ module.exports = spi;
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-spi.prototype.createTokenClientCredentials = function(options, cb) {
+RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
   var qs = {
     grant_type: 'client_credentials'
   };
@@ -95,7 +104,7 @@ spi.prototype.createTokenClientCredentials = function(options, cb) {
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-spi.prototype.createTokenPasswordCredentials = function(options, cb) {
+RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
   var qs = {
     grant_type: 'password',
     username: options.username,
@@ -122,7 +131,7 @@ spi.prototype.createTokenPasswordCredentials = function(options, cb) {
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-spi.prototype.createTokenAuthorizationCode = function(options, cb) {
+RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   var qs = {
     grant_type: 'authorization_code',
     code: options.code
@@ -150,7 +159,7 @@ spi.prototype.createTokenAuthorizationCode = function(options, cb) {
  *
  * Returns the redirect URI as a string.
  */
-spi.prototype.generateAuthorizationCode = function(options, cb) {
+RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
   var qs = {
     response_type: 'code',
     client_id: options.clientId
@@ -180,7 +189,7 @@ spi.prototype.generateAuthorizationCode = function(options, cb) {
  *
  * Returns the redirect URI as a string.
  */
-spi.prototype.createTokenImplicitGrant = function(options, cb) {
+RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
   var qs = {
     response_type: 'token',
     client_id: options.clientId
@@ -208,7 +217,7 @@ spi.prototype.createTokenImplicitGrant = function(options, cb) {
  *   refreshToken: required, from the original token grant
  *   scope: optional
  */
-spi.prototype.refreshToken = function(options, cb) {
+RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var qs = {
     grant_type: 'refresh_token',
     refresh_token: options.refreshToken
@@ -231,7 +240,7 @@ spi.prototype.refreshToken = function(options, cb) {
  *   refreshToken: either this or accessToken must be specified
  *   accessToken: same
  */
-spi.prototype.invalidateToken = function(options, cb) {
+RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
   var qs = {
     token: options.token
   };
@@ -249,7 +258,7 @@ spi.prototype.invalidateToken = function(options, cb) {
 /*
  * Validate an access token. Specify just the token and we are fine.
  */
-spi.prototype.verifyToken = function(token, verb, path, cb) {
+RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
   var r = url.parse(this.uri + '/tokentypes/all/verify');
   r.headers = {
     Authorization: 'Bearer ' + token

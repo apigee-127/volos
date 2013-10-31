@@ -48,6 +48,8 @@ var querystring = require('querystring');
 var crypto = require('crypto');
 var redis = require("redis");
 var extend = require('util')._extend;
+var OAuthCommon = require('volos-oauth-common');
+var Management = require('volos-management-redis');
 
 var debug;
 var debugEnabled;
@@ -60,14 +62,21 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var RedisRuntimeSpi = function(options, mgmt) {
+var create = function(options) {
+  var mgmt = new Management(options);
+  var spi = new RedisRuntimeSpi(mgmt, options);
+  var oauth = new OAuthCommon(spi, options);
+  return oauth;
+};
+module.exports.create = create;
+
+var RedisRuntimeSpi = function(mgmt, options) {
   var host = options.host || '127.0.0.1';
   var port = options.port || 6379;
   var ropts = options.options || {};
   this.client = redis.createClient(port, host, options);
   this.mgmt = mgmt;
 };
-module.exports = RedisRuntimeSpi;
 
 /*
  * Generate an access token using client_credentials. Parameters:

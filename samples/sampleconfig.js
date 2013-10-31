@@ -23,10 +23,30 @@
  ****************************************************************************/
 "use strict";
 
-module.exports = {
+var config = {
   organization: 'ORGANIZATION',
   uri: 'https://ORGANIZATION-test.apigee.net/adapterproxy',
   key: 'CONSUMER KEY',
-  secret: 'CONSUMER SECRET'
+  secret: 'CONSUMER SECRET',
+
+  validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
+  passwordCheck: checkPassword,
+
+  localPort: 10010
 };
 
+function checkPassword(username, password) {
+  return true;
+}
+
+var Management = require('volos-management-apigee');
+var management = new Management(config);
+
+var OAuth = require('volos-oauth-apigee');
+var oauth = OAuth.create(config);
+
+module.exports = {
+  management: management,
+  oauth: oauth,
+  config: config
+};
