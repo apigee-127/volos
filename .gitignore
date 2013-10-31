@@ -5,3 +5,4 @@ testconfig-apigee.js
 testconfig-redis.js
 .*.swo
 .*.swp
+npm-debug.log
