@@ -23,14 +23,6 @@
  ****************************************************************************/
 "use strict";
 
-/*
-schema:
-application_id -> application
-developer_id -> developer
-credentials[i].key -> application_id
-developer_email:application_name -> application_id
- */
-
 /**
  * This module implements the management SPI interface using redis.
  *
@@ -66,6 +58,15 @@ developer_email:application_name -> application_id
  * }
  */
 
+/*
+ schema:
+ volos:management:application_id -> application
+ volos:management:developer_id -> developer
+ volos:management:credentials[i].key -> application_id
+ volos:management:developer_email:application_name -> application_id
+ */
+
+var KEY_PREFIX = 'volos:management';
 var CRYPTO_BYTES = 256 / 8;
 
 var crypto = require('crypto');
@@ -99,7 +100,7 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
     developer.id = developer.uuid = uuid.v4();
   }
   var dev = makeDeveloper(developer);
-  this.client.set(dev.uuid, JSON.stringify(dev), function(err, reply) {
+  this.client.set(_key(dev.uuid), JSON.stringify(dev), function(err, reply) {
     if (err) { return cb(err); }
     return cb(undefined, dev);
   });
@@ -118,7 +119,7 @@ RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
 };
 
 RedisManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
-  this.client.del(uuid, function(err, reply) {
+  this.client.del(_key(uuid), function(err, reply) {
     if (err) { return cb(err); }
     return cb(undefined, reply);
   });
@@ -164,7 +165,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     defaultScope: app.defaultScope
   };
   var self = this;
-  self.client.get(app.developerId, function(err, reply) {
+  self.client.get(_key(app.developerId), function(err, reply) {
     if (err) { return cb(err); }
     var developer = JSON.parse(reply);
     saveApplication(self.client, application, developer, function(err, reply) {
@@ -180,8 +181,7 @@ RedisManagementSpi.prototype.getApp = function(key, cb) {
 
 RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName, cb) {
   var self = this;
-  var key = developerEmail + ':' + appName;
-  this.client.get(key, function(err, reply) {
+  this.client.get(_key(developerEmail, appName), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
       getWith404(self.client, reply, cb);
@@ -192,7 +192,7 @@ RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName,
 };
 
 RedisManagementSpi.prototype.getAppIdForClientId = function(key, cb) {
-  this.client.get(key, cb);
+  this.client.get(_key(key), cb);
 };
 
 RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
@@ -215,8 +215,7 @@ RedisManagementSpi.prototype.deleteApp = function(uuid, cb) {
 };
 
 RedisManagementSpi.prototype.getAppIdForCredentials = function(key, secret, cb) {
-  var id = key + ':' + secret;
-  this.client.get(id, cb);
+  this.client.get(_key(key, secret), cb);
 };
 
 RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
@@ -230,7 +229,7 @@ RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
 // utility functions
 
 function getWith404(client, key, cb) {
-  client.get(key, function(err, reply) {
+  client.get(_key(key), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
       reply = JSON.parse(reply);
@@ -251,16 +250,16 @@ function saveApplication(client, application, developer, cb) {
   var multi = client.multi();
 
   // application_id: -> application
-  multi.set(application.uuid, JSON.stringify(application));
+  multi.set(_key(application.uuid), JSON.stringify(application));
 
   // developer_name:application_name -> application_id
-  multi.set(developer.email + ':' + application.name, application.id);
+  multi.set(_key(developer.email, application.name), application.id);
 
   // credentials[i].key -> application_id
   // credentials[i].key:credentials[i].secret -> application_id
   for (var i = 0; i < application.credentials.length; i++) {
-    multi.set(application.credentials[i].key, application.id);
-    multi.set(application.credentials[i].key + ':' + application.credentials[i].secret, application.id);
+    multi.set(_key(application.credentials[i].key), application.id);
+    multi.set(_key(application.credentials[i].key, application.credentials[i].secret), application.id);
   }
 
   multi.exec(cb);
@@ -276,17 +275,17 @@ function deleteApplication(client, uuid, cb) {
     // credentials[i].key -> application_id
     // credentials[i].key:credentials[i].secret -> application_id
     for (var i = 0; i < application.credentials.length; i++) {
-      multi.del(application.credentials[i].key);
-      multi.del(application.credentials[i].key + ':' + application.credentials[i].secret);
+      multi.del(_key(application.credentials[i].key));
+      multi.del(_key(application.credentials[i].key, application.credentials[i].secret));
     }
 
     // application_id: -> application
-    multi.del(uuid);
+    multi.del(_key(uuid));
 
     // developer_name:application_name -> application_id
     getWith404(client, uuid, function(err, dev) {
       if (dev) {
-        multi.del(dev.email + ':' + application.name);
+        multi.del(_key(dev.email, application.name));
       }
 
       // must do here instead of outside because of async callback
@@ -297,4 +296,10 @@ function deleteApplication(client, uuid, cb) {
 
 function genSecureToken() {
   return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
+}
+
+function _key() {
+  var argsArray = [].slice.apply(arguments);
+  argsArray.unshift(KEY_PREFIX);
+  return argsArray.join(':');
 }

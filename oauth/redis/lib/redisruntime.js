@@ -33,11 +33,12 @@
  */
 
 /*
-schema:
-token -> application_id
-client_id:auth_code -> client_id
+ schema:
+ volos:oauth:token -> application_id
+ volos:oauth:client_id:auth_code -> client_id
 */
 
+var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
 var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
 var REFRESH_TYPE = 'refresh';
@@ -192,14 +193,14 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
   console.log('-storeRefreshToken: ' + options.refreshToken);
 
-  self.client.get(options.refreshToken, function(err, reply) {
+  self.client.get(_key(options.refreshToken), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
       reply = JSON.parse(reply);
       if (reply.token_type === REFRESH_TYPE) {
         createAndStoreToken(self, options, function(err, reply) {
           if (err) { return cb(err); }
-          self.client.del(options.refreshToken, redis.print);
+          self.client.del(_key(options.refreshToken), redis.print);
           return cb(null, reply);
         });
       }
@@ -222,8 +223,8 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
   });
-  if (options.token) { this.client.del(options.token); }
-  if (options.refreshToken) { this.client.del(options.refreshToken); }
+  if (options.token) { this.client.del(_key(options.token)); }
+  if (options.refreshToken) { this.client.del(_key(options.refreshToken)); }
   return cb(null, 'OK');
 };
 
@@ -231,7 +232,7 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
  * Validate an access token. Specify just the token and we are fine.
  */
 RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
-  this.client.exists(token, function(err, reply) {
+  this.client.exists(_key(token), function(err, reply) {
     if (err || !reply) {
       return cb(invalidRequestError());
     } else {
@@ -251,9 +252,9 @@ function createAndStoreAuthCode(self, clientId, scope, redirectUri, cb) {
 
       var code = genSecureToken();
       var hash = JSON.stringify({ redirectUri: redirectUri, scope: scope });
-      self.client.set(clientId + code, hash, function(err, reply) {
+      self.client.set(_key(clientId, code), hash, function(err, reply) {
         if (err) { return cb(err); }
-        self.client.expire(code, AUTH_TTL, function(err, reply) {
+        self.client.expire(_key(code), AUTH_TTL, function(err, reply) {
           return cb(err, code);
         });
       });
@@ -262,10 +263,10 @@ function createAndStoreAuthCode(self, clientId, scope, redirectUri, cb) {
 }
 
 function consumeAuthCode(client, clientId, code, cb) {
-  client.get(clientId + code, function(err, hash) {
+  client.get(_key(clientId, code), function(err, hash) {
     if (err) { return cb(err); }
     if (!hash) { return cb(invalidRequestError()); }
-    client.del(code, function(err, reply) {
+    client.del(_key(code), function(err, reply) {
       return cb(err, JSON.parse(hash));
     });
   });
@@ -335,10 +336,10 @@ function storeToken(client, token, type, clientId, ttl, scope, cb) {
     expires_in: ttl,
   };
   if (scope) { response.scope = scope; }
-  client.set(token, JSON.stringify(response), function(err, reply) {
+  client.set(_key(token), JSON.stringify(response), function(err, reply) {
     if (err) { return cb(err); }
     if (ttl) {
-      client.expire(token, ttl, function(err, reply) {
+      client.expire(_key(token), ttl, function(err, reply) {
         return cb(err, response);
       });
     } else {
@@ -350,4 +351,10 @@ function storeToken(client, token, type, clientId, ttl, scope, cb) {
 function storeRefreshToken(client, token, clientId, cb) {
   console.log('storeRefreshToken: ' + token);
   storeToken(client, token, REFRESH_TYPE, clientId, null, null, cb);
+}
+
+function _key() {
+  var argsArray = [].slice.apply(arguments);
+  argsArray.unshift(KEY_PREFIX);
+  return argsArray.join(':');
 }
