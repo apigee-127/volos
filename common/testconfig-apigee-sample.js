@@ -41,7 +41,7 @@ function checkPassword(username, password) {
 }
 
 var Management = require('volos-management-apigee');
-var management = new Management(config);
+var management = Management.create(config);
 
 var CreateFixtures = require('./createfixtures');
 var fixtureCreator = new CreateFixtures(management);

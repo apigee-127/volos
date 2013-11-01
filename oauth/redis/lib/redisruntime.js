@@ -63,19 +63,19 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var create = function(options) {
-  var mgmt = new Management(options);
-  var spi = new RedisRuntimeSpi(mgmt, options);
-  var oauth = new OAuthCommon(spi, options);
+var create = function(config) {
+  var mgmt = Management.create(config);
+  var spi = new RedisRuntimeSpi(mgmt, config);
+  var oauth = new OAuthCommon(spi, config);
   return oauth;
 };
 module.exports.create = create;
 
-var RedisRuntimeSpi = function(mgmt, options) {
-  var host = options.host || '127.0.0.1';
-  var port = options.port || 6379;
-  var ropts = options.options || {};
-  this.client = redis.createClient(port, host, options);
+var RedisRuntimeSpi = function(mgmt, config) {
+  var host = config.host || '127.0.0.1';
+  var port = config.port || 6379;
+  var ropts = config.options || {};
+  this.client = redis.createClient(port, host, config);
   this.mgmt = mgmt;
 };
 

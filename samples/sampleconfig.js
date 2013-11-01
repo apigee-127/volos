@@ -40,7 +40,7 @@ function checkPassword(username, password) {
 }
 
 var Management = require('volos-management-apigee');
-var management = new Management(config);
+var management = Management.create(config);
 
 var OAuth = require('volos-oauth-apigee');
 var oauth = OAuth.create(config);

@@ -78,24 +78,29 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var DefaultApigeeURI = 'https://api.enterprise.apigee.com';
+var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
 
-function ApigeeManagementSpi(options) {
-  if (!options.organization) {
+
+var create = function(config) {
+  return new ApigeeManagementSpi(config);
+};
+module.exports.create = create;
+
+function ApigeeManagementSpi(config) {
+  if (!config.organization) {
     throw new Error('organization must be specified');
   }
-  if (!options.user) {
+  if (!config.user) {
     throw new Error('user must be specified');
   }
-  if (!options.password) {
+  if (!config.password) {
     throw new Error('password must be specified');
   }
 
-  this.organization = options.organization;
-  this.auth = 'Basic ' + (new Buffer(options.user + ':' + options.password).toString('base64'));
-  this.uri = (options.managementUri ? options.managementUri : DefaultApigeeURI);
+  this.organization = config.organization;
+  this.auth = 'Basic ' + (new Buffer(config.user + ':' + config.password).toString('base64'));
+  this.uri = (config.managementUri ? config.managementUri : DEFAULT_APIGEE_URI);
 }
-module.exports = ApigeeManagementSpi;
 
 // Operations on developers
 

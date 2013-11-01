@@ -84,13 +84,17 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-function RedisManagementSpi(options) {
-  var port = options.port || 6379;
-  var host = options.host || '127.0.0.1';
-  var ropts = options.options || {};
+var create = function(config) {
+  return new RedisManagementSpi(config);
+};
+module.exports.create = create;
+
+function RedisManagementSpi(config) {
+  var port = config.port || 6379;
+  var host = config.host || '127.0.0.1';
+  var ropts = config.options || {};
   this.client = redis.createClient(port, host, ropts);
 }
-module.exports = RedisManagementSpi;
 
 // Operations on developers
 

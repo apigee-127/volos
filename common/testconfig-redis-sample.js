@@ -39,7 +39,7 @@ function checkPassword(username, password) {
 }
 
 var Management = require('volos-management-redis');
-var management = new Management(config);
+var management = Management.create(config);
 
 var OAuth = require('volos-oauth-redis');
 var oauth = OAuth.create(config);
