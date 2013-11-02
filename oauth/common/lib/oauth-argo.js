@@ -23,6 +23,7 @@
  ****************************************************************************/
 "use strict";
 
+var querystring = require('querystring');
 var url = require('url');
 
 var debugEnabled;
@@ -54,7 +55,8 @@ OAuthArgo.prototype.package = function(argo) {
       argo.use(function(handle) {
         handle('request', function(env, next) {
           env.oauth = {
-            authenticate: self.authenticate.bind(self)
+            authenticate: self.authenticate.bind(self),
+            authorize: self.authorize.bind(self)
           };
           next(env);
         });
@@ -96,20 +98,33 @@ OAuthArgo.prototype.package = function(argo) {
 
 OAuthArgo.prototype.authorize = function(env, next) {
   debug('Argo authorize');
-  var parsed = url.parse(env.request.url);
-  this.oauth.authorize(parsed.query, function(err, result) {
-    if (err) {
-      if (debugEnabled) {
-        debug('Authorization error: ' + err);
+
+  var self = this;
+  var auth = function(params, env, next) {
+    self.oauth.authorize(params, function(err, result) {
+      if (err) {
+        if (debugEnabled) {
+          debug('Authorization error: ' + err);
+        }
+        makeError(err, env);
+      } else {
+        env.response.statusCode = 301;
+        env.response.setHeader('Location', result);
       }
-      makeError(err, env);
-    } else {
-      env.response.statusCode = 301;
-      env.response.setHeader('Location', result);
-    }
-    env._oauthAuthenticated = true;
-    next(env);
-  });
+      env._oauthAuthenticated = true;
+      next(env);
+    });
+  }
+
+  if (env.request.method === 'GET') {
+    var params = url.parse(env.request.url, true).query;
+    auth(params, env, next);
+  } else {
+    env.request.getBody(function(err, body) {
+      var params = querystring.parse(body.toString());
+      auth(params, env, next);
+    });
+  }
 };
 
 OAuthArgo.prototype.accessToken = function(env, next) {
