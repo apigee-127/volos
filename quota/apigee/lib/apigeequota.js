@@ -21,12 +21,13 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
+'use strict';
+
 /*
  * A quota SPI that uses the Apigee proxy defined in the "proxy" directory. This proxy has
  * a set of API calls that use the Apigee quota policy, and communicate using form-encoded
  * parameters.
  */
-'use strict';
 
 var assert = require('assert');
 var url = require('url');
@@ -34,6 +35,8 @@ var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
 var util = require('util');
+
+var Quota = require('../../common/lib/quota');
 
 var debug;
 var debugEnabled;
@@ -46,7 +49,12 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debug = function() { };
 }
 
-var spi = function(options) {
+var create = function(options) {
+  return new Quota(ApigeeQuotaSpi, options);
+};
+module.exports.create = create;
+
+var ApigeeQuotaSpi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
   }
@@ -63,10 +71,9 @@ var spi = function(options) {
   this.uri = options.uri;
   this.key = options.key;
   this.options = options;
-}
-module.exports = spi;
+};
 
-spi.prototype.apply = function(options, cb) {
+ApigeeQuotaSpi.prototype.apply = function(options, cb) {
   var allow = options.allow || this.options.allow;
 
   var r = {
@@ -85,7 +92,7 @@ spi.prototype.apply = function(options, cb) {
         allowed: resp.allowed,
         used: resp.used,
         isAllowed: !resp.failed
-      }
+      };
       cb(undefined, ret);
     }
   });
