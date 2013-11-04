@@ -162,7 +162,12 @@ OAuthArgo.prototype.authenticate = function(env, next) {
           }
           makeError(err, env);
         } else {
-          env._oauthAuthenticated = true;
+          var context = {
+            authenticated: true,
+            developerId: result.developerId,
+            appId: result.appId
+          };
+          env.oauth.result = context;
         }
         next(env);
       }

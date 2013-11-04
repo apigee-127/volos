@@ -2,6 +2,6 @@
 <OAuthV2 name="GenerateTokenImplicit">
     <DisplayName>GenerateTokenImplicit</DisplayName>
     <Operation>GenerateAccessTokenImplicitGrant</Operation>
-    <ExpiresIn ref="request.header.x-DNA-Token-Lifetime">36000</ExpiresIn>
+    <ExpiresIn ref="request.header.x-DNA-Token-Lifetime">3600000</ExpiresIn>
     <GenerateResponse enabled="true"/>
 </OAuthV2>
