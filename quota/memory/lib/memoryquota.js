@@ -21,16 +21,24 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
 'use strict';
 
 var assert = require('assert');
+
+var Quota = require('../../common/lib/quota');
 
 /*
  * This is a quota implementation that uses buckets in memory. Each quota bucket is simply
  * an object with an expiration time.
  */
-function spi(options) {
+
+var create = function(options) {
+  return new Quota(MemoryQuotaSpi, options);
+};
+module.exports.create = create;
+
+
+function MemoryQuotaSpi(options) {
   this.options = options;
   this.buckets = {};
 
@@ -41,16 +49,15 @@ function spi(options) {
 
   var self = this;
   this.timer = setInterval(function() {
-    trimTokens(self)
+    trimTokens(self);
   }, options.timeInterval);
 }
-module.exports = spi;
 
-spi.prototype.destroy = function() {
+MemoryQuotaSpi.prototype.destroy = function() {
   clearTimeout(this.timer);
 };
 
-spi.prototype.apply = function(options, cb) {
+MemoryQuotaSpi.prototype.apply = function(options, cb) {
   var bucket = this.buckets[options.identifier];
   var now = Date.now();
 
@@ -81,7 +88,7 @@ spi.prototype.apply = function(options, cb) {
 
 // Separate this out for white-box unit testing
 
-spi.prototype.calculateExpiration = function(now) {
+MemoryQuotaSpi.prototype.calculateExpiration = function(now) {
   assert.equal(typeof now, 'number');
   var bucket = {
     count: 0

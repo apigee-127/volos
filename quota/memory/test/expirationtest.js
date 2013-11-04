@@ -1,12 +1,48 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2013 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+'use strict';
+
+var Spi = require('..');
+var config = require('../../../common/testconfig-redis');
 var assert = require('assert');
-var spi = require('..');
+
+// clone & extend hash
+var _extend = require('util')._extend;
+function extend(a, b) {
+  var options = _extend({}, a);
+  options = _extend(options, b);
+  return options;
+}
 
 describe('Expiration time test', function() {
+
   it('Minute rolling', function() {
-    var q = new spi({
+    var options = extend(options, {
       timeInterval: 60000,
       allow: 5
     });
+    var q = Spi.create(options).quota;
 
     var start = new Date('March 7, 2013 12:00:00');
     var end =   new Date('March 7, 2013 12:01:00');
@@ -22,11 +58,12 @@ describe('Expiration time test', function() {
   });
 
   it('Minute calendar', function() {
-    var q = new spi({
+    var options = extend(config, {
       timeInterval: 60000,
       allow: 5,
       startTime: new Date('March 7, 2013 12:00:00').getTime()
     });
+    var q = Spi.create(options).quota;
 
     // Easy
     var now = new Date('March 7, 2013 12:00:00');
@@ -54,12 +91,33 @@ describe('Expiration time test', function() {
     q.destroy();
   });
 
+  it('Hour rolling', function() {
+    var options = extend(config, {
+      timeInterval: 60000 * 60,
+      allow: 5
+    });
+    var q = Spi.create(options).quota;
+
+    var start = new Date('March 7, 2013 12:00:00');
+    var end =   new Date('March 7, 2013 13:00:00');
+    var expires = new Date(q.calculateExpiration(start.getTime()));
+    assert.deepEqual(end, expires);
+
+    start = new Date('March 7, 2013 12:00:27');
+    end =   new Date('March 7, 2013 13:00:27');
+    expires = new Date(q.calculateExpiration(start.getTime()));
+    assert.deepEqual(end, expires);
+
+    q.destroy();
+  });
+
   it('Hour calendar', function() {
-    var q = new spi({
+    var options = extend(config, {
       timeInterval: 60000 * 60,
       allow: 5,
       startTime: new Date('March 7, 2013 12:00:00').getTime()
     });
+    var q = Spi.create(options).quota;
 
     // Easy
     var now = new Date('March 7, 2013 12:00:00');
@@ -87,11 +145,12 @@ describe('Expiration time test', function() {
   });
 
   it('Day calendar', function() {
-    var q = new spi({
+    var options = extend(config, {
       timeInterval: 60000 * 60 * 24,
       allow: 5,
       startTime: new Date('March 7, 2013 12:00:00').getTime()
     });
+    var q = Spi.create(options).quota;
 
     // Easy
     var now = new Date('March 7, 2013 12:00:00');

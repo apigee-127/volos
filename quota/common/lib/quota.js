@@ -30,7 +30,7 @@ function checkNumber(val, name) {
     return undefined;
   }
   if (typeof val === 'string') {
-    return parseInt(val);
+    return parseInt(val, 10);
   } else if (typeof val === 'number') {
     return val;
   } else {
@@ -54,7 +54,7 @@ var WEEK = DAY * 7;
 // options.allow (Number) default = 1
 // options.consistency (string) A hint to some SPIs about how to distribute quota around
 
-function Quota(spi, o) {
+function Quota(Spi, o) {
   var options = o || {};
   options.timeUnit = o.timeUnit || 'minutes';
   options.interval = checkNumber(o.interval, 'interval') || 1;
@@ -87,7 +87,7 @@ function Quota(spi, o) {
   }
 
   this.options = options;
-  this.quota = new spi(options);
+  this.quota = new Spi(options);
 }
 module.exports = Quota;
 

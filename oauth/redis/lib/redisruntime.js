@@ -48,7 +48,6 @@ var AUTH_TTL = 60 * 5; // 5 minutes
 var querystring = require('querystring');
 var crypto = require('crypto');
 var redis = require("redis");
-var extend = require('util')._extend;
 var OAuthCommon = require('volos-oauth-common');
 var Management = require('volos-management-redis');
 
@@ -61,6 +60,14 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
   debugEnabled = true;
 } else {
   debug = function() { };
+}
+
+// clone & extend hash
+var _extend = require('util')._extend;
+function extend(a, b) {
+  var options = _extend({}, a);
+  options = _extend(options, b);
+  return options;
 }
 
 var create = function(config) {
