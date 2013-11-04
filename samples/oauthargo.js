@@ -47,6 +47,6 @@ argo()
       });
     });
   })
-  .listen(config.localPort);
+  .listen(config.config.localPort);
 
-console.log('Listening on %d', config.localPort);
+console.log('Listening on %d', config.config.localPort);

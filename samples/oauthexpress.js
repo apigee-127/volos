@@ -46,5 +46,5 @@ app.get('/dogs',
 
 console.log(app.routes);
 
-console.log('Listening on %d', config.localPort);
-app.listen(config.localPort);
+console.log('Listening on %d', config.config.localPort);
+app.listen(config.config.localPort);

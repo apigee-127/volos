@@ -1,5 +1,5 @@
 {
-  "name": "volos-quota",
+  "name": "volos-quota-common",
   "version": "0.0.1",
   "main": "lib/quota.js",
   "license": "MIT",
