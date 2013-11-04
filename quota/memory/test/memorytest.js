@@ -24,11 +24,10 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-redis');
 var commonTest = require('../../test/quotatest');
 
 describe('Memory', function() {
 
-  commonTest.testQuota(config, Spi);
+  commonTest.testQuota({}, Spi);
 
 });

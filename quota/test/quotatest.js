@@ -24,7 +24,14 @@
 'use strict';
 
 var assert = require('assert');
-var extend = require('util')._extend;
+
+// clone & extend hash
+var _extend = require('util')._extend;
+function extend(a, b) {
+  var options = _extend({}, a);
+  options = _extend(options, b);
+  return options;
+}
 
 exports.testQuota = function(config, Spi) {
 

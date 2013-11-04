@@ -26,15 +26,19 @@
 var Spi = require('..');
 var config = require('../../../common/testconfig-redis');
 var assert = require('assert');
-var extend = require('util')._extend;
 
-var config = config;
-var Spi = Spi;
+// clone & extend hash
+var _extend = require('util')._extend;
+function extend(a, b) {
+  var options = _extend({}, a);
+  options = _extend(options, b);
+  return options;
+}
 
 describe('Expiration time test', function() {
 
   it('Minute rolling', function() {
-    var options = extend(config, {
+    var options = extend(options, {
       timeInterval: 60000,
       allow: 5
     });
@@ -82,6 +86,26 @@ describe('Expiration time test', function() {
     now = new Date('October 28, 2013 13:23:13');
     end =   new Date('October 28, 2013 13:24:00');
     expires = new Date(q.calculateExpiration(now.getTime()));
+    assert.deepEqual(end, expires);
+
+    q.destroy();
+  });
+
+  it('Hour rolling', function() {
+    var options = extend(config, {
+      timeInterval: 60000 * 60,
+      allow: 5
+    });
+    var q = Spi.create(options).quota;
+
+    var start = new Date('March 7, 2013 12:00:00');
+    var end =   new Date('March 7, 2013 13:00:00');
+    var expires = new Date(q.calculateExpiration(start.getTime()));
+    assert.deepEqual(end, expires);
+
+    start = new Date('March 7, 2013 12:00:27');
+    end =   new Date('March 7, 2013 13:00:27');
+    expires = new Date(q.calculateExpiration(start.getTime()));
     assert.deepEqual(end, expires);
 
     q.destroy();
