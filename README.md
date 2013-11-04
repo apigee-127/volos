@@ -4,47 +4,43 @@ Volos is a set of Node.js modules for common API management functionality.
 
 # Core Modules
 
+## oauth
+
+OAuth 2.0 support with bearer tokens and all the standard grant types. Includes a raw API, plus middleware
+for Express and Argo.
+
+Two implementations are supported:
+
+* volos-oauth-redis: Uses Redis as a database for OAuth tokens and other data
+* volos-oauth-apigee: Communicates with Apigee via API for all data storage
+
+# quota
+
+Support for "quotas" as implemented in many APIs -- count API calls by minute, hour, day, and week and
+reject them then whey are exceeded.
+
+Two implementations are supported:
+
+* volos-quota-memory: Keeps quota buckets in memory
+* volos-quota-apigee: Communicates with Apigee via API to store quota values across servers
+
 ## volos-cache
 
 A simple cache module, supporting "put, "get," and "delete" of string keys and binary values.
 
-* Locally -- cache is in memory on each app
-* Deployed to Apigee -- module is replaced with Apigee's distributed cache
-
-## volos-kvm
-
-A simple key-value map, with a similar interface to volos-cache, but with a different service level.
-
-Uses a pluggable SPI for persistence -- volos-apigee-runtime is the first implementation.
-
-## volos-oauth
-
-OAuth 2.0 support with bearer tokens and all the standard grant types.
-
-Uses a pluggable SPI -- volos-apigee-runtime is the first implementation.
-
-## volos-quota
-
-A quota module, supporting quotas using any string identifier, for varying lengths of time and
-different strategies for resetting them.
-
-Uses a pluggable SPI for persistence and support across the cluster, volos-apigee-runtime is the first implementation.
+This module will likely be reorganized into different implementations like the others.
 
 # Support Modules
 
-## apigee-runtime
-
-This is the module that provides back-end support for kvm, quotas, and oauth. It uses a special Apigee
-proxy, which must be deployed to Apigee, so that it can communicate with Apigee in order to store and
-access data.
-
-In the future we can create other modules that support the same interface but which do different things.
-
-## volos-apigee-management
+## volos-management-apigee
 
 This is a small module that wraps the Apigee management API for creating developers, applications, and the like.
 It is deliberately separated from the runtime because these operations should not happen often and do
-not necessarily support high volume. This module is used for testing.
+not necessarily support high volume. This module is mainly used for testing.
+
+## volos-management-redis
+
+This is the equivalent management module for Redis.
 
 # Other Directories
 
@@ -58,28 +54,8 @@ Samples!
 
 ## proxy
 
-An Apigee proxy that is used by the volos-apigee-runtime and volos-apigee-management modules. These modules
-communicate with this proxy usign an API.
-
-# Runtime Options
-
-There are a few options for running Volos -- either locally, with remote API access to Apigee, or on Apigee
-itself.
-
-In the future, additional "runtime" and "management" modules may be created, which allow different styles of
-persistence.
-
-## Apigee Adapter
-
-When run locally, Volos' runtime module ("volos-apigee-runtime")
-can use API calls to communicate with Apigee. These API calls are
-used for creating and validating OAuth tokens, persisting quota values, and storing key-value maps.
-
-## Deploy to Apigee
-
-When an application that uses "volos-apigee-runtime" is deployed to Apigee, the implementation is replaced
-with one that is optimized to function within Apigee itself. This provides Apigee additional access to information
-about the app which allows for better analytics, stronger SLAs, and better performance.
+An Apigee proxy that is used by the volos-quota-apigee and volos-oauth-apigee modules. These modules
+communicate with this proxy using an API.
 
 # Testing
 
