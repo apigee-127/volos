@@ -25,7 +25,7 @@
 
 var assert = require('assert');
 
-var Quota = require('../../common/lib/quota');
+var Quota = require('volos-quota-common');
 
 /*
  * This is a quota implementation that uses buckets in memory. Each quota bucket is simply

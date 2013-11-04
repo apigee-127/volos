@@ -36,7 +36,7 @@ var https = require('https');
 var querystring = require('querystring');
 var util = require('util');
 
-var Quota = require('../../common/lib/quota');
+var Quota = require('volos-quota-common');
 
 var debug;
 var debugEnabled;
