@@ -24,16 +24,16 @@
 "use strict";
 
 var assert = require('assert');
-var cache = require('..');
+var Cache = require('..');
 
-var CacheName = 'TestCache';
+var CACHE_NAME = 'TestCache';
 
 describe('String Cache', function() {
   this.timeout(10000);
   var tc;
 
   before(function() {
-    tc = cache.getCache(CacheName);
+    tc = Cache.getCache(CACHE_NAME);
     tc.setEncoding('utf8');
   });
 
@@ -148,7 +148,7 @@ describe('Cache encodings', function() {
   var tc;
 
   it('Binary', function(done) {
-    var tc = cache.getCache(CacheName);
+    var tc = Cache.getCache(CACHE_NAME);
     var ts = new Buffer('TestString1');
     tc.set('B1', ts, function(err) {
       assert.equal(err, undefined);
@@ -161,7 +161,7 @@ describe('Cache encodings', function() {
   });
 
   it('base64', function(done) {
-    var tc = cache.getCache(CacheName);
+    var tc = Cache.getCache(CACHE_NAME);
     tc.setEncoding('base64');
     var tb = new Buffer('TestInBase64Yay').toString('base64');
     tc.set('b641', tb, { encoding: 'base64' }, function(err) {
@@ -181,9 +181,9 @@ describe('Multiple Caches', function() {
   var tc2;
 
   before(function() {
-    tc1 = cache.getCache(CacheName);
+    tc1 = Cache.getCache(CACHE_NAME);
     tc1.setEncoding('utf8');
-    tc2 = cache.getCache(CacheName);
+    tc2 = Cache.getCache(CACHE_NAME);
   });
 
   it('Two Buffers', function(done) {
