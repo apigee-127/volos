@@ -35,7 +35,7 @@
 /*
  schema:
  volos:oauth:token -> application_id
- volos:oauth:client_id:auth_code -> client_id
+ volos:oauth:client_id:auth_code -> { redirectUri: redirectUri, scope: scope }
 */
 
 var KEY_PREFIX = 'volos:oauth';
@@ -239,11 +239,13 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
  * Validate an access token. Specify just the token and we are fine.
  */
 RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
-  this.client.exists(_key(token), function(err, reply) {
+  this.client.get(_key(token), function(err, reply) {
     if (err || !reply) {
       return cb(invalidRequestError());
     } else {
-      return cb(null, true);
+      // todo: add developerId
+      var result = { appId: reply, developerId: null };
+      return cb(null, result);
     }
   });
 };
