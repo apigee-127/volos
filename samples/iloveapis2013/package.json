@@ -2,6 +2,7 @@
   "name": "volos-samples-dogs",
   "dependencies": {
     "volos-oauth-apigee": "x.x.x",
+    "volos-quota-apigee": "x.x.x",
     "argo": "x.x.x"
   }
 }
