@@ -30,9 +30,7 @@ var config = {
   secret: 'CONSUMER SECRET',
 
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
-  passwordCheck: checkPassword,
-
-  localPort: 10010
+  passwordCheck: checkPassword
 };
 
 function checkPassword(username, password) {
@@ -48,5 +46,6 @@ var oauth = OAuth.create(config);
 module.exports = {
   management: management,
   oauth: oauth,
-  config: config
+  config: config,
+  localPort: 10010
 };
