@@ -5,7 +5,11 @@
 # simply symlink the local modules in the Volos node_modules directory so all modules
 # under this directory can find each other.
 
-pushd node_modules
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$DIR/unlink.sh"
+
+pushd "$DIR/node_modules"
+
 ln -s ../management/apigee volos-management-apigee
 ln -s ../management/redis volos-management-redis
 
