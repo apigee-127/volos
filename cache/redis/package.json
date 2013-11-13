@@ -1,0 +1,18 @@
+{
+  "name": "volos-cache-redis",
+  "version": "0.0.1",
+  "main": "lib/cache.js",
+  "license": "MIT",
+  "description": "Basic redis-based caching library for the Volos system.",
+  "homepage": "https://github.com/apigee/volos",
+  "keywords": ["cache", "redis"],
+  "dependencies":  {
+  },
+  "devDependencies": {
+    "redis": "0.9.x"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/apigee/volos.git"
+  }
+}
