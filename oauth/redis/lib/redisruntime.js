@@ -82,7 +82,7 @@ var RedisRuntimeSpi = function(mgmt, config) {
   var host = config.host || '127.0.0.1';
   var port = config.port || 6379;
   var ropts = config.options || {};
-  this.client = redis.createClient(port, host, config);
+  this.client = redis.createClient(port, host, ropts);
   this.mgmt = mgmt;
 };
 
@@ -261,11 +261,8 @@ function createAndStoreAuthCode(self, clientId, scope, redirectUri, cb) {
 
       var code = genSecureToken();
       var hash = JSON.stringify({ redirectUri: redirectUri, scope: scope });
-      self.client.set(_key(clientId, code), hash, function(err, reply) {
-        if (err) { return cb(err); }
-        self.client.expire(_key(code), AUTH_TTL, function(err, reply) {
-          return cb(err, code);
-        });
+      self.client.setex(_key(clientId, code), AUTH_TTL, hash, function(err, reply) {
+        return cb(err, code);
       });
     });
   });
@@ -342,19 +339,18 @@ function storeToken(client, token, type, clientId, ttl, scope, cb) {
   var response = {
     access_token: token,
     token_type: type,
-    expires_in: ttl,
+    expires_in: ttl
   };
   if (scope) { response.scope = scope; }
-  client.set(_key(token), JSON.stringify(response), function(err, reply) {
-    if (err) { return cb(err); }
-    if (ttl) {
-      client.expire(_key(token), ttl, function(err, reply) {
-        return cb(err, response);
-      });
-    } else {
-      return cb(null, response);
-    }
-  });
+  if (ttl) {
+    client.setex(_key(token), ttl, JSON.stringify(response), function(err, reply) {
+      return cb(err, response);
+    });
+  } else {
+    client.set(_key(token), JSON.stringify(response), function(err, reply) {
+      return cb(err, response);
+    });
+  }
 }
 
 function storeRefreshToken(client, token, clientId, cb) {
