@@ -72,6 +72,7 @@ MemoryQuotaSpi.prototype.apply = function(options, cb) {
   if (now > bucket.expires) {
     // Quota bucket has expired. The timer also runs but only periodically
     bucket.count = 0;
+    bucket.expires = this.calculateExpiration(now);
   }
 
   bucket.count += options.weight;

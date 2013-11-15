@@ -24,6 +24,7 @@
 'use strict';
 
 var assert = require('assert');
+var random = Math.random();
 
 // clone & extend hash
 var _extend = require('util')._extend;
@@ -31,6 +32,11 @@ function extend(a, b) {
   var options = _extend({}, a);
   options = _extend(options, b);
   return options;
+}
+
+// avoid run to run conflicts
+function id(id) {
+  return 'test:' + random + ":" + id;
 }
 
 exports.testQuota = function(config, Spi) {
@@ -45,45 +51,36 @@ exports.testQuota = function(config, Spi) {
     before(function() {
       var options = extend(config, {
         timeUnit: 'minute',
-        timeInterval: 2000,
         interval: 1,
         allow: 2
       });
       pm = Spi.create(options);
-
-      options = extend(config, {
-        timeUnit: 'minute',
-        timeInterval: 10000,
-        interval: 1,
-        allow: 2
-      });
-      ph = Spi.create(options);
     });
 
     it('Basic per-minute', function(done) {
       pm.apply({
-        identifier: 'One',
+        identifier: id('One'),
         weight: 1
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
 
         pm.apply({
-          identifier: 'Two',
+          identifier: id('Two'),
           weight: 1
         }, function(err, result) {
           assert(!err);
           checkResult(result, 2, 1, true);
 
           pm.apply({
-            identifier: 'One',
+            identifier: id('One'),
             weight: 1
           }, function(err, result) {
             assert(!err);
             checkResult(result, 2, 2, true);
 
             pm.apply({
-              identifier: 'One',
+              identifier: id('One'),
               weight: 1
             }, function(err, result) {
               assert(!err);
@@ -98,14 +95,14 @@ exports.testQuota = function(config, Spi) {
 
     it('Quota weight', function(done) {
       pm.apply({
-        identifier: 'WeightOne',
+        identifier: id('WeightOne'),
         weight: 1
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
 
         pm.apply({
-          identifier: 'WeightOne',
+          identifier: id('WeightOne'),
           weight: 3
         }, function(err, result) {
           assert(!err);
@@ -117,14 +114,14 @@ exports.testQuota = function(config, Spi) {
 
     it('Dynamic', function(done) {
       pm.apply({
-        identifier: 'DynOne',
+        identifier: id('DynOne'),
         weight: 1
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
 
         pm.apply({
-          identifier: 'DynOne',
+          identifier: id('DynOne'),
           weight: 1,
           allow: 1
         }, function(err, result) {
@@ -135,73 +132,182 @@ exports.testQuota = function(config, Spi) {
       });
     });
 
-    it('Timeout', function(done) {
-      this.timeout(30000);
-      pm.apply({
-        identifier: 'TimeOne',
-        weight: 1
-      }, function(err, result) {
-        assert(!err);
-        checkResult(result, 2, 1, true);
+    describe('Timeout', function() {
 
-        // Ensure quota is reset within a minute
-        setTimeout(function() {
-          pm.apply({
-            identifier: 'TimeOne',
-            weight: 1
-          }, function(err, result) {
-            assert(!err);
-            checkResult(result, 2, 1, true);
-            done();
+      if (process.env.ROLLING_TESTS) {
+        console.log('Including rolling expiration test. This will take a couple minutes...');
+
+        describe('Rolling', function() {
+
+          it('Minute', function(done) {
+            this.timeout(120000);
+            var hit = { identifier: id('TimeOne'), weight: 1 };
+            pm.apply(hit, function(err, result) {
+              assert(!err);
+              checkResult(result, 2, 1, true);
+
+              setTimeout(function() {
+                pm.apply(hit, function(err, result) {
+                  assert(!err);
+                  checkResult(result, 2, 2, true);
+
+                  // Ensure quota is reset within a minute
+                  setTimeout(function() {
+                    pm.apply(hit, function(err, result) {
+                      assert(!err);
+                      checkResult(result, 2, 1, true);
+                      done();
+                    });
+                  }, 60001);
+
+                });
+              }, 30001);
+            });
           });
-        }, 2001);
-      });
-    });
 
-    it('Timeout Cleanup', function(done) {
-      this.timeout(30000);
-      pm.apply({
-        identifier: 'TimeTwo',
-        weight: 1
-      }, function(err, result) {
-        assert(!err);
-        checkResult(result, 2, 1, true);
+        });
+      } else {
+        console.log('Skipping longer rolling expiration test. To include, set env var ROLLING_TESTS=true.');
+      }
 
-        // Just let timeout thread run and actually do something
-        setTimeout(function() {
-          done();
-        }, 4001);
-      });
-    });
+      describe('Calendar', function() {
 
-    it('Hour', function(done) {
-      this.timeout(30000);
-      ph.apply({
-        identifier: 'HourOne',
-        weight: 1
-      }, function(err, result) {
-        assert(!err);
-        checkResult(result, 2, 1, true);
-
-        // Ensure quota is not reset within an hour
-        setTimeout(function() {
-          ph.apply({
-            identifier: 'HourOne',
-            weight: 1
-          }, function(err, result) {
-            assert(!err);
-            checkResult(result, 2, 2, true);
-            done();
+        it('Minute', function(done) {
+          this.timeout(2000);
+          var startTime = Date.now() - 59750; // start almost a minute ago
+          var options = extend(config, {
+            timeUnit: 'minute',
+            interval: 1,
+            allow: 1,
+            startTime: startTime
           });
-        }, 5002);
+          var pm = Spi.create(options);
+
+          var hit = { identifier: id('TimeTwo'), weight: 1 };
+          pm.apply(hit, function(err, result) {
+            assert(!err);
+            checkResult(result, 1, 1, true);
+
+            setTimeout(function() {
+              pm.apply(hit, function(err, result) {
+                assert(!err);
+                checkResult(result, 1, 1, true);
+
+                pm.apply(hit, function(err, result) {
+                  assert(!err);
+                  checkResult(result, 1, 2, false);
+
+                  done();
+                });
+              });
+            }, 251);
+          });
+        });
+
+        it('Hour', function(done) {
+          this.timeout(2000);
+          var startTime = Date.now() - (60000 * 60 - 250); // start almost an hour ago
+          var options = extend(config, {
+            timeUnit: 'hour',
+            interval: 1,
+            allow: 1,
+            startTime: startTime
+          });
+          var pm = Spi.create(options);
+
+          var hit = { identifier: id('TimeThree'), weight: 1 };
+          pm.apply(hit, function(err, result) {
+            assert(!err);
+            checkResult(result, 1, 1, true);
+
+            setTimeout(function() {
+              pm.apply(hit, function(err, result) {
+                assert(!err);
+                checkResult(result, 1, 1, true);
+
+                pm.apply(hit, function(err, result) {
+                  assert(!err);
+                  checkResult(result, 1, 2, false);
+
+                  done();
+                });
+              });
+            }, 251);
+          });
+        });
+
+        it('Day', function(done) {
+          this.timeout(2000);
+          var startTime = Date.now() - (60000 * 60 * 24 - 250); // start almost a day ago
+          var options = extend(config, {
+            timeUnit: 'day',
+            interval: 1,
+            allow: 1,
+            startTime: startTime
+          });
+          var pm = Spi.create(options);
+
+          var hit = { identifier: id('TimeFour'), weight: 1 };
+          pm.apply(hit, function(err, result) {
+            assert(!err);
+            checkResult(result, 1, 1, true);
+
+            setTimeout(function() {
+              pm.apply(hit, function(err, result) {
+                assert(!err);
+                checkResult(result, 1, 1, true);
+
+                pm.apply(hit, function(err, result) {
+                  assert(!err);
+                  checkResult(result, 1, 2, false);
+
+                  done();
+                });
+              });
+            }, 251);
+          });
+        });
+
+        it('Week', function(done) {
+          this.timeout(2000);
+          var startTime = Date.now() - (60000 * 60 * 24 * 7 - 250); // start almost a week ago
+          var options = extend(config, {
+            timeUnit: 'week',
+            interval: 1,
+            allow: 1,
+            startTime: startTime
+          });
+          var pm = Spi.create(options);
+
+          var hit = { identifier: id('TimeFive'), weight: 1 };
+          pm.apply(hit, function(err, result) {
+            assert(!err);
+            checkResult(result, 1, 1, true);
+
+            setTimeout(function() {
+              pm.apply(hit, function(err, result) {
+                assert(!err);
+                checkResult(result, 1, 1, true);
+
+                pm.apply(hit, function(err, result) {
+                  assert(!err);
+                  checkResult(result, 1, 2, false);
+
+                  done();
+                });
+              });
+            }, 251);
+          });
+        });
+
       });
     });
   });
 
   function checkResult(result, allowed, used, isAllowed) {
     assert(result);
-    assert.equal(result.used, used);
     assert.equal(result.allowed, allowed);
+    assert.equal(result.used, used);
     assert.equal(result.isAllowed, isAllowed);
   }
 };

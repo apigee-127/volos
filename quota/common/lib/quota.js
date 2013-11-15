@@ -40,7 +40,7 @@ function checkNumber(val, name) {
 
 var TimeUnits = [ 'hour', 'minute', 'day', 'week' ];
 
-var MINUTE = 6000;
+var MINUTE = 60000;
 var HOUR = MINUTE * 60;
 var DAY = HOUR * 24;
 var WEEK = DAY * 7;
