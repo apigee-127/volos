@@ -1,6 +1,6 @@
 {
   "name": "volos-quota-memory",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/memoryquota.js",
   "license": "MIT",
   "description": "In-memory provider for Quota enforcement in the Volos system.",
