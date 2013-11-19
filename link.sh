@@ -21,6 +21,8 @@ ln -s ../quota/common volos-quota-common
 ln -s ../quota/apigee volos-quota-apigee
 ln -s ../quota/memory volos-quota-memory
 
+ln -s ../cache/common volos-cache-common
 ln -s ../cache/memory volos-cache-memory
+ln -s ../cache/redis volos-cache-redis
 
 popd

@@ -17,6 +17,8 @@ rm volos-quota-common
 rm volos-quota-apigee
 rm volos-quota-memory
 
+rm volos-cache-common
 rm volos-cache-memory
+rm volos-cache-redis
 
 popd
