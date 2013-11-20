@@ -109,24 +109,66 @@ exports.testCache = function(config, Spi) {
       });
     });
 
-    it('Expiration', function(done) {
-      this.timeout(5000);
+    it('Default Expiration', function(done) {
+      this.timeout(2000);
       var ts = 'TestString2';
-      tc.set('2', ts, { ttl: 2 }, function(err) {
+      tc.set('2', ts, function(err) {
         assert.equal(err, undefined);
-        // Value should still be in the cache right after insert
-        tc.get('2', function(err, val) {
-          assert.equal(err, undefined);
-          assert.equal(val, ts);
-          // Value should have been removed three seconds after the insert because of 2-second ttl
-          var timeout = setTimeout(function() {
-            tc.get('2', function(err, val) {
-              assert.equal(err, undefined);
-              assert.equal(val, undefined);
-              done();
-            });
-          }, 3000);
-        });
+        // Value should be gone from the cache 500 ms after insert (default is 300)
+        var timeout = setTimeout(function() {
+          tc.get('2', function(err, val) {
+            assert.equal(err, undefined);
+            assert.equal(val, undefined);
+            done();
+          });
+        }, 500);
+      });
+    });
+
+    it('Explicit Expiration', function(done) {
+      this.timeout(2000);
+      var ts = 'TestString2';
+      tc.set('2', ts, { ttl: 1000 }, function(err) {
+        assert.equal(err, undefined);
+        // Value should still be in the cache 500 ms after insert
+        var timeout = setTimeout(function() {
+          tc.get('2', function(err, val) {
+            assert.equal(err, undefined);
+            assert.equal(val, ts);
+            // Value should have been removed because of ttl
+            var timeout = setTimeout(function() {
+              tc.get('2', function(err, val) {
+                assert.equal(err, undefined);
+                assert.equal(val, undefined);
+                done();
+              });
+            }, 500);
+          });
+        }, 500);
+      });
+    });
+
+    it('Set Default Expiration', function(done) {
+      this.timeout(2000);
+      var xc = Spi.getCache('xxx', { ttl: 1000, encoding: 'utf8'});
+      var ts = 'TestString2';
+      xc.set('2', ts, { ttl: 1000 }, function(err) {
+        assert.equal(err, undefined);
+        // Value should still be in the cache 500 ms after insert
+        var timeout = setTimeout(function() {
+          xc.get('2', function(err, val) {
+            assert.equal(err, undefined);
+            assert.equal(val, ts);
+            // Value should have been removed because of ttl
+            var timeout = setTimeout(function() {
+              xc.get('2', function(err, val) {
+                assert.equal(err, undefined);
+                assert.equal(val, undefined);
+                done();
+              });
+            }, 500);
+          });
+        }, 500);
       });
     });
 

@@ -24,7 +24,7 @@
 "use strict";
 
 /*
- * This module implements the cache SPI by storing data in redis.
+ * This module implements the cache SPI by storing data in Redis -- version 2.6 or greater.
  *
  * options: {
  *   ttl:      the default ttl (in ms) to use for cached values (otherwise, 300ms)
@@ -75,7 +75,7 @@ Cache.prototype.get = function(key, callback) {
 // If callback is supplied, call it when the set is complete, passing the error as the first
 // argument if there is one.
 Cache.prototype.set = function(key, value, options, callback) {
-  this.client.setex(this._key(key), options.ttl, value, function(err, reply) {
+  this.client.psetex(this._key(key), options.ttl, value, function(err, reply) {
     return callback ? callback(err, reply) : null;
   });
 };
