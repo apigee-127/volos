@@ -9,13 +9,14 @@ pushd "$DIR/node_modules"
 rm volos-management-apigee
 rm volos-management-redis
 
-rm volos-oauth-common
 rm volos-oauth-apigee
+rm volos-oauth-common
 rm volos-oauth-redis
 
-rm volos-quota-common
 rm volos-quota-apigee
+rm volos-quota-common
 rm volos-quota-memory
+rm volos-quota-redis
 
 rm volos-cache-common
 rm volos-cache-memory

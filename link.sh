@@ -13,13 +13,14 @@ pushd "$DIR/node_modules"
 ln -s ../management/apigee volos-management-apigee
 ln -s ../management/redis volos-management-redis
 
-ln -s ../oauth/common volos-oauth-common
 ln -s ../oauth/apigee volos-oauth-apigee
+ln -s ../oauth/common volos-oauth-common
 ln -s ../oauth/redis volos-oauth-redis
 
-ln -s ../quota/common volos-quota-common
 ln -s ../quota/apigee volos-quota-apigee
+ln -s ../quota/common volos-quota-common
 ln -s ../quota/memory volos-quota-memory
+ln -s ../quota/memory volos-quota-redis
 
 ln -s ../cache/common volos-cache-common
 ln -s ../cache/memory volos-cache-memory
