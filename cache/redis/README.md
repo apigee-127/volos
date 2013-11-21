@@ -7,7 +7,7 @@ that module for detailed docs.
 
 ## Initialization
 
-To get a cache, you call "getCache" on the exported module and pass a name and "options" hash.
+To get a cache, you call "create" on the exported module and pass a name and "options" hash.
 The options can contain the following parameters:
 
  ttl:      the default ttl (in ms) to use for cached values (otherwise, 300ms)
@@ -15,3 +15,6 @@ The options can contain the following parameters:
  host:     redis host (optional, default = 127.0.0.1)
  port:     redis port (optional, default = 6379)
  options:  redis options (hash, optional) - note: return_buffers will be forced to true
+
+Note: The cache name represents a namespace. A created cache will share values (but not necessary options)
+with other volos-quota-redis caches on this node you create using the same name.

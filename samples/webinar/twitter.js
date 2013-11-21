@@ -53,7 +53,7 @@ function search(query, cb) {
 /*** wrap Twitter search with a cache ***/
 
 var volos = require('./volos');
-var cache = volos.Cache.getCache('twitter', { ttl: 5000, encoding: 'utf8' });
+var cache = volos.Cache.create('twitter', { ttl: 5000, encoding: 'utf8' });
 
 function cachedSearch(query, cb) {
   var key = JSON.stringify(query);

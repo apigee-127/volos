@@ -7,8 +7,11 @@ that module for detailed docs.
 
 ## Initialization
 
-To get a cache, you call "getCache" on the exported module and pass a name and "options" hash.
+To get a cache, you call "create" on the exported module and pass a name and "options" hash.
 The options can contain the following parameters:
 
  ttl:      the default ttl (in ms) to use for cached values (otherwise, 300ms)
  encoding: the default string encoding to use for cached values (optional)
+
+Note: The cache name represents a namespace. A created cache will share values (but not necessary options)
+with other volos-quota-memory caches on this node you create using the same name.

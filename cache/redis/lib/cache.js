@@ -45,10 +45,10 @@ var redis = require('redis');
 
 var KEY_PREFIX = 'volos:cache';
 
-function getCache(name, options) {
+function create(name, options) {
   return new Common(Cache, name, options);
 }
-exports.getCache = getCache;
+exports.create = create;
 
 function Cache(name, options) {
   if (!(this instanceof Cache)) {

@@ -35,10 +35,10 @@
 var Common = require('volos-cache-common');
 var caches = {};
 
-function getCache(name, options) {
+function create(name, options) {
   return new Common(Cache, name, options);
 }
-exports.getCache = getCache;
+exports.create = create;
 
 function Cache(name, options) {
   if (!(this instanceof Cache)) {

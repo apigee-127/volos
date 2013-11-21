@@ -13,9 +13,12 @@ place. Current implementations are:
 ## Example
 
     var cm = require('volos-cache-memory');
-    var cache = cm.getCache('name', { ttl: 1000 }); // specifies default ttl as 1000 ms
+    var cache = cm.create('name', { ttl: 1000 }); // specifies default ttl as 1000 ms
     cache.set('key', 'value');
     cache.get('key', callback);
+
+Note: Avoid creating multiple caches with the same name, the results are not defined by the interface and
+may vary by implementation.
 
 ## Reference
 
