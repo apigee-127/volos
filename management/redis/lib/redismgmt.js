@@ -62,7 +62,8 @@
  schema:
  volos:management:application_id -> application
  volos:management:developer_id -> developer
- volos:management:credentials[i].key -> application_id
+ volos:management:credentials.key -> application_id
+ volos:management:credentials.key:credentials.secret -> application_id
  volos:management:developer_email:application_name -> application_id
  */
 
@@ -90,6 +91,7 @@ var create = function(config) {
 module.exports.create = create;
 
 function RedisManagementSpi(config) {
+  config = config || {};
   var port = config.port || 6379;
   var host = config.host || '127.0.0.1';
   var ropts = config.options || {};

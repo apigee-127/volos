@@ -294,8 +294,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
 
   var finalUri = self.uri + uriPath;
 
-  //console.log('makeRequest options = %j', options);
-
   var r = url.parse(finalUri);
   r.headers = {
     Authorization: 'Basic ' + new Buffer(options.clientId + ':' + options.clientSecret).toString('base64')
@@ -308,8 +306,6 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
   if (body) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
-
-  //console.log('request: %j', r);
 
   var req;
   if (r.protocol === 'http:') {

@@ -285,7 +285,6 @@ function makeRequest(self, verb, uriPath, o, cb) {
     cb(err);
   });
   if (o) {
-    //console.log('%j', o);
     req.end(JSON.stringify(o));
   } else {
     req.end();

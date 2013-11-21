@@ -198,7 +198,6 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
-  console.log('-storeRefreshToken: ' + options.refreshToken);
 
   self.client.get(_key(options.refreshToken), function(err, reply) {
     if (err) { return cb(err); }
@@ -354,7 +353,6 @@ function storeToken(client, token, type, clientId, ttl, scope, cb) {
 }
 
 function storeRefreshToken(client, token, clientId, cb) {
-  console.log('storeRefreshToken: ' + token);
   storeToken(client, token, REFRESH_TYPE, clientId, null, null, cb);
 }
 
