@@ -1,0 +1,11 @@
+{
+  "name": "webinar",
+  "dependencies": {
+    "twit": "x.x.x",
+    "volos-cache-redis": "x.x.x",
+    "volos-oauth-redis": "x.x.x",
+    "volos-quota-redis": "x.x.x",
+    "argo": "x.x.x",
+    "underscore": "x.x.x"
+  }
+}
