@@ -82,7 +82,7 @@ function authorize(queryString, resp) {
     if (err) {
       sendError(resp, 500, err.message);
     } else {
-      resp.writeHead(301, {
+      resp.writeHead(302, {
         'Location': result
       });
       resp.end();

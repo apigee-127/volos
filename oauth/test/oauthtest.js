@@ -29,9 +29,8 @@ var url = require('url');
 var TEST_DEVELOPER_NAME = 'joe2@schmoe.io';
 var TEST_APP_NAME = 'APIDNA-Runtime-Test';
 var TEST_SCOPED_APP_NAME = 'APIDNA-Runtime-Test-Scoped';
-var DEFAULT_SCOPE = 'default';
+var DEFAULT_SCOPE = null;
 var OTHER_SCOPE = 'other';
-var VALID_SCOPES = [DEFAULT_SCOPE, OTHER_SCOPE];
 
 var DEFAULT_TOKEN_LIFETIME = 3600000;
 var DEFAULT_REDIRECT_URL = 'http://example.org';
@@ -71,7 +70,10 @@ exports.testOauth = function(config) {
             app = newApp;
 
             mgmt.createApp({
-              name: TEST_SCOPED_APP_NAME, developerId: developer.id, defaultScope: DEFAULT_SCOPE, validScopes: VALID_SCOPES
+              name: TEST_SCOPED_APP_NAME,
+              developerId: developer.id,
+              defaultScope: DEFAULT_SCOPE,
+              routeScopes: { '/dogs': OTHER_SCOPE }
             }, function(err, newApp) {
               if (err) { throw err; }
               console.log('Created app %s', newApp.id);
@@ -154,18 +156,33 @@ exports.testOauth = function(config) {
         });
       });
 
-      it('Invalid Scope', function(done) {
+      it('Invalid Client', function(done) {
         var tr = {
           clientId: scopedApp.credentials[0].key,
-          clientSecret: scopedApp.credentials[0].secret,
-          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
-          scope: 'foo'
+          clientSecret: 'invalid',
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME
         };
         console.log('Create client credentials: %j', tr);
 
         oauthSpi.createTokenClientCredentials(tr, function(err, result) {
           assert(err);
-          assert(err.message === 'invalid_scope');
+          assert(err.errorCode === 'invalid_client');
+          done();
+        });
+      });
+
+      it('Invalid Scope', function(done) {
+        var tr = {
+          clientId: scopedApp.credentials[0].key,
+          clientSecret: scopedApp.credentials[0].secret,
+          tokenLifetime: DEFAULT_TOKEN_LIFETIME,
+          scope: 'invalid_scope'
+        };
+        console.log('Create client credentials: %j', tr);
+
+        oauthSpi.createTokenClientCredentials(tr, function(err, result) {
+          assert(err);
+          assert(err.errorCode === 'invalid_scope');
           done();
         });
       });
@@ -237,7 +254,7 @@ exports.testOauth = function(config) {
 
         oauthSpi.createTokenPasswordCredentials(tr, function(err, result) {
           assert(err);
-          assert(err.message === 'invalid_scope');
+          assert(err.errorCode === 'invalid_scope');
           done();
         });
       });
@@ -348,7 +365,7 @@ exports.testOauth = function(config) {
 
         oauthSpi.generateAuthorizationCode(tr, function(err, result) {
           assert(err);
-          assert(err.message === 'invalid_scope');
+          assert(err.errorCode === 'invalid_scope');
           done();
         });
       });
@@ -447,7 +464,7 @@ exports.testOauth = function(config) {
         oauthSpi.createTokenImplicitGrant(tr, function(err, result) {
           if (err) { console.error('%j', err); }
           assert(err);
-          assert(err.message === 'invalid_scope');
+          assert(err.errorCode === 'invalid_scope');
 
           done();
         });

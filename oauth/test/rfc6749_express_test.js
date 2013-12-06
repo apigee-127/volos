@@ -24,7 +24,7 @@
 "use strict";
 
 var express = require('./fixtures/expressserver.js');
-var remoteTest = require('./remotesharedtest.js');
+var remoteTest = require('./rfc6749_common.js');
 
 describe('Express', function () {
 

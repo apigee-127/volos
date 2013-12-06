@@ -108,7 +108,7 @@ OAuthArgo.prototype.authorize = function(env, next) {
         }
         makeError(err, env);
       } else {
-        env.response.statusCode = 301;
+        env.response.statusCode = 302;
         env.response.setHeader('Location', result);
       }
       env._oauthAuthenticated = true;

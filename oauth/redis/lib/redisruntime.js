@@ -50,6 +50,8 @@ var crypto = require('crypto');
 var redis = require("redis");
 var OAuthCommon = require('volos-oauth-common');
 var Management = require('volos-management-redis');
+var Url = require('url');
+var _ = require('underscore');
 
 var debug;
 var debugEnabled;
@@ -97,7 +99,12 @@ var RedisRuntimeSpi = function(mgmt, config) {
  */
 RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
   options = extend(options, { type: 'client_credentials' });
-  createAndStoreToken(this, options, cb);
+  var self = this;
+  this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
+    if (err) { return cb(err); }
+    if (!reply) { return cb(errorWithCode('invalid_client')); }
+    createAndStoreToken(self, options, cb);
+  });
 };
 
 /*
@@ -139,7 +146,7 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
 /*
  * Generate a redirect response for the authorization_code grant type. Parameters:
  *   clientId: required
- *   redirectUri: required and must match what was deployed along with the app
+ *   redirectUri: optional - if present, must match what was deployed along with the app
  *   scope: optional
  *   state: optional but certainly recommended
  *
@@ -148,16 +155,21 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
   var self = this;
-  var redirectUri = options.redirectUri;
-  self.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, reply) {
+  self.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, redirectUri) {
     if (err) { return cb(err); }
-    if (!reply) { return cb(invalidRequestError()); }
-    createAndStoreAuthCode(self, options.clientId, options.scope, redirectUri, function(err, reply) {
-      if (err) { return cb(err); }
-      var qs = { code: reply };
+    // past this point, errors must be part of the redirect uri
+    createAndStoreAuthCode(self, options.clientId, options.scope, redirectUri, function(err, hash) {
+      var qs = {};
+      if (err) {
+        qs.error = err.errorCode;
+      } else {
+        qs.code = hash.code;
+        if (hash.scope) { qs.scope = hash.scope; }
+      }
       if (options.state) { qs.state = options.state; }
-      if (options.scope) { qs.scope = options.scope; }
-      var uri = redirectUri + '?' + querystring.stringify(qs);
+      var url = Url.parse(redirectUri, true);
+      url.query = extend(url.query, qs);
+      var uri = Url.format(url);
       return cb(null, uri);
     });
   });
@@ -166,7 +178,7 @@ RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
 /*
  * Generate a redirect response for the implicit grant type. Parameters:
  *   clientId: required
- *   redirectUri: required and must match what was deployed along with the app
+ *   redirectUri: optional - if present, must match what was deployed along with the app
  *   scope: optional
  *   state: optional but certainly recommended
  *
@@ -174,16 +186,24 @@ RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
   var self = this;
-  this.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, reply) {
+  this.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, redirectUri) {
     if (err) { return cb(err); }
-    if (!reply) { return cb(invalidRequestError()); }
+    // past this point, errors must be part of the redirect uri
     options = extend(options, { type: 'authorization_code', refresh: false});
     createAndStoreToken(self, options, function(err, reply) {
-      if (err) { return cb(err); }
-      var qs = { access_token: reply.access_token, token_type: BEARER_TYPE, expires_in: reply.expires_in };
-      if (options.scope) { qs.scope = options.scope; }
+      var qs = {};
+      if (err) {
+        qs.error = err.errorCode;
+      } else {
+        qs = { access_token: reply.access_token, token_type: BEARER_TYPE, expires_in: reply.expires_in };
+        if (reply.scope) { qs.scope = reply.scope; }
+      }
       if (options.state) { qs.state = options.state; }
-      var uri = options.redirectUri + '#' + querystring.stringify(qs);
+      var url = Url.parse(redirectUri, true);
+      url.query = extend(url.query, qs);
+      url.hash = querystring.stringify(url.query);
+      url.query = null;
+      var uri = Url.format(url);
       return cb(null, uri);
     });
   });
@@ -198,7 +218,6 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
-
   self.client.get(_key(options.refreshToken), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
@@ -206,7 +225,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
       if (reply.token_type === REFRESH_TYPE) {
         createAndStoreToken(self, options, function(err, reply) {
           if (err) { return cb(err); }
-          self.client.del(_key(options.refreshToken), redis.print);
+          self.client.del(_key(options.refreshToken)); // note: async, ignores reply
           return cb(null, reply);
         });
       }
@@ -251,17 +270,17 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
 
 // utility functions
 
-function createAndStoreAuthCode(self, clientId, scope, redirectUri, cb) {
+function createAndStoreAuthCode(self, clientId, requestedScope, redirectUri, cb) {
   self.mgmt.getAppForClientId(clientId, function(err, app) {
     if (err) { return cb(err); }
 
-    parseAndValidateScope(scope, app, function(err, scope) {
+    determineGrantedScope(requestedScope, app, function(err, grantedScope) {
       if (err) { return cb(err); }
 
       var code = genSecureToken();
-      var hash = JSON.stringify({ redirectUri: redirectUri, scope: scope });
+      var hash = JSON.stringify({ redirectUri: redirectUri, scope: grantedScope });
       self.client.setex(_key(clientId, code), AUTH_TTL, hash, function(err, reply) {
-        return cb(err, code);
+        return cb(err, { code: code, scope: grantedScope });
       });
     });
   });
@@ -271,7 +290,7 @@ function consumeAuthCode(client, clientId, code, cb) {
   client.get(_key(clientId, code), function(err, hash) {
     if (err) { return cb(err); }
     if (!hash) { return cb(invalidRequestError()); }
-    client.del(_key(code), function(err, reply) {
+    client.del(_key(clientId, code), function(err, reply) {
       return cb(err, JSON.parse(hash));
     });
   });
@@ -279,7 +298,7 @@ function consumeAuthCode(client, clientId, code, cb) {
 
 /* options: {
  *   clientId: required
- *   clientSecret: required
+ *   clientSecret: required, unless type === 'authorization_code' || type == 'password'
  *   scope: optional
  *   tokenLifetime: lifetime in milliseconds, optional
  *   type: required
@@ -287,16 +306,15 @@ function consumeAuthCode(client, clientId, code, cb) {
  *   }
  */
 function createAndStoreToken(self, options, cb) {
-  self.mgmt.getAppForCredentials(options.clientId, options.clientSecret, function(err, app) {
-    if (err) { return cb(err); }
-    if (!app) { return cb(invalidRequestError()); }
+  getAppForOptions(self, options, function(err, app) {
+    if (err || !app) { return cb(errorWithCode('access_denied')); }
 
-    parseAndValidateScope(options.scope, app, function(err, scope) {
+    determineGrantedScope(options.scope, app, function(err, grantedScope) {
       if (err) { return cb(err); }
 
       var ttl = options.tokenLifetime ? (options.tokenLifetime / 1000) : DEFAULT_TOKEN_LIFETIME;
       var token = genSecureToken();
-      storeToken(self.client, token, options.type, options.clientId, ttl, scope, function(err, reply) {
+      storeToken(self.client, token, options.type, options.clientId, ttl, grantedScope, function(err, reply) {
         var tokenResponse = reply;
         if (err) { return cb(err); }
         if (options.refresh) {
@@ -314,20 +332,30 @@ function createAndStoreToken(self, options, cb) {
   });
 }
 
-function parseAndValidateScope(scope, app, cb) {
-  if (!scope) { return cb(null, app.defaultScope); }
-  var scopes = scope.split(' ');
-  // check known scopes (slow, true: but simple, and we shouldn't have to check many)
-  for (var i = 0; i < scopes.length; i++) {
-    if (app.validScopes.indexOf(scopes[i]) < 0) {
-      return cb(new Error('invalid_scope'));
-    }
+function getAppForOptions(self, options, cb) {
+  if (!options.clientSecret && (options.type === 'authorization_code' || options.type === 'password')) {
+    self.mgmt.getAppForClientId(options.clientId, cb);
+  } else {
+    self.mgmt.getAppForCredentials(options.clientId, options.clientSecret, cb);
   }
-  return cb(null, scope);
+}
+
+// given a requested scope, returns granted scopes
+// grants what it can, ignores what it can't. but if no default and no match, fails.
+function determineGrantedScope(requestedScope, app, cb) {
+  if (!requestedScope) { return cb(null, app.defaultScope); }
+  if (!app.scopes) { return cb(null, null); }
+  var requestedScopes = requestedScope.split(' ');
+  var grantedScopes = _.intersection(requestedScopes, app.scopes);
+  if (grantedScopes.length === 0) {
+    if (!app.defaultScope) { return cb(errorWithCode('invalid_scope')); }
+    grantedScopes.push(app.defaultScope);
+  }
+  return cb(null, grantedScopes.join(' '));
 }
 
 function invalidRequestError() {
-  return new Error('invalid_request');
+  return errorWithCode('invalid_request');
 }
 
 function genSecureToken() {
@@ -360,4 +388,10 @@ function _key() {
   var argsArray = [].slice.apply(arguments);
   argsArray.unshift(KEY_PREFIX);
   return argsArray.join(':');
+}
+
+function errorWithCode(code) {
+  var err = new Error(code);
+  err.errorCode = code;
+  return err;
 }

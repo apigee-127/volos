@@ -24,7 +24,7 @@
 "use strict";
 
 var argo = require('./fixtures/argoserver.js');
-var remoteTest = require('./remotesharedtest.js');
+var remoteTest = require('./rfc6749_common.js');
 
 describe('Argo', function () {
 
