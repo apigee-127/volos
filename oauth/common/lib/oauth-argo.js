@@ -108,7 +108,7 @@ OAuthArgo.prototype.authorize = function(env, next) {
         }
         makeError(err, env);
       } else {
-        env.response.statusCode = 301;
+        env.response.statusCode = 302;
         env.response.setHeader('Location', result);
       }
       env._oauthAuthenticated = true;
@@ -152,6 +152,8 @@ OAuthArgo.prototype.accessToken = function(env, next) {
           }
           makeError(err, env);
         } else {
+          env.response.setHeader('Cache-Control', 'no-store');
+          env.response.setHeader('Pragma', 'no-cache');
           env.response.body = result;
         }
         env._oauthAuthenticated = true;
@@ -215,6 +217,8 @@ OAuthArgo.prototype.refreshToken = function(env, next) {
           }
           makeError(err, env);
         } else {
+          env.response.setHeader('Cache-Control', 'no-store');
+          env.response.setHeader('Pragma', 'no-cache');
           env.response.body = result;
         }
         env._oauthAuthenticated = true;
@@ -229,9 +233,9 @@ function makeError(err, env) {
     error_description: err.message
   };
   if (err.code) {
-    env.response.body.error_code = err.code;
+    env.response.body.error = err.code;
   } else {
-    env.response.body.error_code = 'unknown_error';
+    env.response.body.error = 'server_error';
   }
   env.response.statusCode = err.statusCode;
 }

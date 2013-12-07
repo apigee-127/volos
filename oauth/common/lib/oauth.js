@@ -23,7 +23,10 @@
  ****************************************************************************/
 "use strict";
 
+var _ = require('underscore');
 var querystring = require('querystring');
+
+var TOKEN_TYPE = 'bearer';
 
 var debug;
 var debugEnabled;
@@ -124,9 +127,12 @@ OAuth.prototype.authorize = function(queryString, cb) {
 };
 
 function doAuthorize(self, grantType, q, cb) {
+  var addProps = {};
+  if (q.state) { addProps.state = q.state; }
   if (!q.client_id) {
-    cb(makeError('invalid_request', 'client_id is required'));
+    return cb(makeError('invalid_request', 'client_id is required', addProps));
   }
+
   var rq = {
     clientId: q.client_id
   };
@@ -143,7 +149,6 @@ function doAuthorize(self, grantType, q, cb) {
   if (grantType === 'code') {
     self.spi.generateAuthorizationCode(rq, function(err, result) {
       if (err) {
-        // TODO more error codes
         cb(makeError('invalid_request', err.message));
       } else {
         cb(undefined, result);
@@ -152,7 +157,6 @@ function doAuthorize(self, grantType, q, cb) {
   } else if (grantType === 'token') {
     self.spi.createTokenImplicitGrant(rq, function(err, result) {
       if (err) {
-        // TODO more error codes
         cb(makeError('invalid_request', err.message));
       } else {
         cb(undefined, result);
@@ -191,20 +195,21 @@ OAuth.prototype.generateToken = function(body, options, cb) {
 
   // Reject anything that does not match the valid grant types specified when the object was created
   if (!parsedBody.grant_type) {
-    cb(makeError('invalid_request', 'grant_type parameter is required'));
-    return;
+    return cb(makeError('invalid_request', 'grant_type parameter is required'));
   }
   if (!isSupportedGrantType(this, parsedBody.grant_type)) {
-    cb(makeError('unsupported_grant_type', 'Unsupported grant type'));
-    return;
+    return cb(makeError('unsupported_grant_type', 'Unsupported grant type'));
   }
 
   options = applyTokenDefaults(this, options);
 
   var idSecret = getIdAndSecret(options.authorizeHeader, parsedBody);
   if (!idSecret) {
-    cb(makeError('invalid_client', 'Client id and secret must be specified'));
-    return;
+    if ((parsedBody.grant_type === 'authorization_code' || parsedBody.grant_type === 'password') && parsedBody.client_id) {
+      idSecret = [parsedBody.client_id, null];
+    } else {
+      return cb(makeError('invalid_client', 'Client id and secret must be specified'));
+    }
   }
 
   if (GrantTypeFunctions[parsedBody.grant_type]) {
@@ -212,12 +217,9 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, idSecret[0], idSecret[1],
                                               options, function(err, result) {
         if (err) {
-          if (err.errorCode) { // use spi's errorCode if present
-            cb(makeError(err.errorCode, err.message));
-          } else {
-            cb(makeError('error', err.message));
-          }
+          cb(makeError(err));
         } else {
+          result.token_type = TOKEN_TYPE;
           cb(undefined, result);
         }
     });
@@ -283,7 +285,7 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
     return;
   }
   if (!self.passwordCheck(parsedBody.username, parsedBody.password)) {
-    cb(makeError('unauthorized', 'Invalid credentials'));
+    cb(makeError('invalid_client', 'Invalid credentials'));
     return;
   }
   gr.username = parsedBody.username;
@@ -360,8 +362,9 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
 
   this.spi.refreshToken(gr, function(err, result) {
     if (err) {
-      cb(makeError('error', err.message));
+      cb(makeError(err));
     } else {
+      result.token_type = TOKEN_TYPE;
       cb(undefined, result);
     }
   });
@@ -459,7 +462,15 @@ OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
 /*
  * Generate an Error. "code" must be set to a valid error code from section 5.2.
  */
-function makeError(code, message) {
+function makeError(code, message, errProps) {
+
+  if (code.statusCode) {
+    return code;
+  } else if (code.errorCode) { // use spi's errorCode
+    message = code.message;
+    code = code.errorCode;
+  }
+
   var err = new Error(message);
   err.code = code;
   switch(code) {
@@ -471,8 +482,14 @@ function makeError(code, message) {
     case "invalid_scope":
       err.statusCode = 400;
       break;
+    case "access_denied":
+      err.statusCode = 403;
+      break;
     default:
       err.statusCode = 500;
+  }
+  if (errProps) {
+    _.extend(err, errProps);
   }
   return err;
 }
@@ -513,6 +530,3 @@ function getIdAndSecret(authorizeHeader, parsedBody) {
   }
   return null;
 }
-
-// TODO middleware that uses functions to gather the appropriate stuff
-// can plug in to HTTP as well as Express and Argo

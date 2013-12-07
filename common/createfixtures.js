@@ -27,8 +27,16 @@
  * Create a developer and app so that we can have them for the rest of the tests.
  */
 
+var DEFAULT_SCOPE = 'scope1';
+var ROUTE_SCOPES = [
+  { path: '/dogs',
+    scopes: ['scope2']
+  }
+];
+
 var TestDeveloper='dyniss@example.org';
 var TestApp='ApigeenTestApp';
+var developerId;
 
 function Creator(management) {
   this.management = management;
@@ -50,13 +58,13 @@ function checkDeveloper(self, cb) {
         cb(err);
       }
     } else {
+      developerId = dev.id;
       checkApp(self, cb);
     }
   });
 }
 
 function createDeveloper(self, cb) {
-  console.log('Creating new developer %s', TestDeveloper);
   var dev = {
       firstName: 'Dyniss',
       lastName: 'Apigeen',
@@ -67,6 +75,7 @@ function createDeveloper(self, cb) {
     if (err) {
       cb(err);
     } else {
+      developerId = dev.id;
       checkApp(self, cb);
     }
   });
@@ -90,7 +99,10 @@ function createApp(self, cb) {
   console.log('Creating new app %s', TestApp);
   var app = {
     name: TestApp,
-    developerId: TestDeveloper
+    developerId: developerId,
+    callbackUrl: 'http://example.org',
+    defaultScope: DEFAULT_SCOPE,
+    routeScopes: ROUTE_SCOPES
   };
   self.management.createApp(app, function(err, app) {
     if (err) {

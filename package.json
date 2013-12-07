@@ -8,6 +8,8 @@
     "supertest" : "x.x.x",
     "redis" : "0.9.x",
     "node-uuid" : "x.x.x",
-    "longjohn" : "x.x.x"
+    "longjohn" : "x.x.x",
+    "should" : "x.x.x",
+    "underscore" : "x.x.x"
   }
 }

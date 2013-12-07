@@ -55,7 +55,7 @@ OAuthExpress.prototype.handleAuthorize = function() {
         }
         makeError(err, resp);
       } else {
-        resp.status(301);
+        resp.status(302);
         resp.set('Location', result);
         resp.send();
       }
@@ -77,6 +77,10 @@ OAuthExpress.prototype.handleAccessToken = function() {
             }
             makeError(err, resp);
           } else {
+            resp.set({
+              'Cache-Control': 'no-store',
+              'Pragma': 'no-cache'
+            });
             resp.json(result);
           }
         });
@@ -84,7 +88,7 @@ OAuthExpress.prototype.handleAccessToken = function() {
   };
 };
 
-OAuthExpress.prototype.authenticate = function() {
+OAuthExpress.prototype.authenticate = function(scopes) {
   var self = this;
   return function(req, resp, next) {
     debug('Express authenticate');
@@ -120,6 +124,10 @@ OAuthExpress.prototype.refreshToken = function() {
             }
             makeError(err, resp);
           } else {
+            resp.set({
+              'Cache-Control': 'no-store',
+              'Pragma': 'no-cache'
+            });
             resp.json(result);
           }
         });
@@ -169,10 +177,13 @@ function makeError(err, resp) {
   var rb = {
     error_description: err.message
   };
+  if (err.state) {
+    rb.state = err.state;
+  }
   if (err.code) {
-    rb.error_code = err.code;
+    rb.error = err.code;
   } else {
-    rb.error_code = 'unknown_error';
+    rb.error = 'server_error';
   }
   resp.json(err.statusCode, rb);
 }

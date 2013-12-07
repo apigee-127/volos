@@ -35,7 +35,7 @@
  *   firstName: (string)
  *   lastName: (string)
  *   status: (string)
- *   attributes: (object)
+ *   attributes: (hash)
  * }
  *
  * application: {
@@ -44,10 +44,15 @@
  *   status: (string)
  *   callbackUrl: (string)
  *   developerId: (string)
- *   attributes: (object)
- *   credentials: [(credentials object)],
- *   defaultScope: (string),  (if specified, must also be in validScopes list)
- *   validScopes: [(string)]
+ *   attributes: (hash)
+ *   credentials: [(credentials)],
+ *   defaultScope: (string) - optional - if exists, assigned when no scope is requested
+ *   routeScopes: [(routeScope)]
+ * }
+ *
+ * routeScope: {
+ *   path: regex
+ *   scopes: [(string)]
  * }
  *
  * credentials: {
@@ -73,6 +78,7 @@ var CRYPTO_BYTES = 256 / 8;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 var redis = require("redis");
+var _ = require('underscore');
 
 var debug;
 var debugEnabled;
@@ -147,17 +153,18 @@ function makeDeveloper(d) {
 // Operations on applications
 
 RedisManagementSpi.prototype.createApp = function(app, cb) {
-  // check scopes
-  if (!app.validScopes) { app.validScopes = []; }
-  if (app.defaultScope && app.validScopes.indexOf(app.defaultScope) < 0) {
-    return cb(new Error("invalid defaultScope"));
-  }
   app.uuid = uuid.v4();
-  var credentials = {
+
+  app.credentials = {
     key: genSecureToken(),
     secret: genSecureToken(),
     status: 'valid'
   };
+
+  var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
+  if (app.defaultScope) { validScopes.push(app.defaultScope); }
+  app.scopes = _.uniq(_.flatten(validScopes));
+
   var application = {
     id: app.uuid,
     uuid: app.uuid,
@@ -166,10 +173,12 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     developerId: app.developerId,
     callbackUrl: app.callbackUrl,
     attributes: app.attributes,
-    credentials: [credentials],
-    validScopes: app.validScopes,
-    defaultScope: app.defaultScope
+    credentials: [app.credentials],
+    defaultScope: app.defaultScope,
+    routeScopes: app.routeScopes,
+    scopes: app.scopes
   };
+
   var self = this;
   self.client.get(_key(app.developerId), function(err, reply) {
     if (err) { return cb(err); }
@@ -212,7 +221,10 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
 RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, cb) {
   this.getAppForClientId(clientId, function(err, reply) {
     if (err) { return cb(err); }
-    return cb(null, redirectUri !== reply.callbackUrl);
+    if (redirectUri && redirectUri !== reply.callbackUrl) { // todo: better comparison, ignore state, etc
+      return cb(new Error('callback url mismatch'));
+    }
+    return cb(null, redirectUri || reply.callbackUrl);
   });
 };
 
@@ -232,9 +244,14 @@ RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
   });
 };
 
+RedisManagementSpi.prototype.matchesScope = function(path, scope, cb) {
+  // todo
+};
+
 // utility functions
 
 function getWith404(client, key, cb) {
+  if (!key) { return cb(make404()); }
   client.get(_key(key), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
