@@ -24,16 +24,20 @@
 "use strict";
 
 var argo = require('argo');
-var config = require('../../../common/testconfig-apigee');
+var config = require('../../../common/testconfig-redis');
+//var config = require('../../../common/testconfig-apigee');
 var oauthRuntime = config.oauth;
 
 var port = 10011;
 
 var argo = argo();
 argo
+
   .get('/dogs', function(handle) {
     handle('request', function(env, next) {
-      env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+      oauthRuntime.argoMiddleware().authenticate(env, function() {
+        env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+      });
       next(env);
     });
   })

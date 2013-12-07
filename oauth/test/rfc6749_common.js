@@ -48,14 +48,22 @@ exports.verifyOauth = function(server) {
     request(server)
       .get('/dogs')
       .set('Authorization', 'Bearer ' + access_token)
-      .expect(200, done);
+      .end(function(err, res) {
+        if (err) { return done ? done(err) : err; }
+        res.status.should.eql(200);
+        if (done) { done(); }
+      });
   }
 
   // just ensure the checkAccessToken() method is valid
   it('access should fail without token', function(done) {
     request(server)
       .get('/dogs')
-      .expect(400, done);
+      .end(function(err, res) {
+        if (err) { return done ? done(err) : err; }
+        res.status.should.eql(400);
+        if (done) { done(); }
+      });
   });
 
   describe('OAuth 2.0 rfc6749', function() {
@@ -77,7 +85,11 @@ exports.verifyOauth = function(server) {
       request(server)
         .post('/accesstoken')
         .send(querystring.stringify({ hello: 'World'}))
-        .expect(400, done);
+        .end(function(err, res) {
+          if (err) { return done(err); }
+          res.status.should.eql(400);
+          done();
+        });
     });
 
 

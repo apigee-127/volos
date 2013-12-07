@@ -29,8 +29,14 @@ var url = require('url');
 var TEST_DEVELOPER_NAME = 'joe2@schmoe.io';
 var TEST_APP_NAME = 'APIDNA-Runtime-Test';
 var TEST_SCOPED_APP_NAME = 'APIDNA-Runtime-Test-Scoped';
+
 var DEFAULT_SCOPE = null;
-var OTHER_SCOPE = 'other';
+var OTHER_SCOPE = 'scope2';
+var ROUTE_SCOPES = [
+  { path: '/dogs',
+    scopes: ['scope2']
+  }
+];
 
 var DEFAULT_TOKEN_LIFETIME = 3600000;
 var DEFAULT_REDIRECT_URL = 'http://example.org';
@@ -63,7 +69,9 @@ exports.testOauth = function(config) {
 
           console.log('Creating application %s for developer %s', TEST_APP_NAME, developer.id);
           mgmt.createApp({
-            name: TEST_APP_NAME, developerId: developer.id
+            name: TEST_APP_NAME,
+            callbackUrl: DEFAULT_REDIRECT_URL,
+            developerId: developer.id
           }, function(err, newApp) {
             if (err) { throw err; }
             console.log('Created app %s', newApp.id);
@@ -71,9 +79,10 @@ exports.testOauth = function(config) {
 
             mgmt.createApp({
               name: TEST_SCOPED_APP_NAME,
+              callbackUrl: DEFAULT_REDIRECT_URL,
               developerId: developer.id,
               defaultScope: DEFAULT_SCOPE,
-              routeScopes: { '/dogs': OTHER_SCOPE }
+              routeScopes: ROUTE_SCOPES
             }, function(err, newApp) {
               if (err) { throw err; }
               console.log('Created app %s', newApp.id);
@@ -131,7 +140,6 @@ exports.testOauth = function(config) {
           assert(result.access_token);
           assert(!result.refresh_token);
           assert(!result.scope);
-          assert.equal(result.token_type, 'client_credentials');
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
           // verify token
@@ -201,7 +209,6 @@ exports.testOauth = function(config) {
           console.log('New token: %j', result);
           assert(result.access_token);
           assert(!result.refresh_token);
-          assert.equal(result.token_type, 'client_credentials');
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
           assert(result.scope === DEFAULT_SCOPE);
           done();
@@ -228,7 +235,6 @@ exports.testOauth = function(config) {
           console.log('New token: %j', result);
           assert(result.access_token);
           assert(result.refresh_token);
-          assert.equal(result.token_type, 'password');
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
           // verify token
@@ -276,7 +282,6 @@ exports.testOauth = function(config) {
           console.log('New token: %j', result);
           assert(result.access_token);
           assert(result.refresh_token);
-          assert.equal(result.token_type, 'password');
           assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
           assert(result.scope === DEFAULT_SCOPE);
           done();
@@ -341,7 +346,6 @@ exports.testOauth = function(config) {
             console.log('New token: %j', result);
             assert(result.access_token);
             assert(result.refresh_token);
-            assert.equal(result.token_type, 'authorization_code');
             assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
 
             // verify token
@@ -359,13 +363,12 @@ exports.testOauth = function(config) {
         var tr = {
           clientId: app.credentials[0].key,
           redirectUri: DEFAULT_REDIRECT_URL,
-          scope: 'foo'
+          scope: 'invalid_scope'
         };
         console.log('Create authorization code: %j', tr);
 
         oauthSpi.generateAuthorizationCode(tr, function(err, result) {
-          assert(err);
-          assert(err.errorCode === 'invalid_scope');
+          assert(result.indexOf('error=invalid_scope') > 0);
           done();
         });
       });
@@ -403,7 +406,6 @@ exports.testOauth = function(config) {
             console.log('New token: %j', result);
             assert(result.access_token);
             assert(result.refresh_token);
-            assert.equal(result.token_type, 'authorization_code');
             assert(result.expires_in <= (DEFAULT_TOKEN_LIFETIME / 1000));
             assert(result.scope === OTHER_SCOPE);
 
@@ -463,8 +465,7 @@ exports.testOauth = function(config) {
 
         oauthSpi.createTokenImplicitGrant(tr, function(err, result) {
           if (err) { console.error('%j', err); }
-          assert(err);
-          assert(err.errorCode === 'invalid_scope');
+          assert(result.indexOf('error=invalid_scope') > 0);
 
           done();
         });
