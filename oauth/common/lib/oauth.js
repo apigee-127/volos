@@ -26,6 +26,8 @@
 var _ = require('underscore');
 var querystring = require('querystring');
 
+var TOKEN_TYPE = 'bearer';
+
 var debug;
 var debugEnabled;
 if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
@@ -215,14 +217,9 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, idSecret[0], idSecret[1],
                                               options, function(err, result) {
         if (err) {
-          if (err.statusCode) {
-            cb(err);
-          } else if (err.errorCode) { // use spi's errorCode
-            cb(makeError(err.errorCode, err.message));
-          } else {
-            cb(makeError('error', err.message));
-          }
+          cb(makeError(err));
         } else {
+          result.token_type = TOKEN_TYPE;
           cb(undefined, result);
         }
     });
@@ -365,8 +362,9 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
 
   this.spi.refreshToken(gr, function(err, result) {
     if (err) {
-      cb(makeError('error', err.message));
+      cb(makeError(err));
     } else {
+      result.token_type = TOKEN_TYPE;
       cb(undefined, result);
     }
   });
@@ -465,6 +463,14 @@ OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
  * Generate an Error. "code" must be set to a valid error code from section 5.2.
  */
 function makeError(code, message, errProps) {
+
+  if (code.statusCode) {
+    return code;
+  } else if (code.errorCode) { // use spi's errorCode
+    message = code.message;
+    code = code.errorCode;
+  }
+
   var err = new Error(message);
   err.code = code;
   switch(code) {

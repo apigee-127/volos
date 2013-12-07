@@ -36,6 +36,8 @@ var creator = config.fixtureCreator;
 var validUserCreds = config.validUserCreds;
 var defaultScope;
 var scopes;
+var client_id;
+var client_secret;
 
 var REDIRECT_URL = 'http://example.org';
 var STATE = 'xyz';
@@ -59,14 +61,10 @@ exports.verifyOauth = function(server) {
   describe('OAuth 2.0 rfc6749', function() {
 
     this.timeout(10000);
-    var app;
-    var client_id;
-    var client_secret;
 
     before(function(done) {
-      creator.createFixtures(function(err, application) {
+      creator.createFixtures(function(err, app) {
         if (err) { console.error('Error creating fixtures: %j', err); }
-        app = application;
         client_id = app.credentials[0].key;
         client_secret = app.credentials[0].secret;
         defaultScope = app.defaultScope;
@@ -216,8 +214,6 @@ exports.verifyOauth = function(server) {
             });
         });
 
-        it('cannot use a token from a different client_id'); // todo
-
         it('cannot use the Authorization Code more than once', function(done) {
           var q = {
             grant_type: 'authorization_code',
@@ -243,7 +239,7 @@ exports.verifyOauth = function(server) {
             });
         });
 
-        describe('requires identical redirect_uri as Auth Code request', function() {
+        describe('authorization code is bound to redirection URI', function() {
 
           it('has no redirect uri', function(done) {
             var q = {
@@ -278,6 +274,8 @@ exports.verifyOauth = function(server) {
               });
           });
         });
+
+        it('authorization code is bound to the client identifier'); // todo: need another client_id to try against
 
         describe('requires authentication', function(done) {
 
@@ -512,12 +510,13 @@ exports.verifyOauth = function(server) {
       });
 
       // also proves we can use client_id instead of basic authentication
-      perform41and51CommonTests({
-        grant_type: 'password',
-        username: validUserCreds.username,
-        password: validUserCreds.password,
-        client_id: client_id,
-        state: 'xyz'
+      perform41and51CommonTests('/accesstoken', function() {
+        return {
+          grant_type: 'password',
+          username: validUserCreds.username,
+          password: validUserCreds.password,
+          client_id: client_id
+        };
       });
 
     }); // 4.3
@@ -527,8 +526,7 @@ exports.verifyOauth = function(server) {
 
       it('can obtain a valid token using basic authentication', function(done) {
         var q = {
-          grant_type: 'client_credentials',
-          state: 'xyz'
+          grant_type: 'client_credentials'
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -556,24 +554,115 @@ exports.verifyOauth = function(server) {
       });
 
       // also proves we can use client_id/client_secret in body instead of header
-      perform41and51CommonTests({
-        grant_type: 'client_credentials',
-        client_id: client_id,
-        client_secret: client_secret,
-        state: 'xyz'
+      perform41and51CommonTests('/accesstoken', function() {
+        return {
+          grant_type: 'client_credentials',
+          client_id: client_id,
+          client_secret: client_secret
+        };
+      });
+
+    }); // 4.4
+
+
+    describe('6. Refreshing an Access Token', function() {
+
+      var refreshToken, resp, selectedScope;
+
+      before(function(done) {
+
+        selectedScope = _.find(scopes, function(ea) { return ea !== defaultScope; });
+        if (!selectedScope) { return console.log('cannot determine a non-default scope to test'); }
+        var q = {
+          grant_type: 'password',
+          username: validUserCreds.username,
+          password: validUserCreds.password,
+          client_id: client_id,
+          scope: selectedScope
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .send(qs)
+          .end(function(err, res) {
+            if (err) { return done(err); }
+            res.status.should.eql(200);
+            res.body.should.have.property('refresh_token');
+            refreshToken = res.body.refresh_token;
+            resp = res;
+            done();
+          });
+      });
+
+      it('must not include any scope not originally granted by the resource owner', function(done) {
+        if (!refreshToken) { return done(); }
+
+        var originalScope = resp.body.scope;
+        if (!originalScope) {
+          // technically, the server could opt to not include the scope if granted as requested
+          console.log('an explicit scope is not included, cannot test');
+          return done();
+        }
+
+        var originalScopes = originalScope.split(' ');
+        originalScopes.should.include(selectedScope);
+
+        request(server)
+          .post('/refresh')
+          .auth(client_id, client_secret)
+          .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+          .end(function(err, res) {
+
+            resp.body.should.have.property('scope');
+            var refreshScopes = resp.body.scope.split(' ');
+
+            _.difference(refreshScopes, originalScopes).should.be.empty;
+            done();
+          });
+      });
+
+      it('refresh token is bound to the client to which it was issued'); // todo: need another client_id to test this
+
+      it('must authenticate client', function(done) {
+        request(server)
+          .post('/refresh')
+          .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+          .end(function(err, res) {
+            verify52ErrorResponse(err, res, done, 'invalid_client');
+          });
+      });
+
+      it('must validate the refresh token', function(done) {
+        request(server)
+          .post('/refresh')
+          .auth(client_id, client_secret)
+          .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: 'invalid token' }))
+          .end(function(err, res) {
+            verify52ErrorResponse(err, res, done);
+          });
+      });
+
+      // also proves we can use client_id/client_secret in body instead of header
+      perform41and51CommonTests('/refresh', function() {
+        return {
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: client_id,
+          client_secret: client_secret
+        };
       });
 
     }); // 4.4
 
 
     // common testing for 4.3 & 4.4
-    function perform41and51CommonTests(baseBody) {
+    function perform41and51CommonTests(endpoint, getBaseBody) {
 
       it('can obtain a valid token', function(done) {
+        var baseBody = getBaseBody();
         var qs = querystring.stringify(baseBody);
         request(server)
-          .post('/accesstoken')
-          .auth(client_id, client_secret)
+          .post(endpoint)
           .send(qs)
           .end(function(err, res) {
             verify51SuccessfulResponse(err, res, done);
@@ -589,14 +678,14 @@ exports.verifyOauth = function(server) {
         it('temporarily_unavailable');
 
         it('invalid_scope / default scope', function(done) {
+          var baseBody = getBaseBody();
           var body =  _.extend(baseBody, {
             scope: 'invalidScope'
           });
           var bodyString = querystring.stringify(body);
 
           request(server)
-            .post('/accesstoken')
-            .auth(client_id, client_secret)
+            .post(endpoint)
             .send(bodyString)
             .end(function(err, res) {
               // spec gives the option of invalid_token or returning some other scope...

@@ -124,6 +124,10 @@ OAuthExpress.prototype.refreshToken = function() {
             }
             makeError(err, resp);
           } else {
+            resp.set({
+              'Cache-Control': 'no-store',
+              'Pragma': 'no-cache'
+            });
             resp.json(result);
           }
         });

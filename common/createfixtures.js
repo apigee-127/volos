@@ -29,7 +29,9 @@
 
 var DEFAULT_SCOPE = 'scope1';
 var ROUTE_SCOPES = [
-  { '/dogs': 'scope2' }
+  { path: '/dogs',
+    scopes: ['scope2']
+  }
 ];
 
 var TestDeveloper='dyniss@example.org';

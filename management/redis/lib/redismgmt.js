@@ -161,7 +161,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     status: 'valid'
   };
 
-  var validScopes = _.map(app.routeScopes, function(routeScope) { routeScope.scopes; });
+  var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
   app.scopes = _.uniq(_.flatten(validScopes));
 
