@@ -23,8 +23,7 @@
  ****************************************************************************/
 "use strict";
 
-//var config = require('../../common/testconfig-apigee');
-var config = require('../../common/testconfig-redis');
+var config = require('../../common/testconfig');
 
 var should = require('should');
 var Url = require('url');

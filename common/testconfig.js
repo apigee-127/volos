@@ -21,29 +21,12 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
-var express = require('express');
+/**
+ * Used by api-level tests: require an appropriate implementation configuration below.
+ * (Note: Be sure to copy and edit the appropriate config sample file to be included.)
+ */
 
-var config = require('../../../common/testconfig');
-var oauthRuntime = config.oauth;
-
-var app = express();
-
-app.get('/authorize', oauthRuntime.expressMiddleware().handleAuthorize());
-app.post('/accesstoken', oauthRuntime.expressMiddleware().handleAccessToken());
-app.post('/invalidate', oauthRuntime.expressMiddleware().invalidateToken());
-app.post('/refresh', oauthRuntime.expressMiddleware().refreshToken());
-app.use(oauthRuntime.expressMiddleware().authenticate());
-
-app.get('/dogs',
-  oauthRuntime.expressMiddleware().authenticate(),
-  function(req, resp) {
-  resp.json(['John', 'Paul', 'George', 'Ringo']);
-});
-
-app.get('/ok', function(req, resp) {
-  resp.send(200, 'ok');
-});
-
-module.exports = app;
+require('./testconfig-redis');
+//require('./testconfig-apigee');

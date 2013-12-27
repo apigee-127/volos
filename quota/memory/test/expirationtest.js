@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-redis');
+var config = require('../../../common/testconfig');
 var assert = require('assert');
 
 // clone & extend hash

@@ -24,8 +24,7 @@
 "use strict";
 
 var argo = require('argo');
-var config = require('../../../common/testconfig-redis');
-//var config = require('../../../common/testconfig-apigee');
+var config = require('../../../common/testconfig');
 var oauthRuntime = config.oauth;
 
 var port = 10011;

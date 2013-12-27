@@ -27,7 +27,7 @@ var request = require('supertest');
 var querystring = require('querystring');
 var server = require('./fixtures/expressserver.js');
 
-var config = require('../../common/testconfig-apigee.js');
+var config = require('../../common/testconfig');
 var creator = config.fixtureCreator;
 
 describe('Api', function() {
