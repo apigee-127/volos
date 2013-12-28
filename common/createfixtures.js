@@ -34,85 +34,94 @@ var ROUTE_SCOPES = [
   }
 ];
 
-var TestDeveloper='dyniss@example.org';
-var TestApp='ApigeenTestApp';
-var developerId;
+var DEV_1 = {
+  firstName: 'Dyniss',
+  lastName: 'Apigeen',
+  email: 'dyniss@example.org',
+  userName: 'dyniss'
+};
+
+var APP_1 = {
+  name: 'ApigeenTestApp',
+  developerId: DEV_1.email,
+  callbackUrl: 'http://example.org',
+  defaultScope: DEFAULT_SCOPE,
+  routeScopes: ROUTE_SCOPES
+};
+
+var DEV_2 = {
+  firstName: 'Dyniss2',
+  lastName: 'Apigeen2',
+  email: 'dyniss2@example.org',
+  userName: 'dyniss2'
+};
+
+var APP_2 = {
+  name: 'ApigeenTestApp2',
+  developerId: DEV_2.email,
+  callbackUrl: 'http://example.org',
+  defaultScope: DEFAULT_SCOPE,
+  routeScopes: ROUTE_SCOPES
+};
+
 
 function Creator(management) {
   this.management = management;
 }
-Creator.TestDeveloper = TestDeveloper;
-Creator.TestApp = TestApp;
 module.exports = Creator;
 
 Creator.prototype.createFixtures = function(cb) {
-  checkDeveloper(this, cb);
+  var self = this;
+  checkDeveloper(self, DEV_1, APP_1, function(err, app1) {
+    if (err) { return cb(err); }
+    checkDeveloper(self, DEV_2, APP_2, function(err, app2) {
+      if (err) { return cb(err); }
+      cb(undefined, [app1, app2]);
+    });
+  });
 };
 
-function checkDeveloper(self, cb) {
-  self.management.getDeveloper(TestDeveloper, function(err, dev) {
+function checkDeveloper(self, dev, app, cb) {
+  self.management.getDeveloper(dev.email, function(err, devRet) {
     if (err) {
       if (err.statusCode === 404) {
-        createDeveloper(self, cb);
+        createDeveloper(self, dev, app, cb);
       } else {
         cb(err);
       }
     } else {
-      developerId = dev.id;
-      checkApp(self, cb);
+      checkApp(self, devRet, app, cb);
     }
   });
 }
 
-function createDeveloper(self, cb) {
-  var dev = {
-      firstName: 'Dyniss',
-      lastName: 'Apigeen',
-      email: 'dyniss@example.org',
-      userName: 'dyniss'
-    };
+function createDeveloper(self, dev, app, cb) {
+  console.log('Creating new dev %s', JSON.stringify(dev));
   self.management.createDeveloper(dev, function(err, dev) {
     if (err) {
       cb(err);
     } else {
-      developerId = dev.id;
-      checkApp(self, cb);
+      checkApp(self, dev, app, cb);
     }
   });
 }
 
-function checkApp(self, cb) {
-  self.management.getDeveloperApp(TestDeveloper, TestApp, function(err, app) {
+function checkApp(self, dev, app, cb) {
+  app.developerId = dev.id;
+  self.management.getDeveloperApp(dev.id, app.name, function(err, appRet) {
     if (err) {
       if (err.statusCode === 404) {
-        createApp(self, cb);
+        createApp(self, app, cb);
       } else {
         cb(err);
       }
     } else {
-      returnApp(cb, app);
+      cb(undefined, appRet);
     }
   });
 }
 
-function createApp(self, cb) {
-  console.log('Creating new app %s', TestApp);
-  var app = {
-    name: TestApp,
-    developerId: developerId,
-    callbackUrl: 'http://example.org',
-    defaultScope: DEFAULT_SCOPE,
-    routeScopes: ROUTE_SCOPES
-  };
-  self.management.createApp(app, function(err, app) {
-    if (err) {
-      cb(err);
-    } else {
-      returnApp(cb, app);
-    }
-  });
-}
-
-function returnApp(cb, app) {
-  cb(undefined, app);
+function createApp(self, app, cb) {
+  console.log('Creating new app %s', JSON.stringify(app));
+  self.management.createApp(app, cb);
 }

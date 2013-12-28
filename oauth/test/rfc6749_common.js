@@ -31,6 +31,7 @@ var request = require('supertest');
 var querystring = require('querystring');
 var _ = require('underscore');
 
+var apps;
 var creator = config.fixtureCreator;
 var validUserCreds = config.validUserCreds;
 var defaultScope;
@@ -70,12 +71,13 @@ exports.verifyOauth = function(server) {
     this.timeout(10000);
 
     before(function(done) {
-      creator.createFixtures(function(err, app) {
-        if (err) { console.error('Error creating fixtures: %j', err); }
-        client_id = app.credentials[0].key;
-        client_secret = app.credentials[0].secret;
-        defaultScope = app.defaultScope;
-        scopes = app.scopes;
+      creator.createFixtures(function(err, reply) {
+        if (err) { return done(err); }
+        apps = reply;
+        client_id = apps[0].credentials[0].key;
+        client_secret = apps[0].credentials[0].secret;
+        defaultScope = apps[0].defaultScope;
+        scopes = apps[0].scopes;
         done();
       });
     });
@@ -286,7 +288,23 @@ exports.verifyOauth = function(server) {
           });
         });
 
-        it('authorization code is bound to the client identifier'); // todo: need another client_id to try against
+        it('authorization code is bound to the client identifier', function(done) {
+          var app2_client_id = apps[1].credentials[0].key;
+          var app2_secret = apps[1].credentials[0].secret;
+          var q = {
+            grant_type: 'authorization_code',
+            code: code,
+            state: STATE
+          };
+          var qs = querystring.stringify(q);
+          request(server)
+            .post('/accesstoken')
+            .auth(app2_client_id, app2_secret)
+            .send(qs)
+            .end(function(err, res) {
+              verify52ErrorResponse(err, res, done);
+            });
+        });
 
         describe('requires authentication', function(done) {
 
@@ -632,7 +650,17 @@ exports.verifyOauth = function(server) {
           });
       });
 
-      it('refresh token is bound to the client to which it was issued'); // todo: need another client_id to test this
+      it('refresh token is bound to the client to which it was issued', function(done) {
+        var app2_client_id = apps[1].credentials[0].key;
+        var app2_secret = apps[1].credentials[0].secret;
+        request(server)
+          .post('/refresh')
+          .auth(app2_client_id, app2_secret)
+          .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+          .end(function(err, res) {
+            verify52ErrorResponse(err, res, done);
+          });
+      });
 
       it('must authenticate client', function(done) {
         request(server)

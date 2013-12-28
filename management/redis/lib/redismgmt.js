@@ -182,6 +182,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
   var self = this;
   self.client.get(_key(app.developerId), function(err, reply) {
     if (err) { return cb(err); }
+    if (!reply) { return cb(new Error('developer ' + app.developerId + ' not found.')); }
     var developer = JSON.parse(reply);
     saveApplication(self.client, application, developer, function(err, reply) {
       if (err) { return cb(err); }
@@ -242,10 +243,6 @@ RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
     if (err) { return cb(err); }
     getWith404(self.client, reply, cb);
   });
-};
-
-RedisManagementSpi.prototype.matchesScope = function(path, scope, cb) {
-  // todo
 };
 
 // utility functions

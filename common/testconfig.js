@@ -28,5 +28,5 @@
  * (Note: Be sure to copy and edit the appropriate config sample file to be included.)
  */
 
-require('./testconfig-redis');
-//require('./testconfig-apigee');
+module.exports = require('./testconfig-redis');
+//module.exports = require('./testconfig-apigee');
