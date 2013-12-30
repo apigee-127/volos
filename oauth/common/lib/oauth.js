@@ -430,7 +430,7 @@ OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, cb) {
   this.spi.verifyToken(hdr[1], verb, path,
     function(err, result) {
       if (err) {
-        cb(makeError('invalid_token', err.message));
+        cb(makeError('invalid_grant', err.message));
       } else {
         cb(undefined, result);
       }
@@ -452,7 +452,7 @@ OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
   this.spi.verifyApiKey(apiKey, verb, path,
     function(err, result) {
       if (err) {
-        cb(makeError('invalid_token', err.message));
+        cb(makeError('invalid_grant', err.message));
       } else {
         cb(undefined, result);
       }

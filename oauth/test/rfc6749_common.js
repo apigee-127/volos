@@ -55,6 +55,19 @@ exports.verifyOauth = function(server) {
       });
   }
 
+  function verifyAccessTokenExpires(access_token, exp, done) {
+    setTimeout(function() {
+      request(server)
+        .get('/dogs')
+        .set('Authorization', 'Bearer ' + access_token)
+        .end(function(err, res) {
+          if (err) { return done ? done(err) : err; }
+          res.status.should.eql(400);
+          if (done) { done(); }
+        });
+    }, exp);
+  }
+
   // just ensure the checkAccessToken() method is valid
   it('access should fail without token', function(done) {
     request(server)
@@ -207,6 +220,24 @@ exports.verifyOauth = function(server) {
             .send(qs)
             .end(function(err, res) {
               verify51SuccessfulResponse(err, res, done);
+            });
+        });
+
+        it('issued token must fail after expiration', function(done) {
+          var q = {
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: REDIRECT_URL,
+            state: STATE
+          };
+          var qs = querystring.stringify(q);
+          request(server)
+            .post('/accesstoken')
+            .auth(client_id, client_secret)
+            .send(qs)
+            .end(function(err, res) {
+              verify51SuccessfulResponse(err, res);
+              verifyAccessTokenExpires(res.body.access_token, config.config.tokenLifetime, done);
             });
         });
 
@@ -383,6 +414,24 @@ exports.verifyOauth = function(server) {
           });
       });
 
+      it('must fail after expiration', function(done) {
+        var q = {
+          response_type: 'token',
+          client_id: client_id,
+          redirect_uri: REDIRECT_URL,
+          state: STATE
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .get('/authorize')
+          .query(qs)
+          .redirects(0)
+          .end(function(err, res) {
+            verifyHashRedirectSuccessResponse(err, res, q);
+            verifyAccessTokenExpires(res.body.access_token, config.config.tokenLifetime, done);
+          });
+      });
+
       describe('Error Response (no redirect)', function() {
 
         it('must have client_id', function(done) {
@@ -477,6 +526,23 @@ exports.verifyOauth = function(server) {
           });
       });
 
+      it('must fail after expiration', function(done) {
+        var q = {
+          grant_type: 'password',
+          username: validUserCreds.username,
+          password: validUserCreds.password
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(client_id, client_secret)
+          .send(qs)
+          .end(function(err, res) {
+            verify51SuccessfulResponse(err, res);
+            verifyAccessTokenExpires(res.body.access_token, config.config.tokenLifetime, done);
+          });
+      });
+
       it('must include username', function(done) {
         var q = {
           grant_type: 'password',
@@ -564,6 +630,21 @@ exports.verifyOauth = function(server) {
           .send(qs)
           .end(function(err, res) {
             verify51SuccessfulResponse(err, res, done);
+          });
+      });
+
+      it('must fail after expiration', function(done) {
+        var q = {
+          grant_type: 'client_credentials'
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(client_id, client_secret)
+          .send(qs)
+          .end(function(err, res) {
+            verify51SuccessfulResponse(err, res);
+            verifyAccessTokenExpires(res.body.access_token, config.config.tokenLifetime, done);
           });
       });
 
@@ -759,7 +840,7 @@ exports.verifyOauth = function(server) {
 
       // verify refresh token if present (it's optional)
       var refreshToken = res.body.refresh_token;
-      if (!refreshToken) { return done(); }
+      if (!refreshToken) { return (done) ? done() : null; }
 
       request(server)
         .post('/refresh')
