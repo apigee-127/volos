@@ -219,6 +219,19 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   });
 };
 
+// todo
+RedisManagementSpi.prototype.scopesMatching = function(key, verb, path, cb) {
+  var self = this;
+  self.getApp(key, function(err, app) {
+    if (err) { return cb(err); }
+    var routeScope = _.find(app.routeScopes, function(rs) {
+      return new RegExp(rs.path).test(path);
+    });
+    cb(null, routeScope.scopes);
+  });
+};
+
+
 RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, cb) {
   this.getAppForClientId(clientId, function(err, reply) {
     if (err) { return cb(err); }

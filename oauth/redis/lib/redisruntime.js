@@ -234,6 +234,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
     if (err) { return cb(err); }
     if (reply) {
       var token = JSON.parse(reply);
+      options.scope = token.scope;
       createAndStoreToken(self, options, function(err, reply) {
         if (err) { return cb(err); }
         self.client.del(_key(options.refreshToken)); // note: async, ignores reply
@@ -267,13 +268,24 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
  * Validate an access token. Specify just the token and we are fine.
  */
 RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
-  this.client.get(_key(token), function(err, token_details) {
-    if (err || !token_details) {
+  var self = this;
+  self.client.get(_key(token), function(err, reply) {
+    if (err || !reply) {
       return cb(invalidRequestError());
     } else {
-
-      var result = { appId: token_details.application_id, developerId: token_details.developerId };
-      return cb(null, result);
+      var token_details = JSON.parse(reply);
+      // todo: check scope!!!
+      self.mgmt.scopesMatching(token_details.application_id, verb, path, function(err, requiredScopes) {
+        if (err) { return cb(err); }
+        if (requiredScopes) {
+          var grantedScopes = token_details.scope.split(' ');
+          if (_.difference(requiredScopes, grantedScopes).length > 0) {
+            cb(errorWithCode('invalid_scope'));
+          }
+        }
+        var result = { appId: token_details.application_id, developerId: token_details.developerId };
+        return cb(null, result);
+      });
     }
   });
 };
@@ -290,7 +302,8 @@ function createAndStoreAuthCode(self, clientId, requestedScope, redirectUri, cb)
       var code = genSecureToken();
       var hash = JSON.stringify({ redirectUri: redirectUri, scope: grantedScope });
       self.client.setex(_key(clientId, code), AUTH_TTL, hash, function(err, reply) {
-        return cb(err, { code: code, scope: grantedScope });
+        if (err) { return err; }
+        return cb(null, { code: code, scope: grantedScope });
       });
     });
   });
@@ -329,7 +342,7 @@ function createAndStoreToken(self, options, cb) {
         if (err) { return cb(err); }
         if (options.refresh) {
           var refreshToken = genSecureToken();
-          storeRefreshToken(self.client, app, refreshToken, options.clientId, function(err, reply) {
+          storeRefreshToken(self.client, app, refreshToken, options.clientId, grantedScope, function(err, reply) {
             if (err) { return cb(err); }
             tokenResponse.refresh_token = refreshToken;
             return cb(null, tokenResponse);
@@ -392,8 +405,8 @@ function storeToken(client, app, token, type, clientId, ttl, scope, cb) {
   }
 }
 
-function storeRefreshToken(client, app, token, clientId, cb) {
-  storeToken(client, app, token, REFRESH_TYPE, clientId, null, null, cb);
+function storeRefreshToken(client, app, token, clientId, scope, cb) {
+  storeToken(client, app, token, REFRESH_TYPE, clientId, null, scope, cb);
 }
 
 function _key() {
