@@ -36,8 +36,8 @@ argo
     handle('request', function(env, next) {
       oauthRuntime.argoMiddleware().authenticate(env, function() {
         env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+        next(env);
       });
-      next(env);
     });
   })
   .get('/ok', function(handle) {
