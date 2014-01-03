@@ -274,7 +274,6 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
       return cb(invalidRequestError());
     } else {
       var token_details = JSON.parse(reply);
-      // todo: check scope!!!
       self.mgmt.scopesMatching(token_details.application_id, verb, path, function(err, requiredScopes) {
         if (err) { return cb(err); }
         if (requiredScopes) {

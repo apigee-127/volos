@@ -29,9 +29,10 @@
 
 var DEFAULT_SCOPE = 'scope1';
 var ROUTE_SCOPES = [
-  { path: '/dogs',
-    scopes: ['scope2']
-  }
+  { path: '/pigs', scopes: ['scope1'] },
+  { path: '/dogs', scopes: ['scope2'] },
+  { path: '/cats', verbs: ['GET','POST'], scopes: ['scope1','scope2'] },
+  { path: '/c*',   verbs: ['GET','POST'], scopes: ['scope1','scope2','scope3'] }
 ];
 
 var DEV_1 = {

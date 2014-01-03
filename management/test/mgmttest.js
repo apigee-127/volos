@@ -24,6 +24,7 @@
 "use strict";
 
 var assert = require('assert');
+var should = require('should');
 
 // We delete this ID on every test -- be careful about that!
 var TEST_DEVELOPER_EMAIL = 'joe@schmoe.io';
@@ -108,7 +109,7 @@ exports.testManagement = function(config) {
         name: TEST_APP_NAME,
         developerId: developer.id,
         defaultScope: 'default',
-        validScopes: 'other default'
+        routeScopes: [{ path: '/', scopes: ['default'] }, { path: '/', scopes: ['other'] }]
       };
       mgmt.createApp(na, function(err, newApp) {
         if (err) { console.error('%j', err); }
@@ -116,20 +117,6 @@ exports.testManagement = function(config) {
         assert.equal(na.defaultScope, newApp.defaultScope);
         assert.deepEqual(na.validScopes, newApp.validScopes);
         assert(newApp.id);
-        done();
-      });
-    });
-
-    it('Create App With Invalid defaultScope', function(done) {
-      var na = {
-        name: TEST_APP_NAME,
-        developerId: developer.id,
-        defaultScope: 'default',
-        validScopes: 'other'
-      };
-      mgmt.createApp(na, function(err, newApp) {
-        assert(err);
-        assert(err.message === 'invalid defaultScope');
         done();
       });
     });

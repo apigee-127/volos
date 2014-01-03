@@ -51,7 +51,8 @@
  * }
  *
  * routeScope: {
- *   path: regex
+ *   verbs: [(string)]
+ *   path: (string w/ optional wildcards - see Express routes specs)
  *   scopes: [(string)]
  * }
  *
@@ -219,15 +220,17 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   });
 };
 
-// todo
+// returns first match
 RedisManagementSpi.prototype.scopesMatching = function(key, verb, path, cb) {
   var self = this;
   self.getApp(key, function(err, app) {
     if (err) { return cb(err); }
     var routeScope = _.find(app.routeScopes, function(rs) {
-      return new RegExp(rs.path).test(path);
+      var pathMatch = pathRegexp(rs.path).test(path);
+      if (!pathMatch) { return false; }
+      return rs.verbs ? _.contains(rs.verbs, verb) : true; // default is to match any verbs
     });
-    cb(null, routeScope.scopes);
+    cb(null, routeScope ? routeScope.scopes : []);
   });
 };
 
@@ -335,4 +338,47 @@ function _key() {
   var argsArray = [].slice.apply(arguments);
   argsArray.unshift(KEY_PREFIX);
   return argsArray.join(':');
+}
+
+// the following was blatantly stolen from https://github.com/visionmedia/express/blob/master/lib/utils.js
+
+/**
+ * Normalize the given path string,
+ * returning a regular expression.
+ *
+ * An empty array should be passed,
+ * which will contain the placeholder
+ * key names. For example "/user/:id" will
+ * then contain ["id"].
+ *
+ * @param  {String|RegExp|Array} path
+ * @param  {Array} keys
+ * @param  {Boolean} sensitive
+ * @param  {Boolean} strict
+ * @return {RegExp}
+ * @api private
+ */
+
+var toString = {}.toString;
+function pathRegexp(path, keys, sensitive, strict) {
+  keys = keys || [];
+  if (toString.call(path) == '[object RegExp]') return path;
+  if (Array.isArray(path)) path = '(' + path.join('|') + ')';
+  path = path
+    .concat(strict ? '' : '/?')
+    .replace(/\/\(/g, '(?:/')
+    .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?(\*)?/g, function(_, slash, format, key, capture, optional, star){
+      keys.push({ name: key, optional: !! optional });
+      slash = slash || '';
+      return ''
+        + (optional ? '' : slash)
+        + '(?:'
+        + (optional ? slash : '')
+        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
+        + (optional || '')
+        + (star ? '(/*)?' : '');
+    })
+    .replace(/([\/.])/g, '\\$1')
+    .replace(/\*/g, '(.*)');
+  return new RegExp('^' + path + '$', sensitive ? '' : 'i');
 }
