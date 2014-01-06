@@ -202,7 +202,15 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
 };
 
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
-  this.createApp(app, cb);
+  var self = this
+  this.getAppIdForClientId(app.credentials[0].key, function(err, reply){
+    if (err) { return cb(err); }
+    else if(reply == app.id) {
+      self.createApp(app, cb);
+    } else {
+      cb(new Error("invalid app"))
+    }
+  })
 };
 
 RedisManagementSpi.prototype.getApp = function(key, cb) {
