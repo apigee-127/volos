@@ -241,6 +241,9 @@ RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, 
     if (redirectUri && redirectUri !== reply.callbackUrl) { // todo: better comparison, ignore state, etc
       return cb(new Error('callback url mismatch'));
     }
+    if(!(redirectUri || reply.callbackUrl)) {
+      return cb(new Error('invalid redirect uri'));  // specify app callbackUrl or pass redirect_uri parameter
+    }
     return cb(null, redirectUri || reply.callbackUrl);
   });
 };
