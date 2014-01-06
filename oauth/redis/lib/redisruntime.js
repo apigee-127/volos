@@ -54,7 +54,7 @@ auth_details = {
 
 var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
-var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
+var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24 * 1000; // 1 day in milliseconds
 var REFRESH_TYPE = 'refresh';
 var AUTH_TTL = 60 * 5; // 5 minutes
 
