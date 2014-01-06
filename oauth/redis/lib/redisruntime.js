@@ -277,7 +277,7 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
       self.mgmt.scopesMatching(token_details.application_id, verb, path, function(err, requiredScopes) {
         if (err) { return cb(err); }
         if (requiredScopes) {
-          var grantedScopes = token_details.scope.split(' ');
+          var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
           if (_.difference(requiredScopes, grantedScopes).length > 0) {
             cb(errorWithCode('invalid_scope'));
           }
