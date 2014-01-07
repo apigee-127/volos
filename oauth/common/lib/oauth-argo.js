@@ -91,6 +91,16 @@ OAuthArgo.prototype.package = function(argo) {
           }
         );
       }
+      if (self.options.invalidateTokenUri) {
+        if (debugEnabled) { debug('invalidate token = ' + self.options.refreshTokenUri); }
+        argo.route(self.options.invalidateTokenUri, { methods: ['POST'] },
+          function(handle) {
+            handle('request', function(env, next) {
+              self.invalidateToken(env, next);
+            });
+          }
+        );
+      }
       // TODO the existing OAuth package overrides the default argo "route" method -- why?
     }
   };
@@ -210,6 +220,41 @@ OAuthArgo.prototype.refreshToken = function(env, next) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
     self.oauth.refreshToken(body, { authorizeHeader: env.request.headers.authorization },
+      function(err, result) {
+        if (err) {
+          if (debugEnabled) {
+            debug('Access token error: ' + err);
+          }
+          makeError(err, env);
+        } else {
+          env.response.setHeader('Cache-Control', 'no-store');
+          env.response.setHeader('Pragma', 'no-cache');
+          env.response.body = result;
+        }
+        env._oauthAuthenticated = true;
+        next(env);
+      });
+  });
+};
+
+OAuthArgo.prototype.invalidateToken = function(env, next) {
+  debug('Argo invalidateToken');
+  var self = this;
+  env.request.getBody(function(bodyErr, body) {
+    if (bodyErr) {
+      makeError(bodyErr, env);
+      env._oauthAuthenticated = true;
+      next(env);
+      return;
+    }
+
+    if (body instanceof Buffer) {
+      body = body.toString('ascii');
+    }
+    if (debugEnabled) {
+      debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
+    }
+    self.oauth.invalidateToken(body, { authorizeHeader: env.request.headers.authorization },
       function(err, result) {
         if (err) {
           if (debugEnabled) {
