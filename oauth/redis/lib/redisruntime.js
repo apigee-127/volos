@@ -237,7 +237,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
       options.scope = token.scope;
       createAndStoreToken(self, options, function(err, reply) {
         if (err) { return cb(err); }
-        self.client.del(_key(options.refreshToken)); // note: async, ignores reply
+        self.client.del(_key(options.clientId, options.refreshToken));
         return cb(null, reply);
       });
     } else {
@@ -247,21 +247,22 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
 };
 
 /*
- * Invalidate an existing token. Parameters:
+ * Invalidate an existing token. Options is a hash containing:
  *   clientId: required
  *   clientSecret: required
- *   refreshToken: either this or accessToken must be specified
- *   accessToken: same
+ *   token: required
+ *   tokenTypeHint: optional
  */
 RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
-  // check clientId, clientSecret
+  var client = this.client;
   this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
+
+    client.del(_key(options.token));
+    client.del(_key(options.clientId, options.token));
+    return cb(null, 'OK');
   });
-  if (options.token) { this.client.del(_key(options.token)); }
-  if (options.refreshToken) { this.client.del(_key(options.refreshToken)); }
-  return cb(null, 'OK');
 };
 
 /*
