@@ -48,7 +48,6 @@ OAuthExpress.prototype.handleAuthorize = function() {
   var self = this;
   return function(req, resp) {
   debug('Express authorize');
-
     self.oauth.authorize(req.query, function(err, result) {
       if (err) {
         if (debugEnabled) {

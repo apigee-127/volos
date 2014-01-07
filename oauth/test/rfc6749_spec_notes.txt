@@ -1,0 +1,280 @@
+RFC 6749 Spec Notes
+
+Legend:
+/ = tested
+x = cannot (or will not) be tested
+  = open item
+
+2. Client Registration
+x When registering a client, the client developer SHALL:
+x  specify the client type (2.1)
+x  provide its client redirection URIs (3.1.2)
+x  include any other information required by the server
+x    (e.g., application name, website, description, logo image, the acceptance of legal terms)
+
+2.1 Client Types
+x confidential: protocol and keys can be secreted
+x public: protocol and keys may be compromised
+
+2.2 Client Identifier
+x server issues the registered client a client identifier (not secret)
+x server SHOULD document the size of any identifier it issues
+
+2.3 Client Authentication
+x server MAY accept any form of (confidential) client authentication meeting its security requirements
+x server MAY establish a client authentication method with public clients
+/ server MUST NOT rely on public client authentication for the purpose of identifying the (public) client
+/ client MUST NOT use more than one authentication method in each request
+
+2.3.1 Client Password
+/ server MUST support the HTTP Basic authentication scheme for authenticating clients that were issued a client password
+x server MAY support including the client credentials in the request-body (NOT RECOMMENDED)
+x   SHOULD be limited to clients unable to directly utilize the HTTP Basic authentication / other password auth
+/   parameters MUST NOT be included in the request URI
+x server MUST require the use of TLS when sending requests using password authentication
+server MUST protect any endpoint utilizing it against brute force attacks
+
+3. Protocol Endpoints
+x Authorization endpoint - used to obtain authorization from the resource owner via user-agent redirection
+x Token endpoint - used to exchange an authorization grant for an access token
+x Redirection (client) endpoint - client endpoint used by the authorization server to return authorization credentials to the client via the resource owner user-agent
+
+
+3.1 Authorization Endpoint
+/ server MUST first verify the identity of the resource owner. (method unspecified)
+x Location specified in documentation
+x Endpoint URI MAY include query component
+x   which MUST be retained,
+x   but MUST NOT include a fragment
+x server MUST require the use of TLS
+/ server MUST support the use of GET for the authorization endpoint,
+x server MAY support POST
+/ Parameters sent without a value MUST be treated as if they were omitted
+/ authorization server MUST ignore unrecognized request parameters
+/ Request and response parameters MUST NOT be included more than once
+
+3.1.1 Response Type
+/ response_type MUST exist and be "code" or "token"
+x  (or registered extension - space-delimited commutative values)
+
+3.1.2 Redirection Endpoint
+endpoint URI MUST be an absolute URI
+endpoint URI MAY include query component which MUST be retained
+endpoint MUST NOT include a fragment
+
+3.1.2.1
+x redirection endpoint SHOULD require the use of TLS when response_type = "code" or "token"
+  (or when the redirection request will result in the transmission of sensitive credentials over an open network)
+x if to TLS, the authorization server SHOULD warn the resource owner about the insecure endpoint prior to redirection
+
+3.1.2.2
+server MUST require public and confidential clients utilizing implicit grants to register their endpoints
+x server SHOULD require all clients to register their redirection endpoint prior to utilizing the authorization
+/ server SHOULD require the client to provide the complete redirection URI
+x   (client MAY use the "state" request parameter to achieve per-request customization)
+x else, the authorization server SHOULD require the registration of the URI scheme, authority, and path
+x  (allowing the client to dynamically vary only the query component)
+server MAY allow the client to register multiple redirection endpoints
+
+3.1.2.3 Dynamic Configuration
+If multiple redirection URIs, only part of the URI, or if no redirection URI has been registered
+  the client MUST include a redirection URI with the authorization request using the "redirect_uri" request parameter
+When a redirection URI is included, authorization server MUST compare and match the value received against at least one of the registered redirection URIs (or URI components) as defined in [RFC3986] Section 6, if any redirection URIs were registered. If the client registration included the full redirection URI, the authorization server MUST compare the two URIs using simple string comparison as defined in [RFC3986] Section 6.2.1.
+  (http://tools.ietf.org/pdf/rfc3986.pdf) (https://npmjs.org/package/URIjs)
+
+
+3.1.2.4 Invalid Endpoint
+/ server SHOULD inform the resource owner of the error and MUST NOT automatically redirect
+
+
+3.2 Token Endpoint
+/ endpoint URI MAY include query component which MUST be retained
+  but MUST NOT include a fragment
+x server MUST require the use of TLS
+/ client MUST use HTTP POST
+/ Parameters sent without a value MUST be treated as if they were omitted
+x server MUST ignore unrecognized request parameters
+/ Request and response parameters MUST NOT be included more than once
+
+3.2.1 Client Authentication
+/ client MUST authenticate with the server
+/ In the "authorization_code" "grant_type" request to the token endpoint, an unauthenticated client MUST send its "client_id"
+
+3.3 Access Token Scope
+x server MAY fully or partially ignore the scope requested
+/ If the issued scope is different from the one requested, the server MUST include the "scope" response parameter
+/ if client omits scope, server MUST either use a pre-defined default
+/   or fail the request indicating an invalid scope
+x server SHOULD document its scope requirements and default value (if defined)
+
+
+4.1 Authorization Code Grant
+4.1.1 Authorization Request
+/response_type - required - MUST be "code"
+/ client_id - required (2.2)
+/ redirect_uri - optional
+/ scope - optional (3.3)
+/ state - recommended (authorization server includes this value when redirecting)
+/ client directs the resource owner to the constructed URI
+/ server validates the request to ensure that all required parameters are present and valid
+/ if valid, server authenticates the resource owner and obtains an authorization decision
+/ server directs the user-agent to the provided client redirection URI
+
+4.1.2 Authorization Response
+/ server issues an authorization code and delivers it to the client by adding parameters to QUERY component of URI:
+/ code - required
+   MUST expire shortly after it is issued (max lifetime of 10 minutes is RECOMMENDED)
+/  client MUST NOT use the authorization code more than once
+/  otherwise, server MUST deny the request
+x     and SHOULD revoke (when possible) all tokens based on that authorization code
+/  authorization code is bound to the client identifier and redirection URI
+/ state - REQUIRED if the "state" was present in the client request (identical to client value)
+x server SHOULD document the size of any value it issues
+
+4.1.2.1 Error Response
+/if bad URI or client_id - server SHOULD inform the resource owner of the error and MUST NOT automatically redirect
+/  else, authorization server informs the client by adding the following parameters to QUERY component of redirect URI:
+/error - required -
+/  invalid_request
+x  unauthorized_client
+/   access_denied
+x   unsupported_response_type
+/  invalid_scope
+x  server_error
+x  temporarily_unavailable
+x error_description - optional
+x error_uri - optional - URI identifying a human-readable web page with information about the error
+/ state - REQUIRED if the "state" was present in the client request - exact value sent by client
+
+4.1.3 Access Token Request
+/ client makes a request to the token endpoint, with the following in the request body:
+/ grant_type - required - MUST be "authorization_code"
+/ code - required - the authorization code received from the authorization server
+/ redirect_uri - required if the "redirect_uri" parameter was in the authorization request (MUST be identical)
+/ client_id - required if the client is not authenticating with the authorization server per 3.2.1
+server MUST:
+/  - require client authentication if client type is confidential or the client was issued client credentials (or assigned other authentication requirements)
+/  - authenticate the client if client authentication is included
+/  - ensure that the authorization code was issued to the authenticated confidential client
+/    (or if the client is public, ensure that the code was issued to "client_id" in the request)
+/  - verify that the authorization code is valid
+/  - ensure that the "redirect_uri" parameter is present and identical if the "redirect_uri" parameter was included in the initial authorization request (4.1.1)
+
+4.1.4 Access Token Response
+/ if valid, server issues an access token and optional refresh token (5.1)
+/ else, server returns an error response (5.2)
+
+
+4.2 Implicit Grant
+4.2.1 Authorization Request
+/ response_type - required - MUST be "token"
+/ client_id - required (values defined in 2.2)
+/ redirect_uri - optional
+x scope - optional (3.3)
+x state - recommended (authorization server includes this value when redirecting)
+/ server validates the request to ensure that all required parameters are present and valid
+/ if valid, server authenticates the resource owner and obtains an authorization decision
+/ server directs the user-agent to the provided client redirection URI
+
+4.2.2 Access Token Response
+/ server issues an authorization code and delivers it to the client by adding parameters to FRAGMENT component of URI:
+/ access_token - required - issued by the authorization server
+/ token_type - required - type of the token issued (7.1)
+x expires_in - recommended - lifetime in seconds
+x  if omitted, server SHOULD provide the expiration time via other means or document the default
+x scope - OPTIONAL, if identical to the scope requested by the client
+  otherwise, REQUIRED (3.3)
+/ state - REQUIRED if the "state" was present in the client request (identical to client value)
+/ authorization server MUST NOT issue a refresh token
+x server SHOULD document the size of any value it issues
+
+/ 4.2.2.1 Error Response
+/ same as 4.1.2.1 - except use FRAGMENT component of URI
+
+
+4.3 Resource Owner Password Credentials Grant
+4.3.2 Access Token Request
+/ grant_type - required - MUST be "password"
+/ username - required
+/ password - required
+x scope - optional - scope of the access request (3.3)
+/server MUST:
+/  - require client authentication if client type is confidential or the client was issued client credentials (or assigned other authentication requirements) (3.2.1)
+/  - authenticate the client if client authentication is included
+/  - validate the resource owner password credentials
+x server MUST protect the endpoint against brute force attacks (e.g., using rate-limitation or generating alerts)
+
+4.3.3 Access Token Response
+/ (5.1, 5.2)
+
+
+4.4 Client Credentials Grant
+4.4.2 Access Token Request
+/ grant_type - required - MUST be "client_credentials"
+x scope - optional - scope of the access request (3.3)
+/ server MUST authenticate the client
+
+4.4.3 Access Token Response
+/ (5.1, 5.2)
+
+
+5.1 Successful Response
+/ access_token - required - issued by the authorization server
+/ token_type - required - type of the token issued (7.1)
+x expires_in - recommended - lifetime in seconds
+x   if omitted, server SHOULD provide the expiration time via other means or document the default
+/ refresh_token - optional - (6.)
+/ scope - OPTIONAL, if identical to the scope requested by the client; otherwise, REQUIRED (3.3)
+/ parameters are included in the entity-body of the HTTP response using the "application/json" media type
+/ parameters are serialized into a JSON structure by adding each parameter at the highest structure level
+/ Parameter names and string values are included as JSON strings
+/ Numerical values are included as JSON numbers
+/ for any response containing tokens, credentials, or other sensitive information:
+/  server MUST include the HTTP "Cache-Control" response header field with a value of "no-store"
+/  server MUST include the "Pragma" response header field with a value of "no-cache"
+x server SHOULD document the size of any value it issues
+
+5.2 Error Response
+/ server responds with an HTTP 400 and includes the following parameters:
+/ error - required - invalid_request, invalid_client, invalid_grant, unauthorized_client, unsupported_grant_type, invalid_scope
+x error_description - optional
+x error_uri - optional - URI identifying a human-readable web page with information about the error
+/ parameters are included in the entity-body of the HTTP response using the "application/json" media type
+/ parameters are serialized into a JSON structure by adding each parameter at the highest structure level
+/ Parameter names and string values are included as JSON strings
+/ Numerical values are included as JSON numbers
+
+
+6. Refreshing an Access Token
+/ grant_type - required - MUST be "refresh_token"
+x scope - optional - scope of the access request (3.3)
+/  MUST NOT include any scope not originally granted by the resource owner
+x  if omitted is treated as equal to the scope originally granted by the resource owner
+/ refresh token is bound to the client to which it was issued
+server MUST:
+/  - require client authentication if client type is confidential or the client was issued client credentials (or assigned other authentication requirements) (3.2.1)
+/  - authenticate the client if client authentication is included
+/  - ensure that the refresh token was issued to the authenticated client
+/  - validate the refresh token
+x server MAY issue a new refresh token
+x server MAY revoke the old refresh token after issuing a new refresh token
+/ if new refresh token is issued, the refresh token scope MUST be identical to the original
+/ return value or error: (5.1, 5.2)
+
+
+7. Accessing Protected Resources
+/ server MUST validate the access token
+/  and ensure that it has not expired
+/  and that its scope covers the requested resource
+
+7.2 Error Response
+x server SHOULD inform the client of the error
+x If the error code is returned using a named parameter, the parameter name SHOULD be "error"
+error values: (11.4)
+
+
+4.5 Extension Grants - not covered
+8. Extensibility - not covered
+9. Native Applications - not covered
+10. Security Considerations - not covered
+11. IANA Considerations - not covered

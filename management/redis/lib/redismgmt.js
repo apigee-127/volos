@@ -154,22 +154,13 @@ function makeDeveloper(d) {
 // Operations on applications
 
 RedisManagementSpi.prototype.createApp = function(app, cb) {
+  app.uuid = uuid.v4();
 
-  if(!app.uuid) {
-
-    app.uuid = uuid.v4();
-
-  }
-
-  if(!app.credentials) {
-
-    app.credentials = {
-      key: genSecureToken(),
-      secret: genSecureToken(),
-      status: 'valid'
-    };
-
-  }
+  app.credentials = {
+    key: genSecureToken(),
+    secret: genSecureToken(),
+    status: 'valid'
+  };
 
   var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
@@ -199,18 +190,6 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
       return cb(undefined, application);
     });
   });
-};
-
-RedisManagementSpi.prototype.updateApp = function(app, cb) {
-  var self = this
-  this.getAppIdForClientId(app.credentials[0].key, function(err, reply){
-    if (err) { return cb(err); }
-    else if(reply == app.id) {
-      self.createApp(app, cb);
-    } else {
-      cb(new Error("invalid app"))
-    }
-  })
 };
 
 RedisManagementSpi.prototype.getApp = function(key, cb) {
@@ -262,11 +241,6 @@ RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, 
     if (redirectUri && redirectUri !== reply.callbackUrl) { // todo: better comparison, ignore state, etc
       return cb(new Error('callback url mismatch'));
     }
-
-    if(!(redirectUri || reply.callbackUrl)) {
-      return cb(new Error('invalid redirect uri'));  // specify app callbackUrl or pass redirect_uri parameter
-    }
-
     return cb(null, redirectUri || reply.callbackUrl);
   });
 };

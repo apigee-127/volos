@@ -54,7 +54,7 @@ auth_details = {
 
 var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
-var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day in seconds
+var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
 var REFRESH_TYPE = 'refresh';
 var AUTH_TTL = 60 * 5; // 5 minutes
 
@@ -237,7 +237,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
       options.scope = token.scope;
       createAndStoreToken(self, options, function(err, reply) {
         if (err) { return cb(err); }
-        self.client.del(_key(options.refreshToken)); // note: async, ignores reply
+        self.client.del(_key(options.clientId, options.refreshToken));
         return cb(null, reply);
       });
     } else {
@@ -247,21 +247,22 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
 };
 
 /*
- * Invalidate an existing token. Parameters:
+ * Invalidate an existing token. Options is a hash containing:
  *   clientId: required
  *   clientSecret: required
- *   refreshToken: either this or accessToken must be specified
- *   accessToken: same
+ *   token: required
+ *   tokenTypeHint: optional
  */
 RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
-  // check clientId, clientSecret
+  var client = this.client;
   this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
+
+    client.del(_key(options.token));
+    client.del(_key(options.clientId, options.token));
+    return cb(null, 'OK');
   });
-  if (options.token) { this.client.del(_key(options.token)); }
-  if (options.refreshToken) { this.client.del(_key(options.refreshToken)); }
-  return cb(null, 'OK');
 };
 
 /*
@@ -277,7 +278,7 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
       self.mgmt.scopesMatching(token_details.application_id, verb, path, function(err, requiredScopes) {
         if (err) { return cb(err); }
         if (requiredScopes) {
-          var grantedScopes = token_details.scope.split(' ');
+          var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
           if (_.difference(requiredScopes, grantedScopes).length > 0) {
             cb(errorWithCode('invalid_scope'));
           }

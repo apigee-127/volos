@@ -689,7 +689,7 @@ exports.verifyOauth = function(server) {
 
       var refreshToken, resp, selectedScope;
 
-      before(function(done) {
+      beforeEach(function(done) {
 
         selectedScope = _.find(scopes, function(ea) { return ea !== defaultScope; });
         if (!selectedScope) { return console.log('cannot determine a non-default scope to test'); }
@@ -715,8 +715,6 @@ exports.verifyOauth = function(server) {
       });
 
       it('must not include any scope not originally granted by the resource owner', function(done) {
-        if (!refreshToken) { return done(); }
-
         var originalScope = resp.body.scope;
         if (!originalScope) {
           // technically, the server could opt to not include the scope if granted as requested
@@ -783,7 +781,86 @@ exports.verifyOauth = function(server) {
         };
       });
 
-    }); // 4.4
+    }); // 6
+
+
+    describe('Invalidate', function() {
+
+      var accessToken, refreshToken;
+
+      beforeEach(function(done) {
+
+        var q = {
+          grant_type: 'password',
+          username: validUserCreds.username,
+          password: validUserCreds.password,
+          client_id: client_id,
+          scope: DOGS_SCOPE
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .send(qs)
+          .end(function(err, res) {
+            if (err) { return done(err); }
+            res.status.should.eql(200);
+            res.body.should.have.properties('access_token', 'refresh_token');
+            accessToken = res.body.access_token;
+            refreshToken = res.body.refresh_token;
+            done();
+          });
+      });
+
+      it('access token', function(done) {
+        var q = {
+          client_id: client_id,
+          client_secret: client_secret,
+          token: accessToken
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/invalidate')
+          .send(qs)
+          .end(function(err, res) {
+            if (err) { return done(err); }
+            res.status.should.eql(200);
+
+            request(server)
+              .get('/dogs')
+              .set('Authorization', 'Bearer ' + accessToken)
+              .end(function(err, res) {
+                if (err) { return done ? done(err) : err; }
+                res.status.should.eql(400);
+                done();
+              });
+          });
+      });
+
+      it('refresh token', function(done) {
+          var q = {
+            client_id: client_id,
+            client_secret: client_secret,
+            token: refreshToken
+          };
+          var qs = querystring.stringify(q);
+          request(server)
+            .post('/invalidate')
+            .send(qs)
+            .end(function(err, res) {
+              if (err) { return done(err); }
+              res.status.should.eql(200);
+
+              request(server)
+                .post('/refresh')
+                .auth(client_id, client_secret)
+                .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+                .end(function(err, res) {
+                  verify52ErrorResponse(err, res, done);
+                });
+            });
+        });
+
+    }); // invalidate
 
 
     // common testing for 4.3 & 4.4

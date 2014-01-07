@@ -50,7 +50,8 @@ argo
     // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
     { authorizeUri: '^/authorize.*',
       accessTokenUri: '/accesstoken',
-      refreshTokenUri: '/refresh'
+      refreshTokenUri: '/refresh',
+      invalidateTokenUri: '/invalidate'
     }))
   .listen(port);
 

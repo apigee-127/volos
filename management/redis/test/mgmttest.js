@@ -28,7 +28,6 @@ var config = require('../../../common/testconfig-redis');
 var mgmt = config.management;
 var should = require('should');
 var creator = config.fixtureCreator;
-var assert = require('assert');
 
 describe('Redis', function() {
 
@@ -44,18 +43,6 @@ describe('Redis', function() {
         app = apps[0];
         done();
       });
-    });
-
-    describe('Redis Update App', function() {
-  
-      it('Update App', function(done) {
-        app.callbackUrl="http://localhost"
-        mgmt.updateApp(app, function(err, foundApp) {
-          assert.equal(foundApp.callbackUrl, app.callbackUrl);
-          done();
-        });
-      });
-    
     });
 
     it('GET /pigs', function(done) {
