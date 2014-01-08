@@ -104,6 +104,14 @@ exports.testManagement = function(config) {
       });
     });
 
+    it('Update App', function(done) {
+      app.callbackUrl="http://localhost"
+      mgmt.updateApp(app, function(err, foundApp) {
+        assert.equal(foundApp.callbackUrl, app.callbackUrl);
+        done();
+      });
+    });
+
     it('Create App With Valid Scopes', function(done) {
       var na = {
         name: TEST_APP_NAME,
