@@ -202,7 +202,7 @@ x scope - optional - scope of the access request (3.3)
 /  - require client authentication if client type is confidential or the client was issued client credentials (or assigned other authentication requirements) (3.2.1)
 /  - authenticate the client if client authentication is included
 /  - validate the resource owner password credentials
-x server MUST protect the endpoint against brute force attacks (e.g., using rate-limitation or generating alerts)
+server MUST protect the endpoint against brute force attacks (e.g., using rate-limitation or generating alerts)
 
 4.3.3 Access Token Response
 / (5.1, 5.2)

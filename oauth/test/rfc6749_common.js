@@ -82,7 +82,7 @@ exports.verifyOauth = function(server) {
 
   describe('OAuth 2.0 rfc6749', function() {
 
-    this.timeout(10000);
+    this.timeout(15000);
 
     before(function(done) {
       creator.createFixtures(function(err, reply) {
@@ -381,7 +381,8 @@ exports.verifyOauth = function(server) {
               code: code,
               redirect_uri: REDIRECT_URL,
               state: STATE,
-              client_id: client_id
+              client_id: client_id,
+              client_secret: client_secret
             };
             var qs = querystring.stringify(q);
             request(server)
@@ -403,6 +404,7 @@ exports.verifyOauth = function(server) {
         var q = {
           response_type: 'token',
           client_id: client_id,
+          client_secret: client_secret,
           redirect_uri: REDIRECT_URL,
           state: STATE,
           scope: DOGS_SCOPE
@@ -421,6 +423,7 @@ exports.verifyOauth = function(server) {
         var q = {
           response_type: 'token',
           client_id: client_id,
+          client_secret: client_secret,
           redirect_uri: REDIRECT_URL,
           state: STATE,
           scope: 'scope2'
@@ -484,6 +487,7 @@ exports.verifyOauth = function(server) {
           var q = {
             response_type: 'token',
             client_id: client_id,
+            client_secret: client_secret,
             redirect_uri: REDIRECT_URL,
             state: 'xyz',
             scope: 'invalidScope'
@@ -617,6 +621,7 @@ exports.verifyOauth = function(server) {
           username: validUserCreds.username,
           password: validUserCreds.password,
           client_id: client_id,
+          client_secret: client_secret,
           scope: 'scope2'
         };
       });
@@ -691,13 +696,14 @@ exports.verifyOauth = function(server) {
 
       beforeEach(function(done) {
 
+        // todo: need to figure out apigee setup for this
         selectedScope = _.find(scopes, function(ea) { return ea !== defaultScope; });
-        if (!selectedScope) { return console.log('cannot determine a non-default scope to test'); }
         var q = {
           grant_type: 'password',
           username: validUserCreds.username,
           password: validUserCreds.password,
           client_id: client_id,
+          client_secret: client_secret,
           scope: selectedScope
         };
         var qs = querystring.stringify(q);
@@ -715,6 +721,7 @@ exports.verifyOauth = function(server) {
       });
 
       it('must not include any scope not originally granted by the resource owner', function(done) {
+        if (!selectedScope) { console.log('cannot determine a non-default scope to test'); return done(); }
         var originalScope = resp.body.scope;
         if (!originalScope) {
           // technically, the server could opt to not include the scope if granted as requested
@@ -777,7 +784,7 @@ exports.verifyOauth = function(server) {
           refresh_token: refreshToken,
           client_id: client_id,
           client_secret: client_secret,
-          scope: 'scope2'
+          scope: selectedScope
         };
       });
 
@@ -795,6 +802,7 @@ exports.verifyOauth = function(server) {
           username: validUserCreds.username,
           password: validUserCreds.password,
           client_id: client_id,
+          client_secret: client_secret,
           scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);

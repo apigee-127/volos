@@ -133,7 +133,12 @@ RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
   options = extend(options, { type: 'password', refresh: true });
-  createAndStoreToken(this, options, cb);
+  var self = this;
+  this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
+    if (err) { return cb(err); }
+    if (!reply) { return cb(errorWithCode('invalid_client')); }
+    createAndStoreToken(self, options, cb);
+  });
 };
 
 /*
@@ -148,11 +153,15 @@ RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb)
  */
 RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   var self = this;
-  consumeAuthCode(self.client, options.clientId, options.code, function(err, hash) {
+  this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
     if (err) { return cb(err); }
-    if (options.redirectUri !== hash.redirectUri) { return cb(invalidRequestError()); }
-    options = extend(options, { type: 'authorization_code', refresh: true, scope: hash.scope });
-    createAndStoreToken(self, options, cb);
+    if (!reply) { return cb(errorWithCode('invalid_client')); }
+    consumeAuthCode(self.client, options.clientId, options.code, function(err, hash) {
+      if (err) { return cb(err); }
+      if (options.redirectUri !== hash.redirectUri) { return cb(invalidRequestError()); }
+      options = extend(options, { type: 'authorization_code', refresh: true, scope: hash.scope });
+      createAndStoreToken(self, options, cb);
+    });
   });
 };
 

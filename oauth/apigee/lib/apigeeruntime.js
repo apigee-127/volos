@@ -229,6 +229,10 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   options.grantType = 'refresh_token';
   makeRequest(this, 'POST', '/tokentypes/all/refresh',
     body, options, function(err, result) {
+      // todo: fix at source
+      if (err && err.message === 'Invalid Scope') {
+        err.code = 'invalid_scope';
+      }
       cb(err, result);
     });
 };
@@ -381,7 +385,7 @@ function requestComplete(resp, options, cb) {
 
   var respData = '';
   resp.on('readable', function() {
-    respData += readResponse(resp, respData);
+    respData = readResponse(resp, respData);
   });
 
   resp.on('end', function() {
@@ -390,8 +394,8 @@ function requestComplete(resp, options, cb) {
       err.statusCode = resp.statusCode;
       if (resp.statusCode === 400 || resp.statusCode === 401) { // oauth return
         var ret = JSON.parse(respData);
-        if (ret.errorCode !== null) {
-          err.errorCode = ret.ErrorCode;
+        if (ret.codeode !== null) {
+          err.code = ret.ErrorCode;
           err.message = ret.Error;
         }
       } else {
