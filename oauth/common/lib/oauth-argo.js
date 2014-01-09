@@ -23,6 +23,7 @@
  ****************************************************************************/
 "use strict";
 
+var _ = require('underscore');
 var querystring = require('querystring');
 var url = require('url');
 
@@ -172,7 +173,7 @@ OAuthArgo.prototype.accessToken = function(env, next) {
   });
 };
 
-OAuthArgo.prototype.authenticate = function(env, next) {
+OAuthArgo.prototype.authenticate = function(scopes, env, next) {
   debug('Argo authenticate');
   if (env._oauthAuthenticated) {
     next(env);
@@ -182,6 +183,7 @@ OAuthArgo.prototype.authenticate = function(env, next) {
       env.request.headers.authorization,
       env.request.method,
       parsedUrl.pathname,
+      scopes,
       function(err, result) {
         if (err) {
           if (debugEnabled) {
@@ -281,6 +283,11 @@ function makeError(err, env) {
     env.response.body.error = err.code;
   } else {
     env.response.body.error = 'server_error';
+  }
+  if (err.headers) {
+    _.each(_.keys(err.headers), function(name) {
+      env.response.setHeader(name, err.headers[name]);
+    });
   }
   env.response.statusCode = err.statusCode;
 }

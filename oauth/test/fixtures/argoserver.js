@@ -34,7 +34,7 @@ argo
 
   .get('/dogs', function(handle) {
     handle('request', function(env, next) {
-      oauthRuntime.argoMiddleware().authenticate(env, function() {
+      oauthRuntime.argoMiddleware().authenticate('scope2', env, function() {
         env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
         next(env);
       });
