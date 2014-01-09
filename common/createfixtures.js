@@ -28,12 +28,7 @@
  */
 
 var DEFAULT_SCOPE = 'scope1';
-var ROUTE_SCOPES = [
-  { path: '/pigs', scopes: ['scope1'] },
-  { path: '/dogs', scopes: ['scope2'] },
-  { path: '/cats', verbs: ['GET','POST'], scopes: ['scope1','scope2'] },
-  { path: '/c*',   verbs: ['GET','POST'], scopes: ['scope1','scope2','scope3'] }
-];
+var VALID_SCOPES = 'scope1 scope2 scope3';
 
 var DEV_1 = {
   firstName: 'Dyniss',
@@ -47,7 +42,7 @@ var APP_1 = {
   developerId: DEV_1.email,
   callbackUrl: 'http://example.org',
   defaultScope: DEFAULT_SCOPE,
-  routeScopes: ROUTE_SCOPES
+  validScopes: VALID_SCOPES
 };
 
 var DEV_2 = {
@@ -62,7 +57,7 @@ var APP_2 = {
   developerId: DEV_2.email,
   callbackUrl: 'http://example.org',
   defaultScope: DEFAULT_SCOPE,
-  routeScopes: ROUTE_SCOPES
+  validScopes: VALID_SCOPES
 };
 
 

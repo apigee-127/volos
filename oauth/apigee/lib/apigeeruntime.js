@@ -146,6 +146,14 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   options.grantType = 'authorization_code';
   makeRequest(this, 'POST', '/tokentypes/authcode/tokens',
     body, options, function(err, result) {
+      // todo: fix at source (spec p. 29)
+      if (err) {
+        if (err.message === 'Invalid Authorization Code' || err.message === 'Required param : redirect_uri') {
+          err.code = 'invalid_grant';
+        } else if (/^Invalid redirect_uri :/.test(err.message)) {
+          err.code = 'invalid_grant';
+        }
+      }
       cb(err, result);
     });
 };
@@ -260,10 +268,14 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 };
 
 /*
- * Validate an access token. Specify just the token and we are fine.
+ * Validate an access token.
  */
-RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
-  var r = url.parse(this.uri + '/tokentypes/all/verify');
+RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
+  var urlString = this.uri + '/tokentypes/all/verify';
+  if (requiredScopes) {
+    urlString = urlString + '?' + querystring.stringify({ scope: requiredScopes });
+  }
+  var r = url.parse(urlString);
   r.headers = {
     Authorization: 'Bearer ' + token
   };

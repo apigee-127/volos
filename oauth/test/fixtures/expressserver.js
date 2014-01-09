@@ -37,7 +37,7 @@ app.post('/refresh', oauthRuntime.expressMiddleware().refreshToken());
 app.use(oauthRuntime.expressMiddleware().authenticate());
 
 app.get('/dogs',
-  oauthRuntime.expressMiddleware().authenticate(),
+  oauthRuntime.expressMiddleware().authenticate('scope2'),
   function(req, resp) {
   resp.json(['John', 'Paul', 'George', 'Ringo']);
 });

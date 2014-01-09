@@ -68,9 +68,9 @@ var _ = require('underscore');
 
 var debug;
 var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+if (process.env.NODE_DEBUG && /redis/.test(process.env.NODE_DEBUG)) {
   debug = function(x) {
-    console.log('Apigee: ' + x);
+    console.log('Redis: ' + x);
   };
   debugEnabled = true;
 } else {
@@ -158,7 +158,7 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
     if (!reply) { return cb(errorWithCode('invalid_client')); }
     consumeAuthCode(self.client, options.clientId, options.code, function(err, hash) {
       if (err) { return cb(err); }
-      if (options.redirectUri !== hash.redirectUri) { return cb(invalidRequestError()); }
+      if (options.redirectUri !== hash.redirectUri) { return cb(errorWithCode('invalid_grant')); }
       options = extend(options, { type: 'authorization_code', refresh: true, scope: hash.scope });
       createAndStoreToken(self, options, cb);
     });
@@ -275,18 +275,19 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 };
 
 /*
- * Validate an access token. Specify just the token and we are fine.
+ * Validate an access token.
  */
-RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
+RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
+  debug('verifyToken: ' + token);
   var self = this;
   self.client.get(_key(token), function(err, reply) {
     if (err || !reply) {
       return cb(invalidRequestError());
     } else {
       var token_details = JSON.parse(reply);
-      self.mgmt.scopesMatching(token_details.application_id, verb, path, function(err, requiredScopes) {
-        if (err) { return cb(err); }
-        if (requiredScopes) {
+          if (!Array.isArray(requiredScopes)) {
+            requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
+          }
           var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
           if (_.difference(requiredScopes, grantedScopes).length > 0) {
             cb(errorWithCode('invalid_scope'));
@@ -294,8 +295,6 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, cb) {
         }
         var result = { appId: token_details.application_id, developerId: token_details.developerId };
         return cb(null, result);
-      });
-    }
   });
 };
 
@@ -321,7 +320,7 @@ function createAndStoreAuthCode(self, clientId, requestedScope, redirectUri, cb)
 function consumeAuthCode(client, clientId, code, cb) {
   client.get(_key(clientId, code), function(err, hash) {
     if (err) { return cb(err); }
-    if (!hash) { return cb(invalidRequestError()); }
+    if (!hash) { return cb(errorWithCode('invalid_grant')); }
     client.del(_key(clientId, code), function(err, reply) {
       return cb(err, JSON.parse(hash));
     });
@@ -395,6 +394,7 @@ function genSecureToken() {
 }
 
 function storeToken(client, app, token, type, clientId, ttl, scope, cb) {
+  debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : ''));
   var response = {
     access_token: token,
     expires_in: ttl,

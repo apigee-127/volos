@@ -23,6 +23,7 @@
  ****************************************************************************/
 "use strict";
 
+var _ = require('underscore');
 var debug;
 var debugEnabled;
 if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
@@ -94,7 +95,9 @@ OAuthExpress.prototype.authenticate = function(scopes) {
     debug('Express authenticate');
     self.oauth.verifyToken(
       req.get('authorization'),
-      req.method, req.path,
+      req.method,
+      req.path,
+      scopes,
       function(err, result) {
         if (err) {
           if (debugEnabled) {
@@ -184,6 +187,11 @@ function makeError(err, resp) {
     rb.error = err.code;
   } else {
     rb.error = 'server_error';
+  }
+  if (err.headers) {
+    _.each(_.keys(err.headers), function(name) {
+      resp.setHeader(name, err.headers[name]);
+    });
   }
   resp.json(err.statusCode, rb);
 }

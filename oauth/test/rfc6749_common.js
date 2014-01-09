@@ -82,7 +82,7 @@ exports.verifyOauth = function(server) {
 
   describe('OAuth 2.0 rfc6749', function() {
 
-    this.timeout(15000);
+    this.timeout(25000);
 
     before(function(done) {
       creator.createFixtures(function(err, reply) {
@@ -256,7 +256,7 @@ exports.verifyOauth = function(server) {
             .auth(client_id, client_secret)
             .send(qs)
             .end(function(err, res) {
-              verify52ErrorResponse(err, res, done);
+              verify52ErrorResponse(err, res, done, 'invalid_grant');
             });
         });
 
@@ -280,7 +280,7 @@ exports.verifyOauth = function(server) {
                 .auth(client_id, client_secret)
                 .send(qs)
                 .end(function(err, res) {
-                  verify52ErrorResponse(err, res, done);
+                  verify52ErrorResponse(err, res, done, 'invalid_grant');
                 });
             });
         });
@@ -299,7 +299,7 @@ exports.verifyOauth = function(server) {
               .auth(client_id, client_secret)
               .send(qs)
               .end(function(err, res) {
-                verify52ErrorResponse(err, res, done);
+                verify52ErrorResponse(err, res, done, 'invalid_grant');
               });
           });
 
@@ -316,7 +316,7 @@ exports.verifyOauth = function(server) {
               .auth(client_id, client_secret)
               .send(qs)
               .end(function(err, res) {
-                verify52ErrorResponse(err, res, done);
+                verify52ErrorResponse(err, res, done, 'invalid_grant');
               });
           });
         });
@@ -335,7 +335,7 @@ exports.verifyOauth = function(server) {
             .auth(app2_client_id, app2_secret)
             .send(qs)
             .end(function(err, res) {
-              verify52ErrorResponse(err, res, done);
+              verify52ErrorResponse(err, res, done, "invalid_grant");
             });
         });
 
@@ -351,10 +351,10 @@ exports.verifyOauth = function(server) {
             var qs = querystring.stringify(q);
             request(server)
               .post('/accesstoken')
-              .auth(client_id, 'bad secret')
+              .auth(client_id, 'badsecret')
               .send(qs)
               .end(function(err, res) {
-                verify52ErrorResponse(err, res, done, 'access_denied');
+                verify52ErrorResponse(err, res, done, 'invalid_client', true);
               });
           });
 
@@ -368,10 +368,10 @@ exports.verifyOauth = function(server) {
             var qs = querystring.stringify(q);
             request(server)
               .post('/accesstoken')
-              .auth(client_id, 'bad secret')
+              .auth(client_id, 'badsecret')
               .send(qs)
               .end(function(err, res) {
-                verify52ErrorResponse(err, res, done, 'access_denied');
+                verify52ErrorResponse(err, res, done, 'invalid_client', true);
               });
           });
 
@@ -426,7 +426,7 @@ exports.verifyOauth = function(server) {
           client_secret: client_secret,
           redirect_uri: REDIRECT_URL,
           state: STATE,
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -523,7 +523,7 @@ exports.verifyOauth = function(server) {
           grant_type: 'password',
           username: validUserCreds.username,
           password: validUserCreds.password,
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -540,7 +540,7 @@ exports.verifyOauth = function(server) {
           grant_type: 'password',
           username: validUserCreds.username,
           password: validUserCreds.password,
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -622,7 +622,7 @@ exports.verifyOauth = function(server) {
           password: validUserCreds.password,
           client_id: client_id,
           client_secret: client_secret,
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
       });
 
@@ -634,7 +634,7 @@ exports.verifyOauth = function(server) {
       it('can obtain a valid token using basic authentication', function(done) {
         var q = {
           grant_type: 'client_credentials',
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -649,7 +649,7 @@ exports.verifyOauth = function(server) {
       it('must fail after expiration', function(done) {
         var q = {
           grant_type: 'client_credentials',
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
         var qs = querystring.stringify(q);
         request(server)
@@ -683,7 +683,7 @@ exports.verifyOauth = function(server) {
           grant_type: 'client_credentials',
           client_id: client_id,
           client_secret: client_secret,
-          scope: 'scope2'
+          scope: DOGS_SCOPE
         };
       });
 
@@ -953,14 +953,18 @@ exports.verifyOauth = function(server) {
     }
 
     // 5.2 Error Response
-    function verify52ErrorResponse(err, res, done, errorType) {
+    function verify52ErrorResponse(err, res, done, errorType, usingAuthHeader) {
 
       if (err) { return done(err); }
 
       if (errorType === 'access_denied') {
         res.status.should.eql(403);
-      } else if (errorType === 'unauthorized_client') {
+      } else if (errorType === 'invalid_client') {
         [400, 401].should.include(res.status);
+        if (usingAuthHeader) {  // p. 45
+          res.status.should.eql(401);
+          res.headers.should.have.property('www-authenticate');
+        }
       } else {
         res.status.should.eql(400);
       }

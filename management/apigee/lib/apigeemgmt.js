@@ -164,6 +164,9 @@ function parseDeveloper(o) {
   };
 }
 
+
+// Operations on Apps
+
 ApigeeManagementSpi.prototype.createApp = function(app, cb) {
   var ar = {
     name: app.name,
@@ -239,6 +242,47 @@ function parseApp(a) {
   }
   return app;
 }
+
+
+// Operations on API Products
+
+ApigeeManagementSpi.prototype.createProduct = function(product, cb) {
+  var ar = {
+    name: product.name,
+    scopes: product.scopes
+  };
+  makeRequest(this, 'POST', path.join('/apiproducts', product.name), ar, function(err, newApp) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseApp(newApp));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.getProduct = function(name, cb) {
+  makeRequest(this, 'GET', path.join('/apiproducts', name), function(err, product) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseProduct(product));
+    }
+  });
+};
+
+ApigeeManagementSpi.prototype.deleteProduct = function(name, cb) {
+  makeRequest(this, 'DELETE', path.join('/apiproducts', name), function(err) {
+    if (err) {
+      cb(err);
+    } else {
+      cb();
+    }
+  });
+};
+
+
+
+// Utility
 
 function makeRequest(self, verb, uriPath, o, cb) {
   if (typeof o === 'function') {

@@ -25,89 +25,9 @@
 
 var commonTest = require('../../test/mgmttest');
 var config = require('../../../common/testconfig-redis');
-var mgmt = config.management;
 var should = require('should');
-var creator = config.fixtureCreator;
 
 describe('Redis', function() {
-
-  describe('scopesMatching', function(done) {
-
-    var app;
-
-    before(function(done) {
-      creator.createFixtures(function(err, apps) {
-        if (err) {
-          console.error('Error creating fixtures: %j', err);
-        }
-        app = apps[0];
-        done();
-      });
-    });
-
-    it('GET /pigs', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/pigs', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(1);
-        scopes.should.include('scope1');
-        done();
-      });
-    });
-
-    it('GET /dogs', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/dogs', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(1);
-        scopes.should.include('scope2');
-        done();
-      });
-    });
-
-    it('GET /cats', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/cats', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(2);
-        scopes.should.include('scope1');
-        scopes.should.include('scope2');
-        done();
-      });
-    });
-
-    it('POST /cats', function(done) {
-      mgmt.scopesMatching(app.id, 'POST', '/cats', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(2);
-        scopes.should.include('scope1');
-        scopes.should.include('scope2');
-        done();
-      });
-    });
-
-    it('DELETE /cats', function(done) {
-      mgmt.scopesMatching(app.id, 'DELETE', '/cats', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(0);
-        done();
-      });
-    });
-
-    it('GET /cat', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/cat', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(3);
-        done();
-      });
-    });
-
-    it('GET /cats2', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/cats2', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(3);
-        done();
-      });
-    });
-
-    it('GET /cats/dogs', function(done) {
-      mgmt.scopesMatching(app.id, 'GET', '/cats/dogs', function(err, scopes) {
-        scopes.should.be.instanceof(Array).and.have.lengthOf(3);
-        done();
-      });
-    });
-
-  });
 
   commonTest.testManagement(config);
 

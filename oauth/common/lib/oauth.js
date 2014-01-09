@@ -217,8 +217,17 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, idSecret[0], idSecret[1],
                                               options, function(err, result) {
         if (err) {
-          cb(makeError(err));
+          err = makeError(err);
+          if (options.authorizeHeader && err.code === 'invalid_client') {
+            err.statusCode = 401;
+            var auth = options.authorizeHeader.split(' ')[0];
+            if (auth === 'Basic') {
+              err.headers = {'WWW-Authenticate': 'Basic realm=' + idSecret[0]};
+            }
+          }
+          cb(err);
         } else {
+          debug('createToken : ' + result.access_token);
           result.token_type = TOKEN_TYPE;
           cb(undefined, result);
         }
@@ -412,7 +421,7 @@ OAuth.prototype.invalidateToken = function(body, options, cb) {
  * Verify a token given an authorization header, plus optional path and
  * verb. Some implementations may use those in order to do additional checks.
  */
-OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, cb) {
+OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, requiredScopes, cb) {
   if (typeof verb === 'function') {
     cb = verb;
     verb = undefined;
@@ -427,7 +436,8 @@ OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, cb) {
     return;
   }
 
-  this.spi.verifyToken(hdr[1], verb, path,
+  debug('verifyToken : ' + hdr[1]);
+  this.spi.verifyToken(hdr[1], verb, path, requiredScopes,
     function(err, result) {
       if (err) {
         cb(makeError('invalid_grant', err.message));

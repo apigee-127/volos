@@ -47,13 +47,7 @@
  *   attributes: (hash)
  *   credentials: [(credentials)],
  *   defaultScope: (string) - optional - if exists, assigned when no scope is requested
- *   routeScopes: [(routeScope)]
- * }
- *
- * routeScope: {
- *   verbs: [(string)]
- *   path: (string w/ optional wildcards - see Express routes specs)
- *   scopes: [(string)]
+ *   validScopes: (string) or [(string)]
  * }
  *
  * credentials: {
@@ -162,7 +156,10 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     status: 'valid'
   };
 
-  var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
+  var validScopes = app.validScopes;
+  if (!Array.isArray(app.validScopes)) {
+    validScopes = app.validScopes.split(' ');
+  }
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
   app.scopes = _.uniq(_.flatten(validScopes));
 
@@ -176,7 +173,6 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     attributes: app.attributes,
     credentials: [app.credentials],
     defaultScope: app.defaultScope,
-    routeScopes: app.routeScopes,
     scopes: app.scopes
   };
 
@@ -217,20 +213,6 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   self.getAppIdForClientId(key, function(err, reply) {
     if (err) { return cb(err); }
     self.getApp(reply, cb);
-  });
-};
-
-// returns first match
-RedisManagementSpi.prototype.scopesMatching = function(key, verb, path, cb) {
-  var self = this;
-  self.getApp(key, function(err, app) {
-    if (err) { return cb(err); }
-    var routeScope = _.find(app.routeScopes, function(rs) {
-      var pathMatch = pathRegexp(rs.path).test(path);
-      if (!pathMatch) { return false; }
-      return rs.verbs ? _.contains(rs.verbs, verb) : true; // default is to match any verbs
-    });
-    cb(null, routeScope ? routeScope.scopes : []);
   });
 };
 
