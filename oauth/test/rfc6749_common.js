@@ -82,7 +82,7 @@ exports.verifyOauth = function(server) {
 
   describe('OAuth 2.0 rfc6749', function() {
 
-    this.timeout(25000);
+    this.timeout(30000);
 
     before(function(done) {
       creator.createFixtures(function(err, reply) {
@@ -93,6 +93,12 @@ exports.verifyOauth = function(server) {
         defaultScope = apps[0].defaultScope;
         scopes = apps[0].scopes;
         done();
+      });
+    });
+
+    after(function(done) {
+      creator.destroyFixtures(function(err, reply) {
+        done(err);
       });
     });
 

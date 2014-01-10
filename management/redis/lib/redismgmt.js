@@ -47,7 +47,7 @@
  *   attributes: (hash)
  *   credentials: [(credentials)],
  *   defaultScope: (string) - optional - if exists, assigned when no scope is requested
- *   validScopes: (string) or [(string)]
+ *   scopes: (string) or [(string)]
  * }
  *
  * credentials: {
@@ -148,24 +148,22 @@ function makeDeveloper(d) {
 // Operations on applications
 
 RedisManagementSpi.prototype.createApp = function(app, cb) {
- 
   if(!app.uuid) {
- 
     app.uuid = uuid.v4();
- 
   }
- 
+
   if(!app.credentials) {
- 
     app.credentials = {
       key: genSecureToken(),
       secret: genSecureToken(),
       status: 'valid'
     };
- 
   }
- 
-  var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
+
+  var validScopes = app.scopes;
+  if (!Array.isArray(validScopes)) {
+    validScopes = validScopes.split(' ');
+  }
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
   app.scopes = _.uniq(_.flatten(validScopes));
  
@@ -179,7 +177,6 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     attributes: app.attributes,
     credentials: [app.credentials],
     defaultScope: app.defaultScope,
-    routeScopes: app.routeScopes,
     scopes: app.scopes
   };
  
@@ -196,15 +193,15 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
 };
  
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
-  var self = this
+  var self = this;
   this.getAppIdForClientId(app.credentials[0].key, function(err, reply){
     if (err) { return cb(err); }
-    else if(reply == app.id) {
+    if (reply === app.id) {
       self.createApp(app, cb);
     } else {
-      cb(new Error("invalid app"))
+      cb(new Error("invalid app"));
     }
-  })
+  });
 };
 
 RedisManagementSpi.prototype.getApp = function(key, cb) {

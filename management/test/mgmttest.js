@@ -91,39 +91,27 @@ exports.testManagement = function(config) {
     it('Create App', function(done) {
       var na = {
         name: TEST_APP_NAME,
-        developerId: developer.id
+        developerId: developer.id,
+        scopes: 'scope1 scope2'
       };
       mgmt.createApp(na, function(err, newApp) {
         if (err) { console.error('%j', err); }
         assert(!err);
+        app = newApp;
         assert.equal(na.name, newApp.name);
         assert.equal(na.developerId, newApp.developerId);
         assert(newApp.id);
-        app = newApp;
-        done();
-      });
-    });
-
-    it('Create App With Valid Scopes', function(done) {
-      var na = {
-        name: TEST_APP_NAME,
-        developerId: developer.id,
-        defaultScope: 'default',
-        routeScopes: [{ path: '/', scopes: ['default'] }, { path: '/', scopes: ['other'] }]
-      };
-      mgmt.createApp(na, function(err, newApp) {
-        if (err) { console.error('%j', err); }
-        assert(!err);
-        assert.equal(na.defaultScope, newApp.defaultScope);
-        assert.deepEqual(na.validScopes, newApp.validScopes);
-        assert(newApp.id);
+        newApp.should.have.property('scopes');
+        newApp.scopes.should.include('scope1');
+        newApp.scopes.should.include('scope2');
         done();
       });
     });
 
     it('Update App', function(done) {
-      app.callbackUrl="http://localhost"
+      app.callbackUrl = 'http://localhost';
       mgmt.updateApp(app, function(err, foundApp) {
+        assert(!err);
         assert.equal(foundApp.callbackUrl, app.callbackUrl);
         done();
       });

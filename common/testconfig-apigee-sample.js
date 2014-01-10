@@ -25,6 +25,8 @@
 
 /** copy this file to testconfig-apigee.js and replace the config attributes */
 
+var VALID_USER_CREDS = { username: 'foo', password: 'bar' };
+
 var config = {
   organization: 'ORG',
   user: 'USER',
@@ -33,11 +35,12 @@ var config = {
   key: 'KEY',
 
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
+  tokenLifetime: 4000, // expiration tests will wait this long
   passwordCheck: checkPassword
 };
 
 function checkPassword(username, password) {
-  return true;
+  return username === VALID_USER_CREDS.username && password === VALID_USER_CREDS.password;
 }
 
 var Management = require('volos-management-apigee');
@@ -53,5 +56,6 @@ module.exports = {
   management: management,
   oauth: oauth,
   fixtureCreator: fixtureCreator,
-  config: config
+  config: config,
+  validUserCreds: VALID_USER_CREDS
 };

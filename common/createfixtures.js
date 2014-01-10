@@ -28,7 +28,7 @@
  */
 
 var DEFAULT_SCOPE = 'scope1';
-var VALID_SCOPES = 'scope1 scope2 scope3';
+var SCOPES = 'scope1 scope2 scope3';
 
 var DEV_1 = {
   firstName: 'Dyniss',
@@ -42,7 +42,7 @@ var APP_1 = {
   developerId: DEV_1.email,
   callbackUrl: 'http://example.org',
   defaultScope: DEFAULT_SCOPE,
-  validScopes: VALID_SCOPES
+  scopes: SCOPES
 };
 
 var DEV_2 = {
@@ -57,7 +57,7 @@ var APP_2 = {
   developerId: DEV_2.email,
   callbackUrl: 'http://example.org',
   defaultScope: DEFAULT_SCOPE,
-  validScopes: VALID_SCOPES
+  scopes: SCOPES
 };
 
 
@@ -76,6 +76,34 @@ Creator.prototype.createFixtures = function(cb) {
     });
   });
 };
+
+Creator.prototype.destroyFixtures = function(cb) {
+  var self = this;
+  deleteApp(self, APP_1, function(err, reply) {
+    deleteApp(self, APP_2, function(err, reply) {
+      deleteDeveloper(self, DEV_1, function(err, reply) {
+        deleteDeveloper(self, DEV_2, cb);
+      });
+    });
+  });
+};
+
+function deleteApp(self, app, cb) {
+  self.management.getDeveloperApp(app.developerId, app.name, function(err, appRet) {
+    if (err && err.statusCode !== 404) { return cb(err); }
+    if (err) { return cb(); }
+    self.management.deleteApp(appRet.id, cb);
+  });
+}
+
+function deleteDeveloper(self, dev, cb) {
+  self.management.getDeveloper(dev.email, function(err, devRet) {
+    if (err && err.statusCode !== 404) { return cb(err); }
+    if (err) { return cb(); }
+    self.management.deleteDeveloper(devRet.id, cb);
+  });
+}
+
 
 function checkDeveloper(self, dev, app, cb) {
   self.management.getDeveloper(dev.email, function(err, devRet) {

@@ -49,13 +49,13 @@ if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
 }
 
 var create = function(options) {
-  var spi = new RedisRuntimeSpi(options);
+  var spi = new ApigeeRuntimeSpi(options);
   var oauth = new OAuthCommon(spi, options);
   return oauth;
 };
 module.exports.create = create;
 
-var RedisRuntimeSpi = function(options) {
+var ApigeeRuntimeSpi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
   }
@@ -66,7 +66,7 @@ var RedisRuntimeSpi = function(options) {
   this.uri = options.uri;
   this.key = options.key;
 
-  this.oauth = new OAuthCommon(RedisRuntimeSpi, options);
+  this.oauth = new OAuthCommon(ApigeeRuntimeSpi, options);
 };
 
 /*
@@ -78,7 +78,7 @@ var RedisRuntimeSpi = function(options) {
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
+ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
   var qs = {
     grant_type: 'client_credentials'
   };
@@ -104,7 +104,7 @@ RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
+ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
   var qs = {
     grant_type: 'password',
     username: options.username,
@@ -131,7 +131,7 @@ RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb)
  *
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
-RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
+ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   var qs = {
     grant_type: 'authorization_code',
     code: options.code
@@ -167,7 +167,7 @@ RedisRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
  *
  * Returns the redirect URI as a string.
  */
-RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
+ApigeeRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
   var qs = {
     response_type: 'code',
     client_id: options.clientId
@@ -197,7 +197,7 @@ RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
  *
  * Returns the redirect URI as a string.
  */
-RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
+ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
   var qs = {
     response_type: 'token',
     client_id: options.clientId
@@ -225,7 +225,7 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  *   refreshToken: required, from the original token grant
  *   scope: optional
  */
-RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
+ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var qs = {
     grant_type: 'refresh_token',
     refresh_token: options.refreshToken
@@ -252,7 +252,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
  *   refreshToken: either this or accessToken must be specified
  *   accessToken: same
  */
-RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
+ApigeeRuntimeSpi.prototype.invalidateToken = function(options, cb) {
   var qs = {
     token: options.token
   };
@@ -270,7 +270,7 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 /*
  * Validate an access token.
  */
-RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
+ApigeeRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
   var urlString = this.uri + '/tokentypes/all/verify';
   if (requiredScopes) {
     urlString = urlString + '?' + querystring.stringify({ scope: requiredScopes });

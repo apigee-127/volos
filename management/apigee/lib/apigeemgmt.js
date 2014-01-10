@@ -45,7 +45,8 @@
  *   callbackUrl: (string)
  *   developerId: (string)
  *   attributes: (object)
- *   credentials: (credentials object)
+ *   credentials: (credentials object),
+ *   scopes: [(string))]
  * }
  *
  * credentials: {
@@ -168,48 +169,75 @@ function parseDeveloper(o) {
 // Operations on Apps
 
 ApigeeManagementSpi.prototype.createApp = function(app, cb) {
+  var self = this;
   var ar = {
     name: app.name,
     status: app.status,
     callbackUrl: app.callbackUrl,
+//    scopes: app.scopes,
     attributes: app.attributes
   };
   makeRequest(this, 'POST', path.join('/developers', app.developerId, '/apps'), ar, function(err, newApp) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, parseApp(newApp));
-    }
-  });
-};
+    if (err) { return cb(err); }
+//    return cb(err, parseApp(newApp));
+    // todo: is this really necessary? App looks like it should directly support a scopes prop, but I can't get it to work
 
-ApigeeManagementSpi.prototype.updateApp = function(app, cb) {
-  makeRequest(this, 'PUT', path.join('/developers', app.developerId, '/apps', app.id), function(err, a) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, parseApp(a));
+    // create an ApiProduct
+    if (app.scopes) { // todo: env settings
+      var api = {
+        name: getApiProductName(app),
+        environments: [ 'test', 'prod' ], // todo: which environment(s)?
+        scopes: app.scopes
+      };
+      self.createApiProduct(api, function(err, reply) {
+        if (err && err.statusCode !== 409) { // 409 == already exists, assuming this is ok
+          return cb(err);
+        }
+        var key = newApp.credentials[0].consumerKey;
+
+        self.addDeveloperAppApiProduct(app.developerId, app.name, key, api.name, function(err, reply) {
+          if (err) { return cb(err); }
+          addScopesToApp(self, newApp, function(err, newApp) {
+            var app = parseApp(newApp);
+            cb(undefined, app);
+          });
+        });
+      });
     }
   });
 };
 
 ApigeeManagementSpi.prototype.getApp = function(uuid, cb) {
+  var self = this;
   makeRequest(this, 'GET', path.join('/apps', uuid), function(err, app) {
-    if (err) {
-      cb(err);
-    } else {
+    if (err) { return cb(err); }
+    addScopesToApp(self, app, function(err, app) {
       cb(undefined, parseApp(app));
-    }
+    });
   });
 };
 
 ApigeeManagementSpi.prototype.getDeveloperApp = function(developerName, appName, cb) {
+  var self = this;
   makeRequest(this, 'GET', path.join('/developers', developerName, '/apps', appName), function(err, app) {
-    if (err) {
-      cb(err);
-    } else {
+    if (err) { return cb(err); }
+    addScopesToApp(self, app, function(err, app) {
       cb(undefined, parseApp(app));
-    }
+    });
+  });
+};
+
+ApigeeManagementSpi.prototype.updateApp = function(app, cb) {
+  this.updateDeveloperApp(app.developerId, app.name, app, cb);
+};
+
+ApigeeManagementSpi.prototype.updateDeveloperApp = function(developerName, appName, data, cb) {
+  var self = this;
+  makeRequest(this, 'PUT', path.join('/developers', developerName, '/apps', appName), data, function(err, app) {
+    if (err) { return cb(err); }
+    addScopesToApp(self, app, function(err, app) {
+      cb(undefined, parseApp(app));
+    });
   });
 };
 
@@ -224,12 +252,27 @@ ApigeeManagementSpi.prototype.deleteApp = function(uuid, cb) {
         if (err) {
           cb(err);
         } else {
-          cb();
+          self.deleteApiProduct(getApiProductName(app), cb);
         }
       });
     }
   });
 };
+
+// todo: is this really necessary? App looks like it should directly support a scopes prop, but I can't get it to work
+function addScopesToApp(self, app, cb) {
+  self.getApiProduct(getApiProductName(app), function(err, product) {
+    if (err) { debug('unable to get scopes for app: ' + app.name); }
+    if (product && product.scopes) {
+      app.scopes = product.scopes;
+    }
+    cb(undefined, app);
+  });
+}
+
+function getApiProductName(app) {
+  return app.name + ' product';
+}
 
 function parseApp(a) {
   var app = {
@@ -239,6 +282,7 @@ function parseApp(a) {
     developerId: a.developerId,
     callbackUrl: a.callbackUrl,
     attributes: a.attributes,
+    scopes: a.scopes,
     credentials: []
   };
   for (var i = 0; i < a.credentials.length; i++) {
@@ -256,31 +300,34 @@ function parseApp(a) {
 
 // Operations on API Products
 
-ApigeeManagementSpi.prototype.createProduct = function(product, cb) {
+ApigeeManagementSpi.prototype.createApiProduct = function(product, cb) {
   var ar = {
     name: product.name,
-    scopes: product.scopes
+    displayName: product.displayName ? product.displayName : product.name,
+    approvalType: product.approvalType ? product.approvalType : 'auto',
+    environments: product.environments,
+    scopes: Array.isArray(product.scopes) ? product.scopes : product.scopes.split(' ')
   };
-  makeRequest(this, 'POST', path.join('/apiproducts', product.name), ar, function(err, newApp) {
+  makeRequest(this, 'POST', path.join('/apiproducts'), ar, function(err, apiProd) {
     if (err) {
       cb(err);
     } else {
-      cb(undefined, parseApp(newApp));
+      cb(undefined, apiProd);
     }
   });
 };
 
-ApigeeManagementSpi.prototype.getProduct = function(name, cb) {
+ApigeeManagementSpi.prototype.getApiProduct = function(name, cb) {
   makeRequest(this, 'GET', path.join('/apiproducts', name), function(err, product) {
     if (err) {
       cb(err);
     } else {
-      cb(undefined, parseProduct(product));
+      cb(undefined, product);
     }
   });
 };
 
-ApigeeManagementSpi.prototype.deleteProduct = function(name, cb) {
+ApigeeManagementSpi.prototype.deleteApiProduct = function(name, cb) {
   makeRequest(this, 'DELETE', path.join('/apiproducts', name), function(err) {
     if (err) {
       cb(err);
@@ -290,6 +337,20 @@ ApigeeManagementSpi.prototype.deleteProduct = function(name, cb) {
   });
 };
 
+ApigeeManagementSpi.prototype.addDeveloperAppApiProduct = function(developerName, appName, consumerKey, products, cb) {
+  products = Array.isArray(products) ? products : [ products ];
+  makeRequest(this, 'POST',
+    path.join('/developers', developerName, '/apps', appName, '/keys', consumerKey), { apiProducts: products },
+    function(err, reply) {
+      if (err) {
+        cb(err);
+      } else {
+        cb(undefined, reply);
+      }
+    });
+};
+
+//function parseConsumerKey()
 
 
 // Utility

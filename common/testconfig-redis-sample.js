@@ -25,17 +25,20 @@
 
 /** copy this file to testconfig-redis.js and replace the config attributes if necessary */
 
+var VALID_USER_CREDS = { username: 'foo', password: 'bar' };
+
 var config = {
   host: '127.0.0.1',
   port: 6379,
   options: {},
 
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
+  tokenLifetime: 1000, // expiration tests will wait this long
   passwordCheck: checkPassword
 };
 
 function checkPassword(username, password) {
-  return true;
+  return username === VALID_USER_CREDS.username && password === VALID_USER_CREDS.password;
 }
 
 var Management = require('volos-management-redis');
@@ -51,5 +54,6 @@ module.exports = {
   management: management,
   oauth: oauth,
   fixtureCreator: fixtureCreator,
-  config: config
+  config: config,
+  validUserCreds: VALID_USER_CREDS
 };

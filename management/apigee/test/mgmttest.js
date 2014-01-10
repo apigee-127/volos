@@ -24,11 +24,52 @@
 "use strict";
 
 var commonTest = require('../../test/mgmttest');
-var testOpts = require('../../../common/testconfig-apigee');
+var config = require('../../../common/testconfig-apigee');
+var should = require('should');
+
+var API_PROD_NAME = 'APIDNA-Unit-Test-ApiProduct';
+var mgmt = config.management;
 
 describe('Apigee', function() {
 
   this.timeout(10000);
-  commonTest.testManagement(testOpts);
+
+  before(function() {
+    // Clean up old test data
+    mgmt.deleteApiProduct(API_PROD_NAME, function(err) {
+      if (err) {
+        console.log('ApiProduct %s doesn\'t exist. Good', API_PROD_NAME);
+      } else {
+        console.log('Delete ApiProduct %s', API_PROD_NAME);
+      }
+    });
+  });
+
+  it('Create API Product', function(done) {
+    var api = {
+      name: API_PROD_NAME,
+      environments : [ "test" ],
+      scopes: ['scope1', 'scope2']
+    };
+    mgmt.createApiProduct(api, function(err, apiProd) {
+      if (err) { console.error('%j', err); }
+      should.not.exist(err);
+      api.name.should.equal(apiProd.name);
+      api.scopes.should.equal(api.scopes);
+
+      done();
+    });
+  });
+
+  it('Delete API Product', function(done) {
+    mgmt.deleteApiProduct(API_PROD_NAME, function(err) {
+      if (err) { console.error('%j', err); }
+      should.not.exist(err);
+
+      done();
+    });
+  });
+
+  commonTest.testManagement(config);
 
 });
