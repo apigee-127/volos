@@ -121,6 +121,14 @@ exports.testManagement = function(config) {
       });
     });
 
+    it('Update App', function(done) {
+      app.callbackUrl="http://localhost"
+      mgmt.updateApp(app, function(err, foundApp) {
+        assert.equal(foundApp.callbackUrl, app.callbackUrl);
+        done();
+      });
+    });
+
     it('Get App', function(done) {
       mgmt.getApp(app.id, function(err, foundApp) {
         assert(!err);

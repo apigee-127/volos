@@ -148,21 +148,27 @@ function makeDeveloper(d) {
 // Operations on applications
 
 RedisManagementSpi.prototype.createApp = function(app, cb) {
-  app.uuid = uuid.v4();
-
-  app.credentials = {
-    key: genSecureToken(),
-    secret: genSecureToken(),
-    status: 'valid'
-  };
-
-  var validScopes = app.validScopes;
-  if (!Array.isArray(app.validScopes)) {
-    validScopes = app.validScopes.split(' ');
+ 
+  if(!app.uuid) {
+ 
+    app.uuid = uuid.v4();
+ 
   }
+ 
+  if(!app.credentials) {
+ 
+    app.credentials = {
+      key: genSecureToken(),
+      secret: genSecureToken(),
+      status: 'valid'
+    };
+ 
+  }
+ 
+  var validScopes = _.map(app.routeScopes, function(routeScope) { return routeScope.scopes; });
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
   app.scopes = _.uniq(_.flatten(validScopes));
-
+ 
   var application = {
     id: app.uuid,
     uuid: app.uuid,
@@ -173,9 +179,10 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     attributes: app.attributes,
     credentials: [app.credentials],
     defaultScope: app.defaultScope,
+    routeScopes: app.routeScopes,
     scopes: app.scopes
   };
-
+ 
   var self = this;
   self.client.get(_key(app.developerId), function(err, reply) {
     if (err) { return cb(err); }
@@ -186,6 +193,18 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
       return cb(undefined, application);
     });
   });
+};
+ 
+RedisManagementSpi.prototype.updateApp = function(app, cb) {
+  var self = this
+  this.getAppIdForClientId(app.credentials[0].key, function(err, reply){
+    if (err) { return cb(err); }
+    else if(reply == app.id) {
+      self.createApp(app, cb);
+    } else {
+      cb(new Error("invalid app"))
+    }
+  })
 };
 
 RedisManagementSpi.prototype.getApp = function(key, cb) {

@@ -183,6 +183,16 @@ ApigeeManagementSpi.prototype.createApp = function(app, cb) {
   });
 };
 
+ApigeeManagementSpi.prototype.updateApp = function(app, cb) {
+  makeRequest(this, 'PUT', path.join('/developers', app.developerId, '/apps', app.id), function(err, a) {
+    if (err) {
+      cb(err);
+    } else {
+      cb(undefined, parseApp(a));
+    }
+  });
+};
+
 ApigeeManagementSpi.prototype.getApp = function(uuid, cb) {
   makeRequest(this, 'GET', path.join('/apps', uuid), function(err, app) {
     if (err) {
