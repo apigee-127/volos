@@ -24,43 +24,41 @@
 "use strict";
 
 var argo = require('argo');
-var config = require('../../../common/testconfig');
-var oauthRuntime = config.oauth;
-
 var port = 10011;
 
-var argo = argo();
-argo
-
-  .get('/dogs', function(handle) {
-    handle('request', function(env, next) {
-      oauthRuntime.argoMiddleware().authenticate('scope2', env, function() {
-        env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+module.exports = function(oauth) {
+  var app = argo();
+  app
+    .get('/dogs', function(handle) {
+      handle('request', function(env, next) {
+        oauth.argoMiddleware().authenticate('scope2', env, function() {
+          env.response.body = [ 'Bo', 'Luke', 'Daisy' ];
+          next(env);
+        });
+      });
+    })
+    .get('/ok', function(handle) {
+      handle('request', function(env, next) {
+        env.response.body = 'ok';
         next(env);
       });
-    });
-  })
-  .get('/ok', function(handle) {
-    handle('request', function(env, next) {
-      env.response.body = 'ok';
-      next(env);
-    });
-  })
-  .use(oauthRuntime.argoMiddleware(
-    // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
-    { authorizeUri: '^/authorize.*',
-      accessTokenUri: '/accesstoken',
-      refreshTokenUri: '/refresh',
-      invalidateTokenUri: '/invalidate'
-    }))
-  .listen(port);
+    })
+    .use(oauth.argoMiddleware(
+      // It seems like Argo doesn't strip the query parameters when checking the URI so here we go.
+      { authorizeUri: '^/authorize.*',
+        accessTokenUri: '/accesstoken',
+        refreshTokenUri: '/refresh',
+        invalidateTokenUri: '/invalidate'
+      }))
+    .listen(port);
 
 // supertest expects an address function that returns the port
 // (I couldn't figure out how to get the dynamic port from argo)
-argo.address = function() {
-  var addr = {};
-  addr.port = port;
-  return addr;
-};
+  app.address = function() {
+    var addr = {};
+    addr.port = port;
+    return addr;
+  };
 
-module.exports = argo;
+  return app;
+};

@@ -26,8 +26,6 @@
 var express = require('./fixtures/expressserver.js');
 var remoteTest = require('./rfc6749_common.js');
 
-describe('Express', function () {
-
-  remoteTest.verifyOauth(express);
-
-});
+exports.verifyOauth = function(config) {
+  remoteTest.verifyOauth(config, express(config.oauth));
+};

@@ -24,10 +24,9 @@
 "use strict";
 
 var config = require('../../../common/testconfig-redis');
-var commonTest = require('../../test/oauthtest');
+var oathTest = require('../../test/rfc6749_express_test');
+var oathTest = require('../../test/rfc6749_argo_test');
 
 describe('Redis', function() {
-
-  commonTest.testOauth(config);
-
+  oathTest.verifyOauth(config);
 });

@@ -24,11 +24,9 @@
 "use strict";
 
 var config = require('../../../common/testconfig-apigee');
-var commonTest = require('../../test/oauthtest');
+var oathTest = require('../../test/rfc6749_express_test');
 
 describe('Apigee', function() {
-
   this.timeout(10000);
-  commonTest.testOauth(config);
-
+  oathTest.verifyOauth(config);
 });

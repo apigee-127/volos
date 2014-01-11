@@ -26,8 +26,6 @@
 var argo = require('./fixtures/argoserver.js');
 var remoteTest = require('./rfc6749_common.js');
 
-describe('Argo', function () {
-
-  remoteTest.verifyOauth(argo);
-
-});
+exports.verifyOauth = function(config) {
+  remoteTest.verifyOauth(config, argo(config.oauth));
+}

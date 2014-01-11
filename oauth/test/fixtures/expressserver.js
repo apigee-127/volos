@@ -25,25 +25,24 @@
 
 var express = require('express');
 
-var config = require('../../../common/testconfig');
-var oauthRuntime = config.oauth;
+module.exports = function(oauth) {
+  var app = express();
 
-var app = express();
+  app.get('/authorize', oauth.expressMiddleware().handleAuthorize());
+  app.post('/accesstoken', oauth.expressMiddleware().handleAccessToken());
+  app.post('/invalidate', oauth.expressMiddleware().invalidateToken());
+  app.post('/refresh', oauth.expressMiddleware().refreshToken());
+  app.use(oauth.expressMiddleware().authenticate());
 
-app.get('/authorize', oauthRuntime.expressMiddleware().handleAuthorize());
-app.post('/accesstoken', oauthRuntime.expressMiddleware().handleAccessToken());
-app.post('/invalidate', oauthRuntime.expressMiddleware().invalidateToken());
-app.post('/refresh', oauthRuntime.expressMiddleware().refreshToken());
-app.use(oauthRuntime.expressMiddleware().authenticate());
+  app.get('/dogs',
+    oauth.expressMiddleware().authenticate('scope2'),
+    function(req, resp) {
+      resp.json(['John', 'Paul', 'George', 'Ringo']);
+    });
 
-app.get('/dogs',
-  oauthRuntime.expressMiddleware().authenticate('scope2'),
-  function(req, resp) {
-  resp.json(['John', 'Paul', 'George', 'Ringo']);
-});
+  app.get('/ok', function(req, resp) {
+    resp.send(200, 'ok');
+  });
 
-app.get('/ok', function(req, resp) {
-  resp.send(200, 'ok');
-});
-
-module.exports = app;
+  return app;
+};

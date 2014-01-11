@@ -23,8 +23,6 @@
  ****************************************************************************/
 "use strict";
 
-var config = require('../../common/testconfig');
-
 var should = require('should');
 var Url = require('url');
 var request = require('supertest');
@@ -32,8 +30,6 @@ var querystring = require('querystring');
 var _ = require('underscore');
 
 var apps;
-var creator = config.fixtureCreator;
-var validUserCreds = config.validUserCreds;
 var defaultScope;
 var scopes;
 var client_id;
@@ -43,7 +39,10 @@ var REDIRECT_URL = 'http://example.org';
 var STATE = 'xyz';
 var DOGS_SCOPE = 'scope2';
 
-exports.verifyOauth = function(server) {
+exports.verifyOauth = function(config, server) {
+
+  var creator = config.fixtureCreator;
+  var validUserCreds = config.validUserCreds;
 
   function verifyAccessToken(access_token, done) {
     request(server)
