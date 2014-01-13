@@ -96,7 +96,7 @@ exports.verifyOauth = function(config, server) {
     });
 
     after(function(done) {
-      creator.destroyFixtures(function(err, reply) {
+      creator.destroyFixtures(function(err) {
         done(err);
       });
     });
@@ -344,7 +344,7 @@ exports.verifyOauth = function(config, server) {
             });
         });
 
-        describe('requires authentication', function(done) {
+        describe('requires authentication', function() {
 
           it('missing auth', function(done) {
             var q = {
@@ -480,13 +480,6 @@ exports.verifyOauth = function(config, server) {
       });
 
       describe('Error Response (redirect)', function() {
-
-        // todo...?
-        it('invalid_request');
-        it('unauthorized_client');
-        it('unsupported_response_type');
-        it('server_error');
-        it('temporarily_unavailable');
 
         it('unknown scope (invalid_scope)', function(done) {
           var q = {
@@ -701,7 +694,6 @@ exports.verifyOauth = function(config, server) {
 
       beforeEach(function(done) {
 
-        // todo: need to figure out apigee setup for this
         selectedScope = _.find(scopes, function(ea) { return ea !== defaultScope; });
         var q = {
           grant_type: 'password',
@@ -742,9 +734,10 @@ exports.verifyOauth = function(config, server) {
           .auth(client_id, client_secret)
           .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
           .end(function(err, res) {
+            if (err) { return done(err); }
 
-            resp.body.should.have.property('scope');
-            var refreshScopes = resp.body.scope.split(' ');
+            res.body.should.have.property('scope');
+            var refreshScopes = res.body.scope.split(' ');
 
             _.difference(refreshScopes, originalScopes).should.be.empty;
             done();
@@ -1011,7 +1004,7 @@ exports.verifyOauth = function(config, server) {
       if (reqHash.response_type === 'code') {
         resHash.should.have.property('code');
       } else {
-        resHash.should.have.property('access_token');
+        resHash.should.have.property('access_doken');
         if (resHash && resHash.scope === DOGS_SCOPE) { // only check when appropriate scope for token
           verifyAccessToken(resHash.access_token);
         }
