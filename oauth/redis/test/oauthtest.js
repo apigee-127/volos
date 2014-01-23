@@ -24,7 +24,7 @@
 "use strict";
 
 var config = require('../../../common/testconfig-redis');
-var oathTest = require('../../test/rfc6749_express_test');
+//var oathTest = require('../../test/rfc6749_express_test');
 var oathTest = require('../../test/rfc6749_argo_test');
 
 describe('Redis', function() {

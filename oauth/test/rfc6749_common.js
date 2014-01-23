@@ -1004,7 +1004,7 @@ exports.verifyOauth = function(config, server) {
       if (reqHash.response_type === 'code') {
         resHash.should.have.property('code');
       } else {
-        resHash.should.have.property('access_doken');
+        resHash.should.have.property('access_token');
         if (resHash && resHash.scope === DOGS_SCOPE) { // only check when appropriate scope for token
           verifyAccessToken(resHash.access_token);
         }
