@@ -144,7 +144,7 @@ exports.testCache = function(config, Spi) {
               });
             }, 500);
           });
-        }, 500);
+        }, 501);
       });
     });
 
@@ -168,7 +168,7 @@ exports.testCache = function(config, Spi) {
               });
             }, 500);
           });
-        }, 500);
+        }, 501);
       });
     });
 
