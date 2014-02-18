@@ -161,7 +161,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
   }
 
   var validScopes = app.scopes;
-  if (!Array.isArray(validScopes)) {
+  if (validScopes && !Array.isArray(validScopes)) {
     validScopes = validScopes.split(' ');
   }
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
