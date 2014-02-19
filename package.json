@@ -10,6 +10,7 @@
     "node-uuid" : "x.x.x",
     "longjohn" : "x.x.x",
     "should" : "x.x.x",
-    "underscore" : "x.x.x"
+    "underscore" : "x.x.x",
+    "twit": "x.x.x"
   }
 }
