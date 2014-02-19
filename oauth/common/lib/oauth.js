@@ -175,6 +175,7 @@ function doAuthorize(self, grantType, q, cb) {
  *   authorizeHeader: if an Authorize header was on the request, include it here
  *   tokenLifetime: The time, in milliseconds, when the token should expire. If not specified,
  *     taken from the parent, otherwise it uses a system-level default
+ *   attributes: An array of custom attributes to store with the token. [{}]
  */
 OAuth.prototype.generateToken = function(body, options, cb) {
   // From RFC6749
@@ -286,26 +287,24 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
   }
 
   if (!self.passwordCheck) {
-    cb(makeError('internal_error', 'Password check function not supplied'));
-    return;
+    return cb(makeError('internal_error', 'Password check function not supplied'));
   }
   if (!parsedBody.username || !parsedBody.password) {
-    cb(makeError('invalid_request', 'Missing username and password parameters'));
-    return;
+    return cb(makeError('invalid_request', 'Missing username and password parameters'));
   }
-  if (!self.passwordCheck(parsedBody.username, parsedBody.password)) {
-    cb(makeError('invalid_client', 'Invalid credentials'));
-    return;
-  }
-  gr.username = parsedBody.username;
-  gr.password = parsedBody.password;
+  self.passwordCheck(parsedBody.username, parsedBody.password, function(err, result) {
+    if (!result) { return cb(makeError('invalid_client', 'Invalid credentials')); }
 
-  self.spi.createTokenPasswordCredentials(gr, function(err, result) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, result);
-    }
+    gr.username = parsedBody.username;
+    gr.password = parsedBody.password;
+
+    self.spi.createTokenPasswordCredentials(gr, function(err, result) {
+      if (err) {
+        cb(err);
+      } else {
+        cb(undefined, result);
+      }
+    });
   });
 }
 

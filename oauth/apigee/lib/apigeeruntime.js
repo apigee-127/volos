@@ -80,7 +80,8 @@ var ApigeeRuntimeSpi = function(options) {
  */
 ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
   var qs = {
-    grant_type: 'client_credentials'
+    grant_type: 'client_credentials',
+    attributes: [{ name: 'attr_name', value: 'attr_value', display: true }]
   };
   if (options.scope) {
     qs.scope = options.scope;

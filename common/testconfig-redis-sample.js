@@ -37,8 +37,8 @@ var config = {
   passwordCheck: checkPassword
 };
 
-function checkPassword(username, password) {
-  return username === VALID_USER_CREDS.username && password === VALID_USER_CREDS.password;
+function checkPassword(username, password, cb) {
+  cb(null, username === VALID_USER_CREDS.username && password === VALID_USER_CREDS.password);
 }
 
 var Management = require('volos-management-redis');

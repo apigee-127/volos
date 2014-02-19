@@ -33,8 +33,8 @@ var config = {
   passwordCheck: checkPassword
 };
 
-function checkPassword(username, password) {
-  return true;
+function checkPassword(username, password, cb) {
+  cb(null, true);
 }
 
 var Management = require('volos-management-apigee');

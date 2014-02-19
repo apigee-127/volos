@@ -46,8 +46,8 @@ function initOauth(app) {
 
   oauth = OAuth.create(oauthConfig);
 
-  function oauthCheckPassword(username, password) {
-    return username === 'sganyo' && password === 'password'; // implement appropriately
+  function oauthCheckPassword(username, password, cb) {
+    cb(null, username === 'sganyo' && password === 'password'); // implement appropriately
   }
 
   console.log('Initialized OAuth');

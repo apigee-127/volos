@@ -31,7 +31,7 @@ var config = {
   localPort: 10000
 };
 
-function checkPassword(username, password) {
-  return true;
+function checkPassword(username, password, cb) {
+  cb(null, true);
 }
 module.exports = config;
