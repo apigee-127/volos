@@ -175,7 +175,6 @@ function doAuthorize(self, grantType, q, cb) {
  *   authorizeHeader: if an Authorize header was on the request, include it here
  *   tokenLifetime: The time, in milliseconds, when the token should expire. If not specified,
  *     taken from the parent, otherwise it uses a system-level default
- *   attributes: An array of custom attributes to store with the token. [{}]
  */
 OAuth.prototype.generateToken = function(body, options, cb) {
   // From RFC6749
