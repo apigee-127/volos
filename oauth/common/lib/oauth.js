@@ -50,8 +50,13 @@ var GrantTypeFunctions = {
  * Options:
  *   validGrantTypes: An array of OAuth 2.0 grant types that will be supported. If not specified, only
  *      "authorization_code" will be supported.
- *   tokenLifetime: The default length of time, in milliseconds, that a token will survive until being expired.
- *     Optional.
+ *   tokenLifetime: The default length of time, in milliseconds, that a token will survive until being
+ *      expired. Optional.
+ *   beforeCreateToken: An optional function that can customize the parameters passed to the token generation
+ *      function. This is intended mostly to add a custom attributes field to the options hash, but could
+ *      be used for other reasons. The callback must be called with no arguments to continue. If the callback
+ *      is called with an error, a token will not be generated and the error will be returned to the client.
+ *      Function signature: function beforeCreateToken(parsedBody, options, cb);
  */
 
 function OAuth(spi, options) {
@@ -61,6 +66,7 @@ function OAuth(spi, options) {
   this.validGrantTypes = options.validGrantTypes;
   this.tokenLifetime = options.tokenLifetime;
   this.passwordCheck = options.passwordCheck;
+  this.beforeCreateToken = options.beforeCreateToken;
 }
 module.exports = OAuth;
 
@@ -75,7 +81,8 @@ OAuth.prototype.expressMiddleware = function(options) {
 };
 
 var DefaultOptions = {
-  validGrantTypes: [ 'authorization_code' ]
+  validGrantTypes: [ 'authorization_code' ],
+  beforeCreateToken: function(hash, options, cb) { cb(); }
 };
 
 function applyModuleDefaults(options) {
@@ -84,6 +91,9 @@ function applyModuleDefaults(options) {
   }
   if (!options.validGrantTypes) {
     options.validGrantTypes = DefaultOptions.validGrantTypes;
+  }
+  if (!options.beforeCreateToken) {
+    options.beforeCreateToken = DefaultOptions.beforeCreateToken;
   }
   return options;
 }
@@ -175,6 +185,7 @@ function doAuthorize(self, grantType, q, cb) {
  *   authorizeHeader: if an Authorize header was on the request, include it here
  *   tokenLifetime: The time, in milliseconds, when the token should expire. If not specified,
  *     taken from the parent, otherwise it uses a system-level default
+ *   attributes: An array of custom attributes to store with the token. [{}]
  */
 OAuth.prototype.generateToken = function(body, options, cb) {
   // From RFC6749
@@ -212,29 +223,34 @@ OAuth.prototype.generateToken = function(body, options, cb) {
     }
   }
 
-  if (GrantTypeFunctions[parsedBody.grant_type]) {
-    if (debugEnabled) { debug("grant_type: " + parsedBody.grant_type); }
-    GrantTypeFunctions[parsedBody.grant_type](this, parsedBody, idSecret[0], idSecret[1],
-                                              options, function(err, result) {
-        if (err) {
-          err = makeError(err);
-          if (options.authorizeHeader && err.code === 'invalid_client') {
-            err.statusCode = 401;
-            var auth = options.authorizeHeader.split(' ')[0];
-            if (auth === 'Basic') {
-              err.headers = {'WWW-Authenticate': 'Basic realm=' + idSecret[0]};
-            }
+  var createTokenFunction = GrantTypeFunctions[parsedBody.grant_type];
+
+  if (!createTokenFunction) { return cb(makeError('unsupported_grant_type', 'Unsupported grant type')); }
+
+  if (debugEnabled) { debug("grant_type: " + parsedBody.grant_type); }
+
+  var self = this;
+  this.beforeCreateToken(parsedBody, options, function(err) {
+    if (err) { return cb(err); }
+
+    createTokenFunction(self, parsedBody, idSecret[0], idSecret[1], options, function(err, result) {
+      if (err) {
+        err = makeError(err);
+        if (options.authorizeHeader && err.code === 'invalid_client') {
+          err.statusCode = 401;
+          var auth = options.authorizeHeader.split(' ')[0];
+          if (auth === 'Basic') {
+            err.headers = {'WWW-Authenticate': 'Basic realm=' + idSecret[0]};
           }
-          cb(err);
-        } else {
-          debug('createToken : ' + result.access_token);
-          result.token_type = TOKEN_TYPE;
-          cb(undefined, result);
         }
+        cb(err);
+      } else {
+        debug('createToken : ' + result.access_token);
+        result.token_type = TOKEN_TYPE;
+        cb(undefined, result);
+      }
     });
-  } else {
-    cb(makeError('unsupported_grant_type', 'Unsupported grant type'));
-  }
+  });
 };
 
 var GenerateTokenDefaults = {
