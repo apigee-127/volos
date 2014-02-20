@@ -106,6 +106,7 @@ OAuthExpress.prototype.authenticate = function(scopes) {
           makeError(err, resp);
           // In express, once we set the response we're done
         } else {
+          req.token = result;
           next();
         }
       }
