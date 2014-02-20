@@ -46,7 +46,7 @@ auth_details = {
  scope: scope
 }
 
- schema:
+schema:
  volos:oauth:access_token -> token_details
  volos:oauth:client_id:refresh_token -> token_details
  volos:oauth:client_id:auth_code -> auth_details
@@ -285,20 +285,22 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScop
   debug('verifyToken: ' + token);
   var self = this;
   self.client.get(_key(token), function(err, reply) {
-    if (err || !reply) {
-      return cb(invalidRequestError());
-    } else {
-      var token_details = JSON.parse(reply);
-          if (!Array.isArray(requiredScopes)) {
-            requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
-          }
-          var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
-          if (_.difference(requiredScopes, grantedScopes).length > 0) {
-            cb(errorWithCode('invalid_scope'));
-          }
-        }
-        var result = { appId: token_details.application_id, developerId: token_details.developerId };
-        return cb(null, result);
+    if (err || !reply) { return cb(invalidRequestError()); }
+
+    var token_details = JSON.parse(reply);
+    if (!Array.isArray(requiredScopes)) {
+      requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
+    }
+    var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
+    if (_.difference(requiredScopes, grantedScopes).length > 0) {
+      cb(errorWithCode('invalid_scope'));
+    }
+    var result = {
+      appId: token_details.application_id,
+      developerId: token_details.developer_id,
+      attributes: token_details.attributes
+    };
+    return cb(null, result);
   });
 };
 
@@ -407,7 +409,7 @@ function storeToken(client, app, token, type, clientId, ttl, scope, attributes, 
   };
   if (scope) { response.scope = scope; }
   if (attributes) { response.attributes = attributes; }
-  var stored = JSON.stringify(_.extend({ application_id: app.id }, response));
+  var stored = JSON.stringify(_.extend({ application_id: app.id, developer_id: app.developerId }, response));
   var key = (type === REFRESH_TYPE) ? _key(clientId, token) :_key(token);
   if (ttl) {
     client.setex(key, ttl, stored, function(err, reply) {

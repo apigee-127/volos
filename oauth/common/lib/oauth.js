@@ -279,6 +279,9 @@ function clientCredentialsGrant(self, parsedBody, clientId, clientSecret, option
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
   }
+  if (options.attributes) {
+    gr.attributes = options.attributes;
+  }
 
   self.spi.createTokenClientCredentials(gr, function(err, result) {
     if (err) {
@@ -290,6 +293,12 @@ function clientCredentialsGrant(self, parsedBody, clientId, clientSecret, option
 }
 
 function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, options, cb) {
+  if (!self.passwordCheck) {
+    return cb(makeError('internal_error', 'Password check function not supplied'));
+  }
+  if (!parsedBody.username || !parsedBody.password) {
+    return cb(makeError('invalid_request', 'Missing username and password parameters'));
+  }
   var gr = {
     clientId: clientId,
     clientSecret: clientSecret
@@ -300,13 +309,10 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
   }
+  if (options.attributes) {
+    gr.attributes = options.attributes;
+  }
 
-  if (!self.passwordCheck) {
-    return cb(makeError('internal_error', 'Password check function not supplied'));
-  }
-  if (!parsedBody.username || !parsedBody.password) {
-    return cb(makeError('invalid_request', 'Missing username and password parameters'));
-  }
   self.passwordCheck(parsedBody.username, parsedBody.password, function(err, result) {
     if (!result) { return cb(makeError('invalid_client', 'Invalid credentials')); }
 
@@ -338,6 +344,9 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
   }
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
+  }
+  if (options.attributes) {
+    gr.attributes = options.attributes;
   }
 
   self.spi.createTokenAuthorizationCode(gr, function(err, result) {
