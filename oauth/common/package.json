@@ -1,18 +1,22 @@
 {
   "name": "volos-oauth-common",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "MIT",
   "main": "lib/oauth.js",
   "description": "Support for OAuth providers in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["oauth", "express", "argo", "node.js"],
-  "dependencies":  {
-    "underscore" : "x.x.x"
+  "keywords": [
+    "oauth",
+    "express",
+    "argo",
+    "node.js"
+  ],
+  "dependencies": {
+    "underscore": "x.x.x"
   },
-  "devDependencies": {
-  },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/apigee/volos.git"
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
   }
 }
