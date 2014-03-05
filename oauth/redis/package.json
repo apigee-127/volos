@@ -10,7 +10,8 @@
     "redis" : "0.9.x",
     "node-uuid" : "x.x.x",
     "volos-oauth-common": "x.x.x",
-    "volos-management-redis": "x.x.x"
+    "volos-management-redis": "x.x.x",
+    "underscore" : "x.x.x"
    },
   "devDependencies": {
     "supertest" : "x.x.x"
