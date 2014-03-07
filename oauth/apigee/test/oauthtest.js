@@ -24,9 +24,11 @@
 "use strict";
 
 var config = require('../../../common/testconfig-apigee');
-var oathTest = require('../../test/rfc6749_express_test');
+var specTest = require('../../test/rfc6749_express_test');
+var extensionsTest = require('../../test/extensions_test');
 
 describe('Apigee', function() {
-  this.timeout(10000);
-  oathTest.verifyOauth(config);
+  this.timeout(20000);
+  specTest.verifyOauth(config);
+  extensionsTest.verifyOauth(config);
 });

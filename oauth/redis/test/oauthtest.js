@@ -25,8 +25,10 @@
 
 var config = require('../../../common/testconfig-redis');
 //var oathTest = require('../../test/rfc6749_express_test');
-var oathTest = require('../../test/rfc6749_argo_test');
+var specTest = require('../../test/rfc6749_argo_test');
+var extensionsTest = require('../../test/extensions_test');
 
 describe('Redis', function() {
-  oathTest.verifyOauth(config);
+  specTest.verifyOauth(config);
+  extensionsTest.verifyOauth(config);
 });

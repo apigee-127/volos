@@ -7,4 +7,7 @@
       <GrantType>authorization_code</GrantType>
     </SupportedGrantTypes>
     <GenerateResponse enabled="true"/>
+  <Attributes>
+    <Attribute name="attributes" ref="request.header.x-DNA-Token-Attributes"></Attribute>
+  </Attributes>
 </OAuthV2>

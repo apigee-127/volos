@@ -330,6 +330,9 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
   if (options.tokenLifetime) {
     r.headers['x-DNA-Token-Lifetime'] = options.tokenLifetime;
   }
+  if (options.attributes) {
+    r.headers['x-DNA-Token-Attributes'] = JSON.stringify(options.attributes);
+  }
   r.method = verb;
   if (body) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -436,6 +439,9 @@ function requestComplete(resp, options, cb) {
         if (options.grantType) {
           json.token_type = options.grantType;
         }
+        if (json.attributes) {
+          json.attributes = JSON.parse(json.attributes);
+        }
       } catch (e) {
         // The response might not be JSON -- not everything returns it
         return cb();
@@ -485,7 +491,9 @@ function verifyRequestComplete(resp, cb) {
       cb(err);
     } else {
       if (cb) {
-        cb(undefined, querystring.parse(respData));
+        var parsed = querystring.parse(respData);
+        if (parsed.attributes) { parsed.attributes = JSON.parse(parsed.attributes); }
+        cb(undefined, parsed);
       }
     }
   });
