@@ -427,19 +427,20 @@ function requestComplete(resp, options, cb) {
       }
       cb(err);
     } else {
+      var json;
       try {
-        var ret = JSON.parse(respData);
-        if (ret.expires_in) {
-          ret.expires_in = parseInt(ret.expires_in, 10);
+        json = JSON.parse(respData);
+        if (json.expires_in) {
+          json.expires_in = parseInt(json.expires_in, 10);
         }
         if (options.grantType) {
-          ret.token_type = options.grantType;
+          json.token_type = options.grantType;
         }
-        cb(undefined, ret);
       } catch (e) {
         // The response might not be JSON -- not everything returns it
-        cb();
+        return cb();
       }
+      cb(undefined, json);
     }
   });
 }
