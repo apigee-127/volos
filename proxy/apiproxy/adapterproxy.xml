@@ -10,7 +10,7 @@
     <Policies>
         <Policy>ExtractInvalidateParams</Policy>
         <Policy>GenerateAuthorizationCode</Policy>
-        <Policy>GenerateTokenAuthoriationCode</Policy>
+        <Policy>GenerateTokenAuthorizationCode</Policy>
         <Policy>GenerateTokenClientCredentials</Policy>
         <Policy>GenerateTokenImplicit</Policy>
         <Policy>GenerateTokenPasswordCredentials</Policy>

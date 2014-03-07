@@ -48,7 +48,7 @@
             <Request>
                 <Step>
                     <FaultRules/>
-                    <Name>GenerateTokenAuthoriationCode</Name>
+                    <Name>GenerateTokenAuthorizationCode</Name>
                 </Step>
             </Request>
             <Response/>

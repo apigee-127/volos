@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<OAuthV2 name="GenerateTokenAuthoriationCode">
-    <DisplayName>GenerateTokenAuthoriationCode</DisplayName>
+<OAuthV2 name="GenerateTokenAuthorizationCode">
+    <DisplayName>GenerateTokenAuthorizationCode</DisplayName>
     <Operation>GenerateAccessToken</Operation>
     <ExpiresIn ref="request.header.x-DNA-Token-Lifetime">3600000</ExpiresIn>
     <SupportedGrantTypes>
