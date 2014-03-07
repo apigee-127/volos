@@ -451,6 +451,9 @@ OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, required
   } else if (typeof path === 'function') {
     cb = path;
     path = undefined;
+  } else if (typeof requiredScopes === 'function') {
+    cb = requiredScopes;
+    requiredScopes = undefined;
   }
 
   var hdr = /Bearer (.+)/.exec(authorizationHeader);
