@@ -161,6 +161,7 @@ OAuthExpress.prototype.invalidateToken = function() {
 };
 
 function getRequestBody(req, cb) {
+  if (req.complete) { return cb(req.body); }
   var body = '';
   req.setEncoding('utf8');
   req.on('readable', function() {
