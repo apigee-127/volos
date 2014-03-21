@@ -13,7 +13,7 @@
     "volos-oauth-common": "x.x.x"
   },
   "devDependencies": {
-    "supertest": "x.x.x"
+    "supertest" : "0.8.x"
   },
   "repository": {
     "type": "git",

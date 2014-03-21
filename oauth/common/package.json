@@ -12,9 +12,10 @@
     "node.js"
   ],
   "dependencies": {
-    "underscore": "x.x.x"
+    "underscore": "1.6.x"
   },
-  "devDependencies": {},
+  "devDependencies": {
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"

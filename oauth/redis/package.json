@@ -12,13 +12,13 @@
   ],
   "dependencies": {
     "redis": "0.9.x",
-    "node-uuid": "x.x.x",
+    "node-uuid": "1.4.x",
     "volos-oauth-common": "x.x.x",
     "volos-management-redis": "x.x.x",
-    "underscore": "x.x.x"
+    "underscore": "1.6.x"
   },
   "devDependencies": {
-    "supertest": "x.x.x"
+    "supertest": "0.8.x"
   },
   "repository": {
     "type": "git",

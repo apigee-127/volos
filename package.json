@@ -4,13 +4,13 @@
   "comments": "This package.json is here so we can get dependencies to run tests",
   "dependencies":  {
     "express": "3.4.x",
-    "argo": "x.x.x",
-    "supertest" : "x.x.x",
+    "argo": "0.4.x",
+    "supertest" : "0.8.x",
     "redis" : "0.9.x",
-    "node-uuid" : "x.x.x",
-    "longjohn" : "x.x.x",
-    "should" : "x.x.x",
-    "underscore" : "x.x.x",
-    "twit": "x.x.x"
+    "node-uuid" : "1.4.x",
+    "longjohn" : "0.2.x",
+    "should" : "3.1.x",
+    "underscore" : "1.6.x",
+    "twit": "1.1.x"
   }
 }

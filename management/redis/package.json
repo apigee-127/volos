@@ -8,10 +8,10 @@
   "keywords": ["redis", "node.js"],
   "dependencies":  {
     "redis" : "0.9.x",
-    "node-uuid" : "x.x.x"
+    "node-uuid" : "1.4.x"
   },
   "devDependencies": {
-    "supertest" : "x.x.x"
+    "supertest" : "0.8.x"
   },
   "repository" : {
     "type" : "git",
