@@ -181,8 +181,6 @@ OAuthArgo.prototype.authenticate = function(scopes, env, next) {
     var parsedUrl = url.parse(env.request.url);
     this.oauth.verifyToken(
       env.request.headers.authorization,
-      env.request.method,
-      parsedUrl.pathname,
       scopes,
       function(err, result) {
         if (err) {

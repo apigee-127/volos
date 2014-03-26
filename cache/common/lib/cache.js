@@ -75,7 +75,7 @@ Cache.prototype.set = function(key, v, o, c) {
     options = {};
     callback = o;
   } else {
-    if (typeof c !== 'function') {
+    if (c && typeof c !== 'function') {
       throw new Error('callback must be a function');
     }
     options = o;

@@ -35,10 +35,11 @@
 /*
 token_details = {
   access_token: token,
-  expires_in: ttl,
+  issued_at: time, // in ms
+  ttl: ttl, // in secs
   scope: scope,
-  application_id,
-  developer_id
+  application_id: application_id,
+  developer_id: developer_id
 }
 
 auth_details = {
@@ -281,7 +282,7 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 /*
  * Validate an access token.
  */
-RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
+RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   debug('verifyToken: ' + token);
   var self = this;
   self.client.get(_key(token), function(err, reply) {
@@ -293,18 +294,29 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScop
     }
     var grantedScopes = token_details.scope ? token_details.scope.split(' ') : [];
     if (_.difference(requiredScopes, grantedScopes).length > 0) {
-      cb(errorWithCode('invalid_scope'));
+      return cb(errorWithCode('invalid_scope'));
     }
+    var expires_in = calculateExpiresIn(token_details);
+    if (!expires_in) { return cb(invalidRequestError()); }
     var result = {
       appId: token_details.application_id,
       developerId: token_details.developer_id,
-      attributes: token_details.attributes
+      attributes: token_details.attributes,
+      expires_in: expires_in
     };
     return cb(null, result);
   });
 };
 
 // utility functions
+
+// in seconds
+function calculateExpiresIn(token_details) {
+  var now = new Date().getTime();
+  var expiration = token_details.issued_at + (token_details.ttl * 1000);
+  var remaining = expiration - now;
+  return (remaining > 0) ? (remaining / 1000) : 0;
+}
 
 function createAndStoreAuthCode(self, clientId, requestedScope, redirectUri, cb) {
   self.mgmt.getAppForClientId(clientId, function(err, app) {
@@ -403,13 +415,16 @@ function genSecureToken() {
 function storeToken(client, app, token, type, clientId, ttl, scope, attributes, cb) {
   debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : ''));
   var response = {
+    issued_at: new Date().getTime(),
     access_token: token,
-    expires_in: ttl,
+    ttl: ttl,
     scope: scope
   };
   if (scope) { response.scope = scope; }
   if (attributes) { response.attributes = attributes; }
   var stored = JSON.stringify(_.extend({ application_id: app.id, developer_id: app.developerId }, response));
+  response.expires_in = ttl;
+  delete(response.ttl);
   var key = (type === REFRESH_TYPE) ? _key(clientId, token) :_key(token);
   if (ttl) {
     client.setex(key, ttl, stored, function(err, reply) {

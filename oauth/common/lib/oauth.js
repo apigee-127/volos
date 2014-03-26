@@ -70,6 +70,11 @@ function OAuth(spi, options) {
 }
 module.exports = OAuth;
 
+OAuth.prototype.useCache = function(cache) {
+  var OAuthCache = require('./oauth-cache');
+  this.spi = OAuthCache.create(cache, this.spi);
+};
+
 OAuth.prototype.argoMiddleware = function(options) {
   var mw = require('./oauth-argo');
   return new mw(this, options);
@@ -444,14 +449,8 @@ OAuth.prototype.invalidateToken = function(body, options, cb) {
  * Verify a token given an authorization header, plus optional path and
  * verb. Some implementations may use those in order to do additional checks.
  */
-OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, requiredScopes, cb) {
-  if (typeof verb === 'function') {
-    cb = verb;
-    verb = undefined;
-  } else if (typeof path === 'function') {
-    cb = path;
-    path = undefined;
-  } else if (typeof requiredScopes === 'function') {
+OAuth.prototype.verifyToken = function(authorizationHeader, requiredScopes, cb) {
+  if (typeof requiredScopes === 'function') {
     cb = requiredScopes;
     requiredScopes = undefined;
   }
@@ -463,7 +462,7 @@ OAuth.prototype.verifyToken = function(authorizationHeader, verb, path, required
   }
 
   debug('verifyToken : ' + hdr[1]);
-  this.spi.verifyToken(hdr[1], verb, path, requiredScopes,
+  this.spi.verifyToken(hdr[1], requiredScopes,
     function(err, result) {
       if (err) {
         cb(makeError('invalid_grant', err.message));

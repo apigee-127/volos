@@ -95,8 +95,6 @@ OAuthExpress.prototype.authenticate = function(scopes) {
     debug('Express authenticate');
     self.oauth.verifyToken(
       req.get('authorization'),
-      req.method,
-      req.path,
       scopes,
       function(err, result) {
         if (err) {

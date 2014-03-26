@@ -2,7 +2,7 @@
 <AssignMessage async="false" continueOnError="false" enabled="true" name="GenerateVerifyResponse">
     <DisplayName>GenerateVerifyResponse</DisplayName>
     <Set>
-      <Payload contentType="application/x-www-form-urlencoded">developerId={developer.id}&amp;appName={developer.app.name}&amp;appId={developer.app.id}&amp;attributes={accesstoken.attributes}</Payload>
+      <Payload contentType="application/x-www-form-urlencoded">developerId={developer.id}&amp;appName={developer.app.name}&amp;appId={developer.app.id}&amp;attributes={accesstoken.attributes}&amp;expires_in={expires_in}</Payload>
     </Set>
     <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
     <AssignTo createNew="false" transport="http" type="response"/>

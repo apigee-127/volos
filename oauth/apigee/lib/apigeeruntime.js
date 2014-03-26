@@ -282,7 +282,7 @@ ApigeeRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 /*
  * Validate an access token.
  */
-ApigeeRuntimeSpi.prototype.verifyToken = function(token, verb, path, requiredScopes, cb) {
+ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   var urlString = this.uri + '/tokentypes/all/verify';
   if (requiredScopes) {
     urlString = urlString + '?' + querystring.stringify({ scope: requiredScopes });

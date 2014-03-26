@@ -690,7 +690,7 @@ exports.verifyOauth = function(config, server) {
 
     describe('6. Refreshing an Access Token', function() {
 
-      var refreshToken, resp, selectedScope;
+      var refreshToken, resp, selectedScope, originalScope;
 
       beforeEach(function(done) {
 
@@ -719,7 +719,7 @@ exports.verifyOauth = function(config, server) {
 
       it('must not include any scope not originally granted by the resource owner', function(done) {
         if (!selectedScope) { console.log('cannot determine a non-default scope to test'); return done(); }
-        var originalScope = resp.body.scope;
+        originalScope = resp.body.scope;
         if (!originalScope) {
           // technically, the server could opt to not include the scope if granted as requested
           console.log('an explicit scope is not included, cannot test');
@@ -782,7 +782,7 @@ exports.verifyOauth = function(config, server) {
           refresh_token: refreshToken,
           client_id: client_id,
           client_secret: client_secret,
-          scope: selectedScope
+          scope: originalScope
         };
       });
 
@@ -905,7 +905,7 @@ exports.verifyOauth = function(config, server) {
               // spec gives the option of invalid_token or returning some other scope...
               if (res.status === 200) { // server-chosen scope
                 res.body.should.have.property('scope');
-                done(); // note: can't verify
+                done(); // note: can't verify the wrong scope
 //                verify51SuccessfulResponse(err, res, done);
               } else { // invalid_scope
                 verify52ErrorResponse(err, res, done, 'invalid_scope');
@@ -928,7 +928,9 @@ exports.verifyOauth = function(config, server) {
       res.headers.pragma.should.eql('no-cache');
 
       res.body.should.have.properties('access_token', 'token_type');
-      verifyAccessToken(res.body.access_token);
+      if (res.body.scope.indexOf(DOGS_SCOPE) > 0) { // can only verify if appropriate scope
+        verifyAccessToken(res.body.access_token);
+      }
 
       // expires_in is optional (though recommended)
       if (res.body.expires_in) { res.body.expires_in.should.be.a.number; }
@@ -946,7 +948,11 @@ exports.verifyOauth = function(config, server) {
           res.status.should.eql(200);
           res.body.should.have.property('access_token');
           var accessToken = res.body.access_token;
-          verifyAccessToken(accessToken, done);
+          if (res.body.scope.indexOf(DOGS_SCOPE) > 0) { // can only verify if appropriate scope
+            verifyAccessToken(accessToken, done);
+          } else {
+            if (done) { done(); }
+          }
         });
     }
 

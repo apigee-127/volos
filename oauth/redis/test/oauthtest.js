@@ -24,11 +24,27 @@
 "use strict";
 
 var config = require('../../../common/testconfig-redis');
-//var oathTest = require('../../test/rfc6749_express_test');
-var specTest = require('../../test/rfc6749_argo_test');
+var expressTest = require('../../test/rfc6749_express_test');
+var argoTest = require('../../test/rfc6749_argo_test');
 var extensionsTest = require('../../test/extensions_test');
 
 describe('Redis', function() {
-  specTest.verifyOauth(config);
-  extensionsTest.verifyOauth(config);
+
+  describe('via Argo', function() {
+    argoTest.verifyOauth(config);
+    extensionsTest.verifyOauth(config);
+  });
+
+  describe('via Express', function() {
+    expressTest.verifyOauth(config);
+    extensionsTest.verifyOauth(config);
+
+    describe('with cache', function() {
+      var Cache = require('volos-cache-memory');
+      var cache = Cache.create('OAuth cache');
+      config.oauth.useCache(cache);
+      expressTest.verifyOauth(config);
+      extensionsTest.verifyOauth(config);
+    });
+  });
 });
