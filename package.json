@@ -1,6 +1,6 @@
 {
   "name": "Volos",
-  "version": "0.0.1",
+  "version": "0.9.0",
   "comments": "This package.json is here so we can get dependencies to run tests",
   "dependencies":  {
     "express": "3.4.x",

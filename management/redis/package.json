@@ -1,6 +1,6 @@
 {
   "name": "volos-management-redis",
-  "version": "0.0.3",
+  "version": "0.9.0",
   "license": "MIT",
   "main": "lib/redismgmt.js",
   "description": "Redis-backed management in the Volos system.",

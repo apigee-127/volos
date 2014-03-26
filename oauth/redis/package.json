@@ -1,6 +1,6 @@
 {
   "name": "volos-oauth-redis",
-  "version": "0.0.8",
+  "version": "0.9.0",
   "license": "MIT",
   "main": "lib/redisruntime.js",
   "description": "Redis-backed OAuth library in the Volos system.",
@@ -13,8 +13,8 @@
   "dependencies": {
     "redis": "0.9.x",
     "node-uuid": "1.4.x",
-    "volos-oauth-common": "x.x.x",
-    "volos-management-redis": "x.x.x",
+    "volos-oauth-common": "0.9.x",
+    "volos-management-redis": "0.9.x",
     "underscore": "1.6.x"
   },
   "devDependencies": {
