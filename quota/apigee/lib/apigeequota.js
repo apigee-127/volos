@@ -168,13 +168,14 @@ function requestComplete(resp, cb) {
       err.message = respData;
       cb(err);
     } else {
+      var ret;
       try {
-        var ret = querystring.parse(respData);
-        cb(undefined, ret);
+        ret = querystring.parse(respData);
       } catch (e) {
         // The response might not be a query string -- not everything returns it
         cb(e);
       }
+      cb(undefined, ret);
     }
   });
 }
