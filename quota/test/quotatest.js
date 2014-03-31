@@ -35,8 +35,8 @@ function extend(a, b) {
 }
 
 // avoid run to run conflicts
-function id(id) {
-  return 'test:' + random + ":" + id;
+function id(_id) {
+  return 'test:' + random + ":" + _id;
 }
 
 exports.testQuota = function(config, Spi) {
@@ -158,7 +158,7 @@ exports.testQuota = function(config, Spi) {
                       checkResult(result, 2, 1, true);
                       done();
                     });
-                  }, 60001);
+                  }, 30001);
 
                 });
               }, 30001);

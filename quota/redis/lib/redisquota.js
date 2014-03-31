@@ -59,27 +59,22 @@ RedisQuotaSpi.prototype.destroy = function() {
 
 RedisQuotaSpi.prototype.apply = function(options, cb) {
   var self = this;
-  this.client.get(options.identifier, function(err, reply) {
+  self.client.incrby(options.identifier, options.weight, function(err, count) {
     if (err) { return cb(err, null); }
-    var count = reply || 0;
-    var ttl = ((self.calculateExpiration(Date.now()) / 1000) >> 0);
 
-    var multi = self.client.multi();
-    multi.incrby(options.identifier, options.weight);
-    multi.expireat(options.identifier, ttl);
-    multi.exec(function(err, reply) {
-      if (err) { return cb(err, null); }
+    if (count === options.weight) {
+      var ttl = ((self.calculateExpiration(Date.now()) / 1000) >> 0);
+      self.client.expireat(options.identifier, ttl);
+    }
 
-      count = reply[0] || 0;
-      var allow = options.allow || self.options.allow;
+    var allow = options.allow || self.options.allow;
 
-      var result = {
-        allowed: allow,
-        used: count,
-        isAllowed: (count <= allow)
-      };
-      cb(undefined, result);
-    });
+    var result = {
+      allowed: allow,
+      used: count,
+      isAllowed: (count <= allow)
+    };
+    cb(undefined, result);
   });
 };
 
