@@ -421,7 +421,7 @@ function requestComplete(resp, options, cb) {
       err.statusCode = resp.statusCode;
       if (resp.statusCode === 400 || resp.statusCode === 401) { // oauth return
         var ret = JSON.parse(respData);
-        if (ret.codeode !== null) {
+        if (ret.ErrorCode !== null) {
           err.code = ret.ErrorCode;
           err.message = ret.Error;
         }
