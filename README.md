@@ -19,9 +19,10 @@ Two implementations are supported:
 Support for "quotas" as implemented in many APIs -- count API calls by minute, hour, day, and week and
 reject them then whey are exceeded.
 
-Two implementations are supported:
+Three implementations are supported:
 
 * volos-quota-memory: Keeps quota buckets in memory
+* volos-quota-redis:  Keeps quota buckets in redis
 * volos-quota-apigee: Communicates with Apigee via API to store quota values across servers
 
 ## volos-cache

@@ -1,7 +1,7 @@
 # volos-quota-apigee
 
 This is an implementation of API quotas for the Volos family of modules. It uses Apigee as a backing store
-to keep quotas sychronized across many nodes. Furthermore, this is the correct module to use if
+to keep quotas synchronized across many nodes. Furthermore, this is the correct module to use if
 deploying the Node.js application to Apigee, because it will result in quotas that work in the same way
 as the quotas that are built in to the Apigee platform.
 
