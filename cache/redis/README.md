@@ -1,8 +1,8 @@
-# volos-quota-redis
+# volos-cache-redis
 
-This is a redis-backed implementation of quota support for Volos.
+This is a redis-backed implementation of cache support for Volos.
 
-Once initialized, the interface to the module is exactly what is in the "volos-quota-common" module. See
+Once initialized, the interface to the module is exactly what is in the "volos-cache-common" module. See
 that module for detailed docs.
 
 ## Initialization
@@ -17,4 +17,4 @@ The options can contain the following parameters:
  options:  redis options (hash, optional) - note: return_buffers will be forced to true
 
 Note: The cache name represents a namespace. A created cache will share values (but not necessary options)
-with other volos-quota-redis caches on this node you create using the same name.
+with other volos-cache-redis caches on this node you create using the same name.

@@ -1,8 +1,8 @@
-# volos-quota-memory
+# volos-cache-memory
 
-This is a memory-backed implementation of quota support for Volos.
+This is a memory-backed implementation of cache support for Volos.
 
-Once initialized, the interface to the module is exactly what is in the "volos-quota-common" module. See
+Once initialized, the interface to the module is exactly what is in the "volos-cache-common" module. See
 that module for detailed docs.
 
 ## Initialization
@@ -14,4 +14,4 @@ The options can contain the following parameters:
  encoding: the default string encoding to use for cached values (optional)
 
 Note: The cache name represents a namespace. A created cache will share values (but not necessary options)
-with other volos-quota-memory caches on this node you create using the same name.
+with other volos-cache-memory caches on this node you create using the same name.
