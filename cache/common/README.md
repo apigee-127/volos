@@ -1,4 +1,4 @@
-# volos-quota-common
+# volos-cache-common
 
 This module adds support for caching to any API.
 
