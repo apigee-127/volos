@@ -1,19 +1,21 @@
 {
   "name": "volos-quota-redis",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "main": "lib/redisquota.js",
   "license": "MIT",
   "description": "Redis provider for Quota enforcement in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["quota", "redis"],
-  "dependencies":  {
+  "keywords": [
+    "quota",
+    "redis"
+  ],
+  "dependencies": {
     "volos-quota-common": "0.9.x",
     "redis": "0.9.x"
   },
-  "devDependencies": {
-  },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/apigee/volos.git"
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
   }
 }

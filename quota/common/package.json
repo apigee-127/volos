@@ -1,17 +1,18 @@
 {
   "name": "volos-quota-common",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "main": "lib/quota.js",
   "license": "MIT",
   "description": "Common library for Quota enforcement in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["quota", "memory"],
-  "dependencies":  {
-  },
-  "devDependencies": {
-  },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/apigee/volos.git"
+  "keywords": [
+    "quota",
+    "memory"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
   }
 }
