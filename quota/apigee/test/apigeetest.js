@@ -24,10 +24,108 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-apigee');
-var commonTest = require('../../test/quotatest');
+var config = require('../../../common/testconfig-apigee').config;
+var assert = require('assert');
+var random = Math.random();
 
 describe('Apigee', function() {
 
-  commonTest.testQuota(config.config, Spi);
+  this.timeout(120000);
+
+  function id(_id) {
+    return 'test:' + random + ":" + _id;
+  }
+
+  function checkResult(result, allowed, used, isAllowed) {
+    assert(result);
+    assert.equal(result.allowed, allowed);
+    assert.equal(result.used, used);
+    assert.equal(result.isAllowed, isAllowed);
+  }
+
+// clone & extend hash
+  var _extend = require('util')._extend;
+  function extend(a, b) {
+    var options = _extend({}, a);
+    options = _extend(options, b);
+    return options;
+  }
+  var pm;
+
+  before(function() {
+    var options = extend(config, {
+      timeUnit: 'minute',
+      interval: 1,
+      allow: 2
+    });
+    pm = Spi.create(options);
+  });
+
+  describe('Rolling', function() {
+
+    it('Minute', function(done) {
+      var hit = { identifier: id('TimeOne'), weight: 1 };
+      pm.apply(hit, function(err, result) {
+        assert(!err);
+        checkResult(result, 2, 1, true);
+
+        var offset = result.expiryTime - (Date.now() + 60000);
+
+        setTimeout(function() {
+          pm.apply(hit, function(err, result) {
+            assert(!err);
+            checkResult(result, 2, 2, true);
+
+            // Ensure quota is reset within a minute
+            setTimeout(function() {
+              pm.apply(hit, function(err, result) {
+                assert(!err);
+                checkResult(result, 2, 1, true);
+                done();
+              });
+            }, 30001 + offset);
+
+          });
+        }, 30001);
+      });
+    });
+  });
+
+  describe('Basic', function() {
+    it('Basic per-minute', function(done) {
+      pm.apply({
+        identifier: id('One'),
+        weight: 1
+      }, function(err, result) {
+        assert(!err);
+        checkResult(result, 2, 1, true);
+
+        pm.apply({
+          identifier: id('Two'),
+          weight: 1
+        }, function(err, result) {
+          assert(!err);
+          checkResult(result, 2, 1, true);
+
+          pm.apply({
+            identifier: id('One'),
+            weight: 1
+          }, function(err, result) {
+            assert(!err);
+            checkResult(result, 2, 2, true);
+
+            pm.apply({
+              identifier: id('One'),
+              weight: 1
+            }, function(err, result) {
+              assert(!err);
+              checkResult(result, 2, 3, false);
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
+
 });

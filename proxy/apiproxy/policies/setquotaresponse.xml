@@ -10,7 +10,9 @@
         <FormParam name="used">{ratelimit.distributedquota.used.count}</FormParam>
         <FormParam name="exceeded">{ratelimit.distributedquota.exceed.count}</FormParam>
         <FormParam name="available">{ratelimit.distributedquota.available.count}</FormParam>
+        <FormParam name="expiry_time">{ratelimit.distributedquota.expiry.time}</FormParam>
         <FormParam name="failed">{ratelimit.failed}</FormParam>
+        <FormParam name="ts">{system.timestamp}</FormParam>
       </FormParams>
     </Set>
     <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>

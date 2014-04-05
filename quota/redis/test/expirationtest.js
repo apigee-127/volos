@@ -32,13 +32,19 @@ var _extend = require('util')._extend;
 function extend(a, b) {
   var options = _extend({}, a);
   options = _extend(options, b);
+  disableBuffer(options); // need to bypass buffer for these tests
   return options;
+}
+
+function disableBuffer(options) {
+  delete(options.bufferSize);
+  delete(options.bufferTimeout);
 }
 
 describe('Expiration time test', function() {
 
   it('Minute rolling', function() {
-    var options = extend(options, {
+    var options = extend(config, {
       timeInterval: 60000,
       allow: 5
     });

@@ -34,6 +34,8 @@ is set to the top of the hour on some day, then the quota will always reset at t
 name is "foo" then this might be "https://foo-test.apigee.net/adapterproxy".
 * key: An API consumer key for a valid "application" that is part of the same organization where the adapter
 was installed.
+* bufferSize: (Number) optional, create a local memory buffer to hold up to bufferSize for quota elements
+* bufferTimeout: (Number) optional, flush the memory buffer (if exists) every Number ms (default: 300)
 
 Once the quota has been initialized, the module that is returned has the programming interface defined
 by the "volos-quota-common" module.

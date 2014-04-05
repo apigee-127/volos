@@ -53,6 +53,8 @@ var WEEK = DAY * 7;
 // options.interval (Number) default = 1
 // options.allow (Number) default = 1
 // options.consistency (string) A hint to some SPIs about how to distribute quota around
+// options.bufferSize (Number) optional, use a memory buffer up to bufferSize to hold quota elements
+// options.bufferTimeout (Number) optional, flush the buffer every Number ms (default: 300)
 
 function Quota(Spi, o) {
   var options = o || {};
@@ -60,6 +62,7 @@ function Quota(Spi, o) {
   options.interval = checkNumber(o.interval, 'interval') || 1;
   options.allow = checkNumber(o.allow, 'allow') || 1;
   options.rollingWindow = o.rollingWindow || false;
+  options.bufferSize = checkNumber(o.bufferSize, 'bufferSize') || 0;
 
   if (!options.timeUnit in TimeUnits) {
     throw new Error(util.format('Invalid timeUnit %s', options.timeUnit));
@@ -86,17 +89,30 @@ function Quota(Spi, o) {
     }
   }
 
+  if (options.bufferSize > 0) {
+    options.bufferTimeout = checkNumber(o.bufferTimeout, 'bufferTimeout') || 300;
+  }
+
   this.options = options;
-  this.quota = new Spi(options);
+  var spi = new Spi(options);
+  if (options.bufferSize > 0) {
+    var Buffer = require('./memory_buffer');
+    var buffer = Buffer.create(spi, options);
+    this.quota = buffer;
+  } else {
+    this.quota = spi;
+  }
 }
 module.exports = Quota;
 
 // options.identifier (Non-object) required
 // options.weight (Number) default = 1
 // options.allow (Number) default = whatever was set in policy setup, and this allows override
-// cb is invoked with first parameter error, second whether it was allowed, third stats on the quota
+// cb is invoked with first parameter error, second with stats on the quota
 // stats.allowed = setting of "allow"
 // stats.used = current value
+// stats.isAllowed = true if allowed
+// stats.expiryTime = end time (ms) for this window
 
 Quota.prototype.apply = function(o, cb) {
   var options = o || {};

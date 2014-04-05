@@ -89,9 +89,11 @@ ApigeeQuotaSpi.prototype.apply = function(options, cb) {
       cb(err);
     } else {
       var ret = {
-        allowed: resp.allowed,
-        used: resp.used,
-        isAllowed: !resp.failed
+        allowed: Number(resp.allowed),
+        used: Number(resp.used) + Number(resp.exceeded), // note: this is exceeded for this req, not overall
+        isAllowed: !resp.failed,
+        expiryTime: Number(resp.expiry_time),
+        timestamp: Number(resp.ts)
       };
       cb(undefined, ret);
     }
@@ -155,7 +157,7 @@ function requestComplete(resp, cb) {
 
   var respData = '';
   resp.on('readable', function() {
-    respData += readResponse(resp, respData);
+    respData = readResponse(resp, respData);
   });
 
   resp.on('end', function() {
