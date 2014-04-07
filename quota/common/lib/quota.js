@@ -130,3 +130,8 @@ Quota.prototype.apply = function(o, cb) {
     cb(err, result);
   });
 };
+
+Quota.prototype.expressMiddleware = function(options) {
+  var mw = require('./quota-express');
+  return new mw(this, options);
+};
