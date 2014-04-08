@@ -21,28 +21,41 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var should = require('should');
 var request = require('supertest');
-var _ = require('underscore');
 var memoryQuota = require('../memory');
 var expressServer = require('./expressserver');
+var argoServer = require('./argoserver');
 
-describe('Express Middleware', function() {
+describe('Middleware', function() {
 
-  var server;
-
-  before(function(done) {
+  describe('Express', function() {
     var options = {
       timeUnit: 'minute',
       interval: 1,
       allow: 2
     };
     var quota = memoryQuota.create(options);
-    server = expressServer(quota);
-    done();
+    var server = expressServer(quota);
+    verifyQuota(server);
   });
+
+  describe('Argo', function() {
+    var options = {
+      timeUnit: 'minute',
+      interval: 1,
+      allow: 2
+    };
+    var quota = memoryQuota.create(options);
+    var server = argoServer(quota);
+    verifyQuota(server);
+  });
+
+});
+
+ function verifyQuota(server) {
 
   it('must count correctly', function(done) {
     request(server)
@@ -130,53 +143,4 @@ describe('Express Middleware', function() {
       });
   });
 
-});
-
-//describe('Quota SPI', function() {
-//  var pm;
-//  var ph;
-//
-//  before(function() {
-//    var options = extend(config, {
-//      timeUnit: 'minute',
-//      interval: 1,
-//      allow: 2
-//    });
-//    pm = Spi.create(options);
-//  });
-//
-//  it('Basic per-minute', function(done) {
-//    pm.apply({
-//      identifier: id('One'),
-//      weight: 1
-//    }, function(err, result) {
-//      assert(!err);
-//      checkResult(result, 2, 1, true);
-//
-//      pm.apply({
-//        identifier: id('Two'),
-//        weight: 1
-//      }, function(err, result) {
-//        assert(!err);
-//        checkResult(result, 2, 1, true);
-//
-//        pm.apply({
-//          identifier: id('One'),
-//          weight: 1
-//        }, function(err, result) {
-//          assert(!err);
-//          checkResult(result, 2, 2, true);
-//
-//          pm.apply({
-//            identifier: id('One'),
-//            weight: 1
-//          }, function(err, result) {
-//            assert(!err);
-//            checkResult(result, 2, 3, false);
-//            done();
-//          });
-//        });
-//      });
-//
-//    });
-//  });
+};

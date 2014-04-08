@@ -135,3 +135,8 @@ Quota.prototype.expressMiddleware = function(options) {
   var mw = require('./quota-express');
   return new mw(this, options);
 };
+
+Quota.prototype.argoMiddleware = function(options) {
+  var mw = require('./quota-argo');
+  return new mw(this, options);
+};
