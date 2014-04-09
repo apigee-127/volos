@@ -101,6 +101,16 @@ Cache.prototype.clear = function(callback) {
   this.cache.clear(callback);
 };
 
+Cache.prototype.expressMiddleware = function(options) {
+  var mw = require('./cache-express');
+  return new mw(this, options);
+};
+
+Cache.prototype.argoMiddleware = function(options) {
+  var mw = require('./cache-argo');
+  return new mw(this, options);
+};
+
 function validateKey(key) {
   if (!key) {
     throw new Error('key is required');
@@ -129,3 +139,4 @@ function convertNumber(value, name) {
     throw new Error(name + ' must be a string or a number');
   }
 }
+
