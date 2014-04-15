@@ -56,13 +56,11 @@ QuotaExpress.prototype.apply = function(id, weight) {
     self.quota.apply(
       options,
       function(err, reply) {
-        if (err) {
-          if (debugEnabled) { debug('Quota apply error: ' + err); }
-          return resp.send(500, { error: 'error applying quota' });
-        }
+        if (err) { return next(err); }
         if (!reply.isAllowed) {
           if (debugEnabled) { debug('Quota exceeded: ' + id); }
-          return resp.send(403, { error: 'exceeded quota ' });
+          resp.statusCode = 403;
+          return resp.end(JSON.stringify({ error: 'exceeded quota' }));
         }
         next();
       }
@@ -83,13 +81,10 @@ QuotaExpress.prototype.applyPerAddress = function(id, weight) {
     self.quota.apply(
       options,
       function(err, reply) {
-        if (err) {
-          if (debugEnabled) { debug('Quota apply error: ' + err); }
-          return resp.send(500, { error: 'error applying quota' });
-        }
+        if (err) { return next(err); }
         if (!reply.isAllowed) {
-          if (debugEnabled) { debug('Quota exceeded: ' + options.identifier); }
-          return resp.send(403, { error: 'exceeded quota ' });
+          resp.statusCode = 403;
+          return resp.end(JSON.stringify({ error: 'exceeded quota' }));
         }
         next();
       }
