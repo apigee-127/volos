@@ -56,9 +56,9 @@ OAuthExpress.prototype.handleAuthorize = function() {
         }
         makeError(err, resp);
       } else {
-        resp.status(302);
-        resp.set('Location', result);
-        resp.send();
+        resp.statusCode = 302;
+        resp.setHeader('Location', result);
+        resp.end();
       }
     });
   };
@@ -70,7 +70,7 @@ OAuthExpress.prototype.handleAccessToken = function() {
     debug('Express accessToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.generateToken(body, { authorizeHeader: req.get('authorization') },
+      self.oauth.generateToken(body, { authorizeHeader: req.headers.authorization },
         function(err, result) {
           if (err) {
             if (debugEnabled) {
@@ -78,11 +78,9 @@ OAuthExpress.prototype.handleAccessToken = function() {
             }
             makeError(err, resp);
           } else {
-            resp.set({
-              'Cache-Control': 'no-store',
-              'Pragma': 'no-cache'
-            });
-            resp.json(result);
+            resp.setHeader('Cache-Control', 'no-store');
+            resp.setHeader('Pragma', 'no-cache');
+            sendJson(resp, result);
           }
         });
     });
@@ -94,7 +92,7 @@ OAuthExpress.prototype.authenticate = function(scopes) {
   return function(req, resp, next) {
     debug('Express authenticate');
     self.oauth.verifyToken(
-      req.get('authorization'),
+      req.headers.authorization,
       scopes,
       function(err, result) {
         if (err) {
@@ -102,7 +100,6 @@ OAuthExpress.prototype.authenticate = function(scopes) {
             debug('Authentication error: ' + err);
           }
           makeError(err, resp);
-          // In express, once we set the response we're done
         } else {
           req.token = result;
           next();
@@ -118,7 +115,7 @@ OAuthExpress.prototype.refreshToken = function() {
     debug('Express refreshToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.refreshToken(body, { authorizeHeader: req.get('authorization') },
+      self.oauth.refreshToken(body, { authorizeHeader: req.headers.authorization },
         function(err, result) {
           if (err) {
             if (debugEnabled) {
@@ -126,11 +123,9 @@ OAuthExpress.prototype.refreshToken = function() {
             }
             makeError(err, resp);
           } else {
-            resp.set({
-              'Cache-Control': 'no-store',
-              'Pragma': 'no-cache'
-            });
-            resp.json(result);
+            resp.setHeader('Cache-Control', 'no-store');
+            resp.setHeader('Pragma', 'no-cache');
+            sendJson(resp, result);
           }
         });
     });
@@ -143,7 +138,7 @@ OAuthExpress.prototype.invalidateToken = function() {
     debug('Express invalidateToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.invalidateToken(body, { authorizeHeader: req.get('authorization') },
+      self.oauth.invalidateToken(body, { authorizeHeader: req.headers.authorization },
         function(err, result) {
           if (err) {
             if (debugEnabled) {
@@ -151,7 +146,7 @@ OAuthExpress.prototype.invalidateToken = function() {
             }
             makeError(err, resp);
           } else {
-            resp.json(result);
+            sendJson(resp, result);
           }
         });
     });
@@ -193,5 +188,12 @@ function makeError(err, resp) {
       resp.setHeader(name, err.headers[name]);
     });
   }
-  resp.json(err.statusCode, rb);
+  sendJson(resp, err.statusCode, rb);
+}
+
+function sendJson(resp, code, body) {
+  if (!body) { body = code; code = undefined; }
+  if (code) { resp.statusCode = code; }
+  resp.setHeader('Content-Type', 'application/json');
+  resp.end(JSON.stringify(body));
 }
