@@ -1,17 +1,17 @@
 {
   "name": "volos-cache-common",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic caching library for the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["cache"],
-  "dependencies":  {
-  },
-  "devDependencies": {
-  },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/apigee/volos.git"
+  "keywords": [
+    "cache"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
   }
 }
