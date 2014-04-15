@@ -8,7 +8,9 @@
   "keywords": [
     "cache"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "underscore": "1.6.x"
+  },
   "devDependencies": {},
   "repository": {
     "type": "git",
