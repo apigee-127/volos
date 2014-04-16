@@ -1,0 +1,13 @@
+{
+  "name": "volos-proxy-sample",
+  "private": true,
+  "scripts": {
+    "start": "NODE_DEBUG=cache,quota node proxy.js"
+  },
+  "dependencies":  {
+    "connect": "",
+    "http-proxy": "",
+    "volos-cache-memory": "",
+    "volos-quota-memory": ""
+  }
+}
