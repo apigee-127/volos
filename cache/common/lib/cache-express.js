@@ -47,6 +47,7 @@ module.exports = CacheExpress;
 
 // only caches "GET" requests
 // id (optional) may be a string or a function that takes the request and generates a string id
+//   if not specified, id will be set to the request originalUrl
 CacheExpress.prototype.cache = function(id) {
   var self = this;
   var options = {
