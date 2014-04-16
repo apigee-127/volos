@@ -101,8 +101,11 @@ CacheArgo.prototype.cache = function(id) {
           buffer.write(contentType, 1);
           buffer.write(chunk, contentType.length + 1);
           self.internalCache.set(key, buffer, options, function(err) {
-            if (err) { console.log('Cache error: ' + err); }
-            console.log('Cached: ' + key);
+            if (err) {
+              console.log('Cache error: ' + err);
+            } else if (debugEnabled) {
+              debug('Cached: ' + key);
+            }
           });
           resp.end(chunk, encoding);
         };
