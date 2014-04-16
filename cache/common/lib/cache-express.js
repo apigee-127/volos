@@ -67,7 +67,7 @@ CacheExpress.prototype.cache = function(id) {
           var content = reply.toString('utf8', len + 1);
           if (contentType !== '') { resp.setHeader('Content-Type', contentType); }
           resp._fromCache = true; // avoid double caching
-          return resp.send(content);
+          return resp.end(content);
         } else {
           if (debugEnabled) {
             debug('cache miss: ' + key);
