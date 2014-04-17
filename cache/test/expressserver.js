@@ -43,11 +43,6 @@ module.exports = function(cache) {
       resp.json({ count: counter++ });
     });
 
-  var idFunc = function(req) {
-    assert(req);
-    return '/count';
-  };
-
   app.get('/countIdFunction',
     cache.expressMiddleware().cache(idFunc),
     function(req, resp) {
@@ -55,4 +50,9 @@ module.exports = function(cache) {
     });
 
   return app;
+};
+
+var idFunc = function(req) {
+  assert(req);
+  return '/count';
 };

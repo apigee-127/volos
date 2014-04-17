@@ -52,13 +52,13 @@ var proxy = httpProxy.createProxyServer({
 // Create proxy server
 connect.createServer(
 
-  // apply Volos cache
+  // apply Volos cache per url requested
   // improves performance and ability to respond before hitting quota
   cache.expressMiddleware().cache(),
 
-  // apply Volos quota
+  // apply a common Volos quota ('all') to all requests
   // protects the backend from excess requests
-  quota.expressMiddleware().apply('quota'),
+  quota.expressMiddleware().apply({ identifier: 'all' }),
 
   // proxy requests through http-proxy
   function (req, res) {
