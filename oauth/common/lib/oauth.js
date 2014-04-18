@@ -319,6 +319,7 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
   }
 
   self.passwordCheck(parsedBody.username, parsedBody.password, function(err, result) {
+    if (err) { debug(err); }
     if (!result) { return cb(makeError('invalid_client', 'Invalid credentials')); }
 
     gr.username = parsedBody.username;
