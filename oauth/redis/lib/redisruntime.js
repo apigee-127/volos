@@ -95,6 +95,7 @@ var create = function(config) {
 module.exports.create = create;
 
 var RedisRuntimeSpi = function(mgmt, config) {
+  config = config || {}
   var host = config.host || '127.0.0.1';
   var port = config.port || 6379;
   var ropts = config.options || {};
