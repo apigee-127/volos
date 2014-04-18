@@ -1,0 +1,115 @@
+#!/usr/local/bin/node
+'use strict';
+
+// create a developer & app for volos oauth //
+
+var management_redis = require('volos-management-redis');
+var management = management_redis.create();
+var oauth_redis = require('volos-oauth-redis');
+var oauth = oauth_redis.create({ validGrantTypes: [ 'client_credentials'] });
+var readline = require('readline');
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+var questions = [
+  { prompt: 'Developer' },
+  { prompt: '---------' },
+  { prompt: 'First Name', name: 'firstName', default: 'test' },
+  { prompt: 'Last Name', name: 'lastName',  default: 'test' },
+  { prompt: 'email', name: 'email',     default: 'test@test.com' },
+  { prompt: 'username', name: 'userName',  default: 'test' },
+  { prompt: '' },
+  { prompt: 'Application' },
+  { prompt: '-----------' },
+  { prompt: 'Name', name: 'appName',   default: 'test' },
+  { prompt: 'Scopes (space delimited)', name: 'scopes', default: 'test' },
+];
+
+ask(questions, createApplication);
+
+
+function ask(questions, index, next) {
+  if (!next) { next = index; index = 0; }
+  var question = questions[index];
+  while (question && !question.name) {
+    console.log(question.prompt);
+    question = questions[++index];
+  }
+  if (!question) { return next(gatherAnswers(questions)); }
+  var prompt = question.prompt;
+  if (question.default) { prompt += " [" + question.default + "]"; }
+  prompt += '? ';
+  rl.question(prompt, function(answer) {
+    question.answer = answer ? answer : question.default;
+    if (question.answer) { index++; }
+    ask(questions, index, next);
+  });
+}
+
+function gatherAnswers(questions) {
+  rl.close();
+  var answers = {};
+  questions.forEach(function(elem) {
+    if (elem.name) { answers[elem.name] = elem.answer; }
+  });
+  return answers;
+}
+
+function createApplication(answers) {
+
+  var devRequest = {
+    firstName: answers.firstName,
+    lastName: answers.lastName,
+    email: answers.email,
+    userName: answers.userName
+  };
+
+  var appRequest = {
+    name: answers.appName,
+    developerId: answers.userName,
+    scopes: answers.scopes
+  };
+
+  console.log('Creating developer %s', devRequest.userName);
+  management.createDeveloper(devRequest, function (err, developer) {
+    if (err) { throw err;}
+
+    console.log();
+    console.log('Developer:');
+    console.log(developer);
+
+    appRequest.developerId = developer.id;
+
+    console.log('Creating application %s for developer %s', appRequest.name, developer.id);
+    management.createApp(appRequest, function (err, app) {
+      if (err) { throw err; }
+
+      console.log();
+      console.log('Application:');
+      console.log(app);
+
+      var tokenRequest = {
+        grant_type: 'client_credentials',
+        client_id: app.credentials[0].key,
+        client_secret: app.credentials[0].secret,
+        scope: answers.scopes
+      };
+
+      oauth.generateToken(tokenRequest, function(err, reply) {
+        if (err) { throw err; }
+
+        console.log();
+        console.log('OAuth token:');
+        console.log(reply);
+
+        console.log();
+        console.log('Use the token like this:');
+        console.log('curl -H "Authorization: Bearer ' + reply.access_token);
+
+        process.exit();
+      });
+    });
+  });
+}
