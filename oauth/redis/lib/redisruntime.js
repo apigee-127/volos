@@ -79,11 +79,8 @@ if (process.env.NODE_DEBUG && /redis/.test(process.env.NODE_DEBUG)) {
 }
 
 // clone & extend hash
-var _extend = require('util')._extend;
 function extend(a, b) {
-  var options = _extend({}, a);
-  options = _extend(options, b);
-  return options;
+  return _.extend({}, a, b);
 }
 
 var create = function(config) {

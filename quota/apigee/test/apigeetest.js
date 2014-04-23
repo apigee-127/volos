@@ -27,6 +27,7 @@ var Spi = require('..');
 var config = require('../../../common/testconfig-apigee').config;
 var assert = require('assert');
 var random = Math.random();
+var _ = require('underscore');
 
 describe('Apigee', function() {
 
@@ -44,11 +45,8 @@ describe('Apigee', function() {
   }
 
 // clone & extend hash
-  var _extend = require('util')._extend;
   function extend(a, b) {
-    var options = _extend({}, a);
-    options = _extend(options, b);
-    return options;
+    return _.extend({}, a, b);
   }
   var pm;
 

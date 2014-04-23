@@ -26,14 +26,13 @@
 var Spi = require('..');
 var config = require('../../../common/testconfig').config;
 var assert = require('assert');
+var _ = require('underscore');
 
 // clone & extend hash
-var _extend = require('util')._extend;
 function extend(a, b) {
-  var options = _extend({}, a);
-  options = _extend(options, b);
-  disableBuffer(options); // need to bypass buffer for these tests
-  return options;
+  var reply = _.extend({}, a, b);
+  disableBuffer(reply); // need to bypass buffer for these tests
+  return reply;
 }
 
 function disableBuffer(options) {
