@@ -1,19 +1,21 @@
 {
   "name": "volos-management-apigee",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib/apigeemgmt.js",
   "description": "Apigee-backed management in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["apigee"],
-  "dependencies":  {
-    "volos-management-common" : "0.9.x"
+  "keywords": [
+    "apigee"
+  ],
+  "dependencies": {
+    "volos-management-common": "0.9.x"
   },
   "devDependencies": {
-    "supertest" : "0.8.x"
+    "supertest": "0.8.x"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/apigee/volos.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
   }
 }
