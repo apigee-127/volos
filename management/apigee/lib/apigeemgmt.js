@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 /**
  * This module implements the management SPI interface using the Apigee API.
@@ -63,27 +63,18 @@
  *   managementUri: (string) optional URI for Apigee API endpoint to happen -- otherwise it hits api.enterprise.apigee.com.
  */
 
+// todo: support defaultScope on Application
+
+var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
+
 var url = require('url');
 var path = require('path');
 var http = require('http');
 var https = require('https');
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
-
-var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
-
+var Common = require('volos-management-common');
 
 var create = function(config) {
-  return new ApigeeManagementSpi(config);
+  return new Common(ApigeeManagementSpi, config);
 };
 module.exports.create = create;
 
@@ -432,4 +423,15 @@ function requestComplete(req, resp, cb) {
       cb(undefined, JSON.parse(respData));
     }
   });
+}
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Apigee: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
 }

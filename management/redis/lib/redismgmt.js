@@ -74,20 +74,10 @@ var crypto = require('crypto');
 var uuid = require('node-uuid');
 var redis = require("redis");
 var _ = require('underscore');
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var Common = require('volos-management-common');
 
 var create = function(config) {
-  return new RedisManagementSpi(config);
+  return new Common(RedisManagementSpi, config);
 };
 module.exports.create = create;
 
@@ -337,3 +327,15 @@ function _key() {
   argsArray.unshift(KEY_PREFIX);
   return argsArray.join(':');
 }
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Apigee: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
+

@@ -12,6 +12,7 @@ pushd "$DIR/node_modules"
 
 ln -s ../management/apigee volos-management-apigee
 ln -s ../management/redis volos-management-redis
+ln -s ../management/common volos-management-common
 
 ln -s ../oauth/apigee volos-oauth-apigee
 ln -s ../oauth/common volos-oauth-common

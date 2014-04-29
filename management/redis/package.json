@@ -5,10 +5,11 @@
   "main": "lib/redismgmt.js",
   "description": "Redis-backed management in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
-  "keywords": ["redis", "node.js"],
+  "keywords": ["redis"],
   "dependencies":  {
-    "redis" : "0.9.x",
-    "node-uuid" : "1.4.x"
+    "redis" : "0.10.x",
+    "node-uuid" : "1.4.x",
+    "volos-management-common" : "0.9.x"
   },
   "devDependencies": {
     "supertest" : "0.8.x"

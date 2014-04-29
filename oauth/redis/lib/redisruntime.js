@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 /*
  * This module implements the runtime SPI by storing data in redis.
@@ -84,7 +84,7 @@ function extend(a, b) {
 }
 
 var create = function(config) {
-  var mgmt = Management.create(config);
+  var mgmt = Management.create(config).getSpi(); // todo: can everything be abstracted into the common interface?
   var spi = new RedisRuntimeSpi(mgmt, config);
   var oauth = new OAuthCommon(spi, config);
   return oauth;

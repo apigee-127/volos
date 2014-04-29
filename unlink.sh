@@ -6,20 +6,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 pushd "$DIR/node_modules"
 
-rm volos-management-apigee
-rm volos-management-redis
+rm -f volos-management-apigee
+rm -f volos-management-redis
+rm -f volos-management-common
 
-rm volos-oauth-apigee
-rm volos-oauth-common
-rm volos-oauth-redis
+rm -f volos-oauth-apigee
+rm -f volos-oauth-common
+rm -f volos-oauth-redis
 
-rm volos-quota-apigee
-rm volos-quota-common
-rm volos-quota-memory
-rm volos-quota-redis
+rm -f volos-quota-apigee
+rm -f volos-quota-common
+rm -f volos-quota-memory
+rm -f volos-quota-redis
 
-rm volos-cache-common
-rm volos-cache-memory
-rm volos-cache-redis
+rm -f volos-cache-common
+rm -f volos-cache-memory
+rm -f volos-cache-redis
 
 popd

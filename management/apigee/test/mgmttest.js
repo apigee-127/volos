@@ -28,7 +28,7 @@ var config = require('../../../common/testconfig-apigee');
 var should = require('should');
 
 var API_PROD_NAME = 'APIDNA-Unit-Test-ApiProduct';
-var mgmt = config.management;
+var mgmt = config.management.getSpi();
 
 describe('Apigee', function() {
 
