@@ -24,31 +24,21 @@
 'use strict';
 
 var _ = require('underscore');
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Quota: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
 
-function CacheExpress(cache, options) {
-  if (!(this instanceof CacheExpress)) {
-    return new CacheExpress(cache, options);
+function CacheConnect(cache, options) {
+  if (!(this instanceof CacheConnect)) {
+    return new CacheConnect(cache, options);
   }
 
   this.internalCache = cache;
   this.options = options || {};
 }
-module.exports = CacheExpress;
+module.exports = CacheConnect;
 
 // only caches "GET" requests
 // id (optional) may be a string or a function that takes the request and generates a string id
 //   if not specified, id will be set to the request originalUrl
-CacheExpress.prototype.cache = function(id) {
+CacheConnect.prototype.cache = function(id) {
   var self = this;
   var options = {
     ttl: this.internalCache.options.ttl
@@ -128,4 +118,15 @@ function cache(self, key, options, contentType, chunk) {
       debug('Cached: ' + key);
     }
   });
+}
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Quota: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
 }

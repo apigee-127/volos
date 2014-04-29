@@ -101,10 +101,12 @@ Cache.prototype.clear = function(callback) {
   this.cache.clear(callback);
 };
 
-Cache.prototype.expressMiddleware = function(options) {
-  var mw = require('./cache-express');
+Cache.prototype.connectMiddleware = function(options) {
+  var mw = require('./cache-connect');
   return new mw(this, options);
 };
+
+Cache.prototype.expressMiddleware = Cache.prototype.connectMiddleware;
 
 Cache.prototype.argoMiddleware = function(options) {
   var mw = require('./cache-argo');

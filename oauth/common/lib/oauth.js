@@ -80,10 +80,12 @@ OAuth.prototype.argoMiddleware = function(options) {
   return new mw(this, options);
 };
 
-OAuth.prototype.expressMiddleware = function(options) {
-  var mw = require('./oauth-express');
+OAuth.prototype.connectMiddleware = function(options) {
+  var mw = require('./oauth-connect');
   return new mw(this, options);
 };
+
+OAuth.prototype.expressMiddleware = OAuth.prototype.connectMiddleware;
 
 var DefaultOptions = {
   validGrantTypes: [ 'authorization_code' ],

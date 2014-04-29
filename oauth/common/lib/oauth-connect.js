@@ -21,34 +21,28 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var _ = require('underscore');
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('OAuth: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var Url = require('url');
 
-function OAuthExpress(oauth, options) {
-  if (!(this instanceof OAuthExpress)) {
-    return new OAuthExpress(oauth, options);
+function OAuthConnect(oauth, options) {
+  if (!(this instanceof OAuthConnect)) {
+    return new OAuthConnect(oauth, options);
   }
 
   this.oauth = oauth;
   this.options = options || {};
 }
-module.exports = OAuthExpress;
+module.exports = OAuthConnect;
 
-OAuthExpress.prototype.handleAuthorize = function() {
+OAuthConnect.prototype.handleAuthorize = function() {
   var self = this;
   return function(req, resp) {
   debug('Express authorize');
+    if (!req.query) {
+      req.query = Url.parse(req.url).query;
+    }
     self.oauth.authorize(req.query, function(err, result) {
       if (err) {
         if (debugEnabled) {
@@ -64,7 +58,7 @@ OAuthExpress.prototype.handleAuthorize = function() {
   };
 };
 
-OAuthExpress.prototype.handleAccessToken = function() {
+OAuthConnect.prototype.handleAccessToken = function() {
   var self = this;
   return function(req, resp) {
     debug('Express accessToken');
@@ -87,7 +81,7 @@ OAuthExpress.prototype.handleAccessToken = function() {
   };
 };
 
-OAuthExpress.prototype.authenticate = function(scopes) {
+OAuthConnect.prototype.authenticate = function(scopes) {
   var self = this;
   return function(req, resp, next) {
     debug('Express authenticate');
@@ -109,7 +103,7 @@ OAuthExpress.prototype.authenticate = function(scopes) {
   };
 };
 
-OAuthExpress.prototype.refreshToken = function() {
+OAuthConnect.prototype.refreshToken = function() {
   var self = this;
   return function(req, resp) {
     debug('Express refreshToken');
@@ -132,7 +126,7 @@ OAuthExpress.prototype.refreshToken = function() {
   };
 };
 
-OAuthExpress.prototype.invalidateToken = function() {
+OAuthConnect.prototype.invalidateToken = function() {
   var self = this;
   return function(req, resp) {
     debug('Express invalidateToken');
@@ -196,4 +190,15 @@ function sendJson(resp, code, body) {
   if (code) { resp.statusCode = code; }
   resp.setHeader('Content-Type', 'application/json');
   resp.end(JSON.stringify(body));
+}
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('OAuth: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
 }

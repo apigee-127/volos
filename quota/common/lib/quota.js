@@ -131,10 +131,12 @@ Quota.prototype.apply = function(o, cb) {
   });
 };
 
-Quota.prototype.expressMiddleware = function(options) {
-  var mw = require('./quota-express');
+Quota.prototype.connectMiddleware = function(options) {
+  var mw = require('./quota-connect');
   return new mw(this, options);
 };
+
+Quota.prototype.expressMiddleware = Quota.prototype.connectMiddleware;
 
 Quota.prototype.argoMiddleware = function(options) {
   var mw = require('./quota-argo');

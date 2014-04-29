@@ -60,11 +60,11 @@ connect.createServer(
 
   // apply Volos cache per url requested
   // improves performance and ability to respond before hitting quota
-  cache.expressMiddleware().cache(),
+  cache.connectMiddleware().cache(),
 
   // apply a common Volos quota ('all') to all requests
   // protects the backend from excess requests
-  quota.expressMiddleware().apply({ identifier: 'all' }),
+  quota.connectMiddleware().apply({ identifier: 'all' }),
 
   // proxy requests through http-proxy
   function (req, res) {

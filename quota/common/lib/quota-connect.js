@@ -25,22 +25,22 @@
 
 var _ = require('underscore');
 
-function QuotaExpress(quota, options) {
-  if (!(this instanceof QuotaExpress)) {
-    return new QuotaExpress(quota, options);
+function QuotaConnect(quota, options) {
+  if (!(this instanceof QuotaConnect)) {
+    return new QuotaConnect(quota, options);
   }
 
   this.quota = quota;
   this.options = options || {};
 }
-module.exports = QuotaExpress;
+module.exports = QuotaConnect;
 
 // applies quota and returns (403) error on exceeded
 // options contains:
 // identifier (optional) may be a string or a function that takes the request and generates a string id
 //   if not specified, id will default to the request originalUrl
 // weight (optional) may be a number or a function that takes the request and generates a number
-QuotaExpress.prototype.apply = function(options) {
+QuotaConnect.prototype.apply = function(options) {
   var self = this;
   return function(req, resp, next) {
     var opts = calcOptions(req, options);
@@ -54,7 +54,7 @@ QuotaExpress.prototype.apply = function(options) {
 //   if not specified, id will be set to the request originalUrl
 // weight (optional) may be a number or a function that takes the request and generates a number
 //   if weight is specified, id is required (may be null)
-QuotaExpress.prototype.applyPerAddress = function(options) {
+QuotaConnect.prototype.applyPerAddress = function(options) {
   var self = this;
   return function(req, resp, next) {
     var opts = calcOptions(req, options);
