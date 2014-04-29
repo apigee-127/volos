@@ -81,8 +81,6 @@ exports.verifyOauth = function(config, server) {
 
   describe('OAuth 2.0 rfc6749', function() {
 
-    this.timeout(30000);
-
     before(function(done) {
       creator.createFixtures(function(err, reply) {
         if (err) { return done(err); }
