@@ -11,7 +11,7 @@
     "node.js"
   ],
   "dependencies": {
-    "redis": "0.9.x",
+    "redis": "0.10.x",
     "node-uuid": "1.4.x",
     "volos-oauth-common": "0.9.x",
     "volos-management-redis": "0.9.x",
