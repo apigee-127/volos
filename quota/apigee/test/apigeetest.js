@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-apigee').config;
+var config = require('../../../testconfig/testconfig-apigee').config;
 var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');

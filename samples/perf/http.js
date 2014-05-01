@@ -1,7 +1,9 @@
+#!/usr/bin/env node
+
 /****************************************************************************
  The MIT License (MIT)
 
- Copyright (c) 2013 Apigee Corporation
+ Copyright (c) 2014 Apigee Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +23,17 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
-var config = require('../../../testconfig/testconfig-redis');
-var expressTest = require('../../test/rfc6749_express_test');
-var argoTest = require('../../test/rfc6749_argo_test');
-var extensionsTest = require('../../test/extensions_test');
+var http = require('http');
+var util = require('util');
 
-describe('Redis', function() {
+// Create Example Http Server Target
+http.createServer(function (req, res) {
+  util.log('http server returning data');
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.write('request received. url: ' + req.url + '\n headers: ' + JSON.stringify(req.headers, true, 2));
+  res.end();
+}).listen(9012);
 
-  describe('via Argo', function() {
-    argoTest.verifyOauth(config);
-    extensionsTest.verifyOauth(config);
-  });
-
-  describe('via Express', function() {
-    expressTest.verifyOauth(config);
-    extensionsTest.verifyOauth(config);
-
-    describe('with cache', function() {
-      var Cache = require('volos-cache-memory');
-      var cache = Cache.create('OAuth cache');
-      config.oauth.useCache(cache);
-      expressTest.verifyOauth(config);
-      extensionsTest.verifyOauth(config);
-    });
-  });
-});
+console.log('http server started on port 9012');

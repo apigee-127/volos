@@ -24,7 +24,7 @@
 "use strict";
 
 var commonTest = require('../../test/mgmttest');
-var config = require('../../../common/testconfig-redis');
+var config = require('../../../testconfig/testconfig-redis');
 var should = require('should');
 
 describe('Redis', function() {

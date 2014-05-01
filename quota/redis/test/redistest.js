@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-redis').config;
+var config = require('../../../testconfig/testconfig-redis').config;
 var commonTest = require('../../test/quotatest');
 
 describe('Redis', function() {

@@ -23,7 +23,7 @@
  ****************************************************************************/
 "use strict";
 
-var config = require('../../../common/testconfig-apigee');
+var config = require('../../../testconfig/testconfig-apigee');
 var expressTest = require('../../test/rfc6749_express_test');
 var argoTest = require('../../test/rfc6749_argo_test');
 var extensionsTest = require('../../test/extensions_test');

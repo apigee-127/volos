@@ -1,7 +1,7 @@
 {
   "name": "Volos",
-  "version": "0.9.0",
-  "comments": "This package.json is here so we can get dependencies to run tests",
+  "version": "1.0.0",
+  "comments": "This package.json is here so we can get dependencies installed to run tests",
   "private": true,
   "dependencies":  {
     "express": "3.4.x",
@@ -13,5 +13,8 @@
     "should" : "3.1.x",
     "underscore" : "1.6.x",
     "twit": "1.1.x"
+  },
+  "scripts": {
+    "install": "bin/link"
   }
 }

@@ -1,9 +1,16 @@
 Apigee Volos
 ============
 
-Volos is an open source Node.js solution for developing and deploying production-level APIs. Volos provides a way to leverage common features such as [OAuth 2.0](#oauth), [Caching](#cache), and [Quota Management](#quota) into your APIs with maximum joy.
+Volos is an open source Node.js solution for developing and deploying production-level APIs. Volos provides a way to
+leverage common features such as [OAuth 2.0](#oauth), [Caching](#cache), and [Quota Management](#quota) into your
+APIs with maximum joy.
 
-All modules are exposed with well-defined interfaces and full test suites such that, for example, changing between a memory-backed Cache or Quota implementation to a Redis-backed one requires only a simple configuration change. In addition, all modules also have the option to proxy to Apigee Edge.
+All modules are exposed with well-defined interfaces and full test suites such that, for example, changing between a
+memory-backed Cache or Quota implementation to a Redis-backed one requires only a simple configuration change. In
+addition, all modules also have the option to proxy to Apigee Edge.
+
+Finally, all modules include Connect, Express, and Volos middleware for easy integration into http proxies and
+applications.
 
 ***
 
@@ -12,7 +19,9 @@ Usage
 
 Apigee Proxy
 ------------
-All modules are capable of using Apigee Edge as a commercially supported, hardened and distributed backend implementation (though this is not required). If you intend to use the Apigee Edge implementations, you'll need to install an Apigee proxy into your Application on the Apigee Edge server. See [apigee proxy installation](proxy/README.md)
+All modules are capable of using Apigee Edge as a commercially supported, hardened and distributed backend
+implementation (though this is not required). If you intend to use the Apigee Edge implementations, you'll need to
+install an Apigee proxy into your Application on the Apigee Edge server. See [apigee proxy installation](proxy/README.md)
 
 Core Modules
 ------------
@@ -20,7 +29,8 @@ The following modules are part of the core of Volos and are available for inclus
 
 ### [OAuth 2.0](id:oauth)
 
-OAuth 2.0 support with bearer tokens and all the standard grant types. Includes a raw API, plus middleware for Express and Argo.
+OAuth 2.0 support with bearer tokens and all the standard grant types. Includes a raw API, plus middleware for
+Express and Argo.
 
 Two implementations are supported:
 
@@ -29,7 +39,8 @@ Two implementations are supported:
 
 ### [Quota](id:quota)
 
-Support for "quotas" as implemented in many APIs -- count API calls by minute, hour, day, and week and reject them then whey are exceeded.
+Support for "quotas" as implemented in many APIs -- count API calls by minute, hour, day, and week and reject them
+when they are exceeded.
 
 Three implementations are supported:
 
@@ -50,7 +61,9 @@ Two implementations are supported:
 
 #### volos-management-apigee
 
-This is a small module that wraps the Apigee management API for creating developers, applications, and the like. It is deliberately separated from the runtime because these operations should not happen often and do not necessarily support high volume. This module is mainly used for testing.
+This is a small module that wraps the Apigee management API for creating developers, applications, and the like.
+It is deliberately separated from the runtime because these operations should not happen often and do not
+necessarily support high volume. This module is mainly used for testing.
 
 #### volos-management-redis
 
@@ -60,7 +73,8 @@ This is the equivalent management module for Redis.
 
 Development
 ===========
-If you're developing on this project, it is easiest to link all the various modules into your node_modules directory so they all run locally instead of pulling from npm. To do this, just run:
+If you're developing on this project, it is easiest to link all the various modules into your node_modules directory
+so they all run locally instead of pulling from npm. To do this, just run:
 
 `npm install`
 
@@ -77,7 +91,7 @@ Test scripts are written using "mocha." Install mocha if you haven't already lik
 To test Apigee providers:
 
 1. Install the "proxy" module on an Apigee application. See the instructions [here](proxy/README.md).
-2. In the "common" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. You will need to specify the location of your proxy as well as the key and secret for the application.
+2. In the "testconfig" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. You will need to specify the location of your proxy as well as the key and secret for the application.
 3. Run `mocha` in each apigee/test directory you wish you test.
 
 To test Redis providers:

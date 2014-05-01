@@ -24,7 +24,7 @@
 "use strict";
 
 var commonTest = require('../../test/mgmttest');
-var config = require('../../../common/testconfig-apigee');
+var config = require('../../../testconfig/testconfig-apigee');
 var should = require('should');
 
 var API_PROD_NAME = 'APIDNA-Unit-Test-ApiProduct';

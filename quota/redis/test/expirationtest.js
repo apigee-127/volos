@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../common/testconfig-redis').config;
+var config = require('../../../testconfig/testconfig-redis').config;
 var assert = require('assert');
 var _ = require('underscore');
 

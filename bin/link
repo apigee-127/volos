@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
 # Run from the Volos root directory after running 'npm install'. Instead of using
 # 'node link' to install the various modules of Volos as global modules, this will
 # simply symlink the local modules in the Volos node_modules directory so all modules
 # under this directory can find each other.
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$DIR/unlink.sh"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+source "$DIR/bin/unlink"
 
 pushd "$DIR/node_modules"
 
