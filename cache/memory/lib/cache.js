@@ -32,6 +32,8 @@
  * }
  */
 
+var LRU = require('lru-cache');
+
 var Common = require('volos-cache-common');
 var caches = {};
 
@@ -47,7 +49,10 @@ function Cache(name, options) {
 
   var entries = caches[name];
   if (!entries) {
-    entries = {};
+    var lruOpts = {};
+    lruOpts.maxAge = options.ttl;
+    lruOpts.max = options.maxEntries || 1000;
+    entries = new LRU(lruOpts);
     caches[name] = entries;
   }
 
@@ -65,16 +70,9 @@ Cache.prototype.setEncoding = function(encoding) {
 // If "setEncoding" was previously called on this cache, then the value will be returned as a string
 // in the specified encoding. Otherwise, a Buffer will be returned.
 Cache.prototype.get = function(key, callback) {
-  var entry = this.entries[key];
-  var value;
-  if (entry) {
-    if (Date.now() > entry.expiration) {
-      delete this.entries[key];
-    } else if (this.encoding) {
-      value = entry.value.toString(this.encoding);
-    } else {
-      value = entry.value;
-    }
+  var value = this.entries.get(key);
+  if (value && this.encoding) {
+    value = value.toString(this.encoding);
   }
 
   callback(undefined, value);
@@ -85,8 +83,7 @@ Cache.prototype.get = function(key, callback) {
 // argument if there is one. If "value" is a string, then it will be converted to a buffer
 // using the encoding field set in "options" or "utf8" otherwise.
 Cache.prototype.set = function(key, value, options, callback) {
-  var entry = new Entry(value, Date.now() + options.ttl);
-  this.entries[key] = entry;
+  this.entries.set(key, value, options.ttl);
   if (callback) {
     callback();
   }
@@ -95,7 +92,7 @@ Cache.prototype.set = function(key, value, options, callback) {
 // Remove "key" from the cache. If callback is supplied, call it when delete is complete with
 // the error as the first element.
 Cache.prototype.delete = function(key, callback) {
-  delete this.entries[key];
+  this.entries.del(key);
   if (callback) {
     callback();
   }
@@ -104,25 +101,8 @@ Cache.prototype.delete = function(key, callback) {
 // Clear the entire cache. If callback is supplied, call it when delete is complete with
 // the error as the first element.
 Cache.prototype.clear = function(callback) {
-  // Since cache entries are shared, we can't just let them get GCed -- we have to go through and clean up.
-  for (var e in this.entries) {
-    if (this.entries.hasOwnProperty(e)) {
-      delete this.entries[e];
-    }
-  }
+  this.entries.reset();
   if (callback) {
     callback();
   }
 };
-
-function Entry(value, expiration) {
-  if (!(this instanceof Entry)) {
-    return new Entry();
-  }
-
-  this.value = value;
-  this.expiration = expiration;
-}
-
-
-

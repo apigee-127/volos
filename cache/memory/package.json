@@ -1,13 +1,14 @@
 {
   "name": "volos-cache-memory",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic in-memory caching library for the Volos system.",
   "homepage": "https://github.com/apigee/volos",
   "keywords": ["cache"],
   "dependencies":  {
-    "volos-cache-common": "0.9.x"
+    "volos-cache-common": "0.9.x",
+    "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master"
   },
   "devDependencies": {
   },

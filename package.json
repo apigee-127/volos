@@ -12,7 +12,8 @@
     "longjohn" : "0.2.x",
     "should" : "3.1.x",
     "underscore" : "1.6.x",
-    "twit": "1.1.x"
+    "twit": "1.1.x",
+    "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master"
   },
   "scripts": {
     "install": "bin/link"
