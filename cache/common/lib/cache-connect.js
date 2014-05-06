@@ -46,13 +46,12 @@ CacheConnect.prototype.cache = function(id) {
   return function(req, resp, next) {
 
     if (req.method !== 'GET') { return next(); }
-    var fromCache = true;
 
     if (_.isFunction(id)) { id = id(req); }
     var key = id ? id : req.originalUrl;
     debug('Cache check');
 
-    var cacheReturn = function(err, reply) {
+    var getSetCallback = function(err, reply, fromCache) {
       if (err) { return console.log('Cache error: ' + err); }
 
       if (reply && fromCache) {
@@ -64,15 +63,11 @@ CacheConnect.prototype.cache = function(id) {
           resp.setHeader('Content-Type', contentType);
         }
         return resp.end(content);
-      } else {
-        if (debugEnabled) {
-          debug('cache miss: ' + key);
-        }
       }
     };
 
     var populate = function(key, cb) {
-      fromCache = false;
+      if (debugEnabled) { debug('cache miss: ' + key); }
       var cacheValue, contentType;
 
       // replace write() to intercept the content sent to the client
@@ -112,7 +107,7 @@ CacheConnect.prototype.cache = function(id) {
     };
 
     resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
-    self.internalCache.getSet(key, populate, options, cacheReturn);
+    self.internalCache.getSet(key, populate, options, getSetCallback);
   };
 };
 
