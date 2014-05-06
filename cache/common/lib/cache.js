@@ -24,6 +24,7 @@
 "use strict";
 
 var DEFAULT_TTL = 300;
+var eventEmitter = new (require('events').EventEmitter)();
 
 function Cache(Spi, name, options) {
   this.options = options || {};
@@ -36,6 +37,47 @@ module.exports = Cache;
 // in the specified encoding. If this function is never called, then values will always be returned as buffers.
 Cache.prototype.setEncoding = function(encoding) {
   this.options.encoding = encoding;
+};
+
+// Retrieve an element from cache if present and set it using the provided populate function if not.
+// This method will also handle the "thundering herd" issue by coordinating waiting for already in-progress getSet()
+// requests and population for the same key.
+// The populate (key, callback) function must invoke its callback(error, reply) function on completion. If there is an
+// error, it must be passed as the first parameter (otherwise undefined or null). Assuming no error, the second
+// parameter is the value passed to the cache.
+// The options parameter contains any options to be passed as a part of the cache set() function.
+// The callback (error, reply) function will be called after all processing has completed. It is called immediately if
+// the cache contains the item. Otherwise, it will be called once the populate function has completed.
+// If "setEncoding" was previously called on this cache, then the value will be returned as a string
+// in the specified encoding. Otherwise, a Buffer will be returned.
+// key, populate, and callback are required. options is optional.
+Cache.prototype.getSet = function(key, populate, options, callback) {
+  validateKey(key);
+  if (!callback) { callback = options; options = {}; }
+  if (typeof populate !== 'function') { throw new Error('populate must be a function'); }
+  if (typeof callback !== 'function') { throw new Error('callback must be a function'); }
+
+  var self = this;
+  this.cache.get(key, function(err, reply) {
+    if (err || reply) {
+      if (reply && self.options.encoding) {
+        reply = reply.toString(self.options.encoding);
+      }
+      return callback(err, reply);
+    }
+
+    var event = self.name + key;
+    eventEmitter.once(event, callback);
+    if (eventEmitter.listeners(event).length > 1) { return; }
+
+    populate(key, function(err, reply) {
+      if (err) { return eventEmitter.emit(event, err, reply); }
+
+      self.set(key, reply, options, function(err) {
+        eventEmitter.emit(event, err, reply);
+      });
+    });
+  });
 };
 
 // Retrieve the element from cache and return as the second argument to "callback". (First argument is

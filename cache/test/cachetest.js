@@ -24,6 +24,9 @@
 "use strict";
 
 var assert = require('assert');
+var should = require('should');
+var _ = require('underscore');
+
 var CACHE_NAME = 'TestCache';
 
 exports.testCache = function(config, Spi) {
@@ -252,5 +255,43 @@ exports.testCache = function(config, Spi) {
         });
       });
     });
+  });
+
+  it('tames the thundering herd', function(done) {
+
+    var tc = Spi.create(CACHE_NAME);
+    tc.setEncoding('utf8');
+
+    var populateCalled = 0;
+    var populate = function(key, cb) {
+      populateCalled++;
+      cb(null, 'test ' + key);
+    };
+
+    var keys = ['1', '2', '1', '3', '1'];
+    var expectedResults = _.map(keys, function(v) { return  'test ' + v; });
+    var uniqKeys = _.uniq(keys).length;
+    var replies = 0;
+
+    var callback = function(err, reply) {
+      should.not.exist(err);
+      replies++;
+      should(delete(expectedResults[_.indexOf(expectedResults, reply)])).ok;
+
+      if (replies === keys.length) {
+
+        // populate called once per key
+        uniqKeys.should.equal(populateCalled);
+
+        // all results accounted for (in any order)
+        _.compact(expectedResults).length.should.equal(0);
+
+        done();
+      }
+    };
+
+    for (var i = 0; i < keys.length; i++) {
+      tc.getSet(keys[i], populate, callback);
+    }
   });
 }
