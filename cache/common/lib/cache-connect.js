@@ -44,80 +44,89 @@ CacheConnect.prototype.cache = function(id) {
     ttl: this.internalCache.options.ttl
   };
   return function(req, resp, next) {
+
+    if (req.method !== 'GET') { return next(); }
+    var fromCache = true;
+
     if (_.isFunction(id)) { id = id(req); }
     var key = id ? id : req.originalUrl;
     debug('Cache check');
-    if (req.method === 'GET') {
-      self.internalCache.get(key, function(err, reply) {
-        if (err) { console.log('Cache error: ' + err); }
-        resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
-        if (reply) {
-          if (debugEnabled) { debug('cache hit: ' + key); }
-          var len = reply.readUInt8(0);
-          var contentType = reply.toString('utf8', 1, len + 1);
-          var content = reply.toString('utf8', len + 1);
-          if (contentType !== '') { resp.setHeader('Content-Type', contentType); }
-          resp._fromCache = true; // avoid double caching
-          return resp.end(content);
-        } else {
-          if (debugEnabled) {
-            debug('cache miss: ' + key);
-          }
 
-          var didWrite = false; // if multiple writes attempted, dumps cache
+    var cacheReturn = function(err, reply) {
+      if (err) { return console.log('Cache error: ' + err); }
 
-          // replace write() to intercept the content sent to the client
-          resp._v_write = resp.write;
-          resp.write = function (chunk, encoding) {
-            resp._v_write(chunk, encoding);
-            if (chunk) {
-              if (didWrite) {
-                self.internalCache.delete(key);
-              } else {
-                didWrite = true;
-                var contentType = resp._headers['content-type'] || '';
-                cache(self, key, options, contentType, chunk);
-              }
-            }
-          };
+      if (reply && fromCache) {
+        if (debugEnabled) { debug('cache hit: ' + key); }
+        var len = reply.readUInt8(0);
+        var contentType = reply.toString('utf8', 1, len + 1);
+        var content = reply.toString('utf8', len + 1);
+        if (contentType !== '') {
+          resp.setHeader('Content-Type', contentType);
+        }
+        return resp.end(content);
+      } else {
+        if (debugEnabled) {
+          debug('cache miss: ' + key);
+        }
+      }
+    };
 
-          // replace end() to intercept the content returned to the client
-          if (!didWrite) {
-            var end = resp.end;
-            resp.end = function (chunk, encoding) {
-              resp.end = end;
-              if (chunk && !resp._fromCache) { // avoid double caching
-                resp.on('finish', function () {
-                  var contentType = resp._headers['content-type'] || '';
-                  cache(self, key, options, contentType, chunk);
-                });
-              }
-              resp.end(chunk, encoding);
-            };
-            return next();
+    var populate = function(key, cb) {
+      fromCache = false;
+      var cacheValue, contentType;
+
+      // replace write() to intercept the content sent to the client
+      resp._v_write = resp.write;
+      resp.write = function (chunk, encoding) {
+        resp._v_write(chunk, encoding);
+        if (chunk) {
+          if (cacheValue) {
+            cacheValue = undefined; // multiple writes, don't cache
+            resp.write = resp._v_write;
+          } else {
+            contentType = resp._headers['content-type'] || '';
+            cacheValue = chunk;
           }
         }
-      });
-    } else {
+      };
+
+      // replace end() to intercept the content returned to the client
+      var end = resp.end;
+      resp.end = function (chunk, encoding) {
+        resp.end = end;
+        if (chunk) {
+          if (cacheValue) {
+            cacheValue = undefined; // multiple writes, don't cache
+          } else {
+            resp.on('finish', function () {
+              contentType = resp._headers['content-type'] || '';
+              cacheValue = chunk;
+            });
+          }
+        }
+        resp.end(chunk, encoding);
+
+        cache(contentType, cacheValue, cb);
+      };
       return next();
-    }
+    };
+
+    resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
+    self.internalCache.getSet(key, populate, options, cacheReturn);
   };
 };
 
-function cache(self, key, options, contentType, chunk) {
-  chunk = chunk.toString();
-  var size = chunk.length + contentType.length + 1;
-  var buffer = new Buffer(size);
-  buffer.writeUInt8(contentType.length.valueOf(), 0);
-  buffer.write(contentType, 1);
-  buffer.write(chunk, contentType.length + 1);
-  self.internalCache.set(key, buffer, options, function (err) {
-    if (err) {
-      console.log('Cache error: ' + err);
-    } else if (debugEnabled) {
-      debug('Cached: ' + key);
-    }
-  });
+function cache(contentType, cacheValue, cb) {
+  var buffer;
+  if (cacheValue) {
+    cacheValue = cacheValue.toString();
+    var size = cacheValue.length + contentType.length + 1;
+    buffer = new Buffer(size);
+    buffer.writeUInt8(contentType.length.valueOf(), 0);
+    buffer.write(contentType, 1);
+    buffer.write(cacheValue, contentType.length + 1);
+  }
+  cb(null, buffer);
 }
 
 var debug;
