@@ -24,16 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Quota: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var eventEmitter = new (require('events').EventEmitter)();
 
 function CacheArgo(cache, options) {
   if (!(this instanceof CacheArgo)) {
@@ -57,40 +48,34 @@ CacheArgo.prototype.cache = function(id) {
 
     handle('request', function(env, next) {
       var req = env.request;
-      if (req.method === 'GET') {
-        var resp = env.response;
-        if (_.isFunction(id)) { id = id(req); }
-        var key = id ? id : req.url;
+      if (req.method !== 'GET') { return next(env); }
 
-        debug('Cache check');
-        self.internalCache.get(key, function (err, reply) {
-          if (err) { console.log('Cache error: ' + err); }
-          resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
-          if (reply) {
-            if (debugEnabled) { debug('cache hit: ' + key); }
-            var len = reply.readUInt8(0);
-            var contentType = reply.toString('utf8', 1, len + 1);
-            var content = reply.toString('utf8', len + 1);
-            resp.setHeader('Content-Type', contentType);
-            resp.body = content;
-            env.argo._routed = true; // bypass further pipeline processing
-            resp.from_cache = true; // avoid double caching
-          } else {
-            if (debugEnabled) { debug('cache miss: ' + key); }
-          }
-        });
-      }
-      return next(env);
-    });
-
-    handle('response', function(env, next) {
-      var req = env.request;
       var resp = env.response;
-      if (req.method === 'GET' && !resp.from_cache) { // avoid double caching
-        if (_.isFunction(id)) { id = id(req); }
-        var key = id ? id : req.url;
+      if (_.isFunction(id)) { id = id(req); }
+      var key = id ? id : req.url;
+      req._key = key;
 
-        // replace end() to intercept the content returned to the client
+      var getSetCallback = function(err, reply, fromCache) {
+        if (err) { console.log('Cache error: ' + err); }
+
+        if (reply && fromCache) {
+          if (debugEnabled) { debug('cache hit: ' + key); }
+          var len = reply.readUInt8(0);
+          var contentType = reply.toString('utf8', 1, len + 1);
+          var content = reply.toString('utf8', len + 1);
+          resp.setHeader('Content-Type', contentType);
+          resp.body = content;
+          env.argo._routed = true; // bypass further pipeline processing
+        }
+      };
+
+      var populate = function(key, cb) {
+        if (debugEnabled) { debug('cache miss: ' + key); }
+
+        eventEmitter.once(key, function(buffer) {
+          cb(null, buffer);
+        });
+
         var end = resp.end;
         resp.end = function(chunk, encoding) {
           resp.end = end;
@@ -100,17 +85,26 @@ CacheArgo.prototype.cache = function(id) {
           buffer.writeUInt8(contentType.length.valueOf(), 0);
           buffer.write(contentType, 1);
           buffer.write(chunk, contentType.length + 1);
-          self.internalCache.set(key, buffer, options, function(err) {
-            if (err) {
-              console.log('Cache error: ' + err);
-            } else if (debugEnabled) {
-              debug('Cached: ' + key);
-            }
-          });
+          eventEmitter.emit(key, buffer);
           resp.end(chunk, encoding);
         };
-      }
-      return next(env);
+      };
+
+      debug('Cache check');
+      resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
+      self.internalCache.getSet(key, populate, options, getSetCallback);
+      next(env);
     });
   };
 };
+
+var debug;
+var debugEnabled;
+if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
+  debug = function(x) {
+    console.log('Quota: ' + x);
+  };
+  debugEnabled = true;
+} else {
+  debug = function() { };
+}
