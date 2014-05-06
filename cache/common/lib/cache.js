@@ -46,8 +46,9 @@ Cache.prototype.setEncoding = function(encoding) {
 // error, it must be passed as the first parameter (otherwise undefined or null). Assuming no error, the second
 // parameter is the value passed to the cache.
 // The options parameter contains any options to be passed as a part of the cache set() function.
-// The callback (error, reply) function will be called after all processing has completed. It is called immediately if
-// the cache contains the item. Otherwise, it will be called once the populate function has completed.
+// The callback (error, reply, fromCache) function will be called after all processing has completed. It is called
+// immediately (fromCache == true) if the cache contains the item. Otherwise, it will be called once the
+// populate function has completed.
 // If "setEncoding" was previously called on this cache, then the value will be returned as a string
 // in the specified encoding. Otherwise, a Buffer will be returned.
 // key, populate, and callback are required. options is optional.
@@ -63,7 +64,7 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
       if (reply && self.options.encoding) {
         reply = reply.toString(self.options.encoding);
       }
-      return callback(err, reply);
+      return callback(err, reply, true);
     }
 
     var event = self.name + key;
