@@ -122,7 +122,11 @@ Cache.prototype.set = function(key, v, o, c) {
     callback = c;
   }
 
-  var value = convertValue(v, options.encoding);
+  try {
+    var value = convertValue(v, options.encoding);
+  } catch (err) {
+    return callback(err);
+  }
   options.ttl = options.ttl ? convertNumber(options.ttl, 'ttl') : this.options.ttl;
 
   this.cache.set(key, value, options, callback);

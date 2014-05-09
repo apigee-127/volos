@@ -112,15 +112,18 @@ CacheConnect.prototype.cache = function(id) {
   };
 };
 
-function cache(contentType, cacheValue, cb) {
+function cache(contentType, chunk, cb) {
   var buffer;
-  if (cacheValue) {
-    cacheValue = cacheValue.toString();
-    var size = cacheValue.length + contentType.length + 1;
+  if (chunk) {
+    var size = chunk.length + contentType.length + 1;
     buffer = new Buffer(size);
     buffer.writeUInt8(contentType.length.valueOf(), 0);
     buffer.write(contentType, 1);
-    buffer.write(cacheValue, contentType.length + 1);
+    if (Buffer.isBuffer(chunk)) {
+      chunk.copy(buffer, contentType.length + 1, 0);
+    } else {
+      buffer.write(chunk, contentType.length + 1);
+    }
   }
   cb(null, buffer);
 }
