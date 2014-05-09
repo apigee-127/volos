@@ -28,8 +28,9 @@ var request = require('supertest');
 var memoryCache = require('../memory');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
+var async = require('async');
 
-var ttl = 100;
+var ttl = 20;
 
 describe('Middleware', function() {
 
@@ -101,7 +102,7 @@ function verifyCache(server) {
               done();
             });
         });
-    }, ttl + 100);
+    }, ttl + 1);
   });
 
   it('must allow string id override', function(done) {
@@ -126,5 +127,63 @@ function verifyCache(server) {
 
         done();
       });
+  });
+
+  it('must be repeatable', function(done) {
+
+    var times = 50;
+    var count = 3;
+    var func = function(cb) {
+      setTimeout(function() {
+        request(server)
+          .get('/count')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(count);
+
+            request(server)
+              .get('/count')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.body.count.should.equal(count++);
+              });
+          });
+        cb();
+      }, ttl + 5);
+    };
+    for (var funcs = []; funcs.length < times;) { funcs.push(func); }
+
+    async.series(funcs, function(err, results) {
+      done();
+    });
+  });
+
+  it('must be parallel', function(done) {
+
+    this.timeout(240000);
+
+    var concurrent = 3;
+    var times = 200;
+
+    var task = function(cb) {
+      request(server)
+        .get('/count')
+        .end(function(err, res) {
+          res.status.should.eql(200);
+          cb(err);
+        });
+    };
+
+    for (var tasks = []; tasks.length < times;) { tasks.push(task); }
+    var thread = function(cb) {
+      async.series(tasks, function(err, results) {
+        cb();
+      });
+    };
+    for (var threads = []; threads.length < concurrent;) { threads.push(thread); }
+    async.parallel(threads, function(err, reply) {
+      done(err);
+    });
   });
 }

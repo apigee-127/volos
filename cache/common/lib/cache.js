@@ -24,7 +24,9 @@
 "use strict";
 
 var DEFAULT_TTL = 300;
-var eventEmitter = new (require('events').EventEmitter)();
+var EM = require('events').EventEmitter;
+var eventEmitter = new EM();
+eventEmitter.setMaxListeners(100);
 
 function Cache(Spi, name, options) {
   this.options = options || {};
@@ -60,16 +62,11 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
 
   var self = this;
   this.cache.get(key, function(err, reply) {
-    if (err || reply) {
-      if (reply && self.options.encoding) {
-        reply = reply.toString(self.options.encoding);
-      }
-      return callback(err, reply, true);
-    }
+    if (err || reply) { return callback(err, reply, true); }
 
     var event = self.name + key;
     eventEmitter.once(event, callback);
-    if (eventEmitter.listeners(event).length > 1) { return; }
+    if (EM.listenerCount(eventEmitter, event) > 1) { return; }
 
     populate(key, function(err, reply) {
       if (err) { return eventEmitter.emit(event, err, reply); }

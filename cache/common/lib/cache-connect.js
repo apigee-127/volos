@@ -76,8 +76,8 @@ CacheConnect.prototype.cache = function(id) {
         resp._v_write(chunk, encoding);
         if (chunk) {
           if (cacheValue) {
+            debug('multiple writes, no cache');
             cacheValue = undefined; // multiple writes, don't cache
-            resp.write = resp._v_write;
           } else {
             contentType = resp._headers['content-type'] || '';
             cacheValue = chunk;
@@ -91,6 +91,7 @@ CacheConnect.prototype.cache = function(id) {
         resp.end = end;
         if (chunk) {
           if (cacheValue) {
+            debug('multiple writes, no cache');
             cacheValue = undefined; // multiple writes, don't cache
           } else {
             resp.on('finish', function () {
@@ -128,7 +129,7 @@ var debug;
 var debugEnabled;
 if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
   debug = function(x) {
-    console.log('Quota: ' + x);
+    console.log('Cache: ' + x);
   };
   debugEnabled = true;
 } else {
