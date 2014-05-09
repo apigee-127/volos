@@ -25,6 +25,7 @@
 
 var _ = require('underscore');
 var eventEmitter = new (require('events').EventEmitter)();
+eventEmitter.setMaxListeners(0);
 
 function CacheArgo(cache, options) {
   if (!(this instanceof CacheArgo)) {
@@ -65,35 +66,41 @@ CacheArgo.prototype.cache = function(id) {
           var content = reply.toString('utf8', len + 1);
           resp.setHeader('Content-Type', contentType);
           resp.body = content;
-          env.argo._routed = true; // bypass further pipeline processing
+          // leaving these variations here for reference, may want to revisit later
+//          env.argo._routed = true; // bypass later .get processing
+//          env.target.skip = true; // bypass later .target processing
+//          next(env);
+          env.response.end(content); // bypass all later processing, including .use()
         }
       };
 
       var populate = function(key, cb) {
         if (debugEnabled) { debug('cache miss: ' + key); }
 
-        eventEmitter.once(key, function(buffer) {
-          cb(null, buffer);
-        });
-
         var end = resp.end;
         resp.end = function(chunk, encoding) {
           resp.end = end;
-          var contentType = resp._headers['content-type'];
-          var size = chunk.length + contentType.length + 1;
-          var buffer = new Buffer(size);
-          buffer.writeUInt8(contentType.length.valueOf(), 0);
-          buffer.write(contentType, 1);
-          buffer.write(chunk, contentType.length + 1);
-          eventEmitter.emit(key, buffer);
+          var buffer;
+          if (chunk) {
+            var contentType = resp._headers['content-type'];
+            var size = chunk.length + contentType.length + 1;
+            buffer = new Buffer(size);
+            buffer.writeUInt8(contentType.length.valueOf(), 0);
+            buffer.write(contentType, 1);
+            if (Buffer.isBuffer(chunk)) {
+              chunk.copy(buffer, contentType.length + 1, 0);
+            } else {
+              buffer.write(chunk, contentType.length + 1);
+            }
+          }
+          cb(null, buffer);
           resp.end(chunk, encoding);
         };
+        next(env);
       };
 
-      debug('Cache check');
       resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
       self.internalCache.getSet(key, populate, options, getSetCallback);
-      next(env);
     });
   };
 };
@@ -102,7 +109,7 @@ var debug;
 var debugEnabled;
 if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
   debug = function(x) {
-    console.log('Quota: ' + x);
+    console.log('Cache: ' + x);
   };
   debugEnabled = true;
 } else {
