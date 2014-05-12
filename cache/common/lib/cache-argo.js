@@ -24,6 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
+var encoder = require('./cache-encoder');
 var eventEmitter = new (require('events').EventEmitter)();
 eventEmitter.setMaxListeners(0);
 
@@ -56,21 +57,12 @@ CacheArgo.prototype.cache = function(id) {
       var key = id ? id : req.url;
       req._key = key;
 
-      var getSetCallback = function(err, reply, fromCache) {
+      var getSetCallback = function(err, buffer, fromCache) {
         if (err) { console.log('Cache error: ' + err); }
 
-        if (reply && fromCache) {
+        if (buffer && fromCache) {
           if (debugEnabled) { debug('cache hit: ' + key); }
-          var len = reply.readUInt8(0);
-          var contentType = reply.toString('utf8', 1, len + 1);
-          var content = reply.toString('utf8', len + 1);
-          resp.setHeader('Content-Type', contentType);
-          resp.body = content;
-          // leaving these variations here for reference, may want to revisit later
-//          env.argo._routed = true; // bypass later .get processing
-//          env.target.skip = true; // bypass later .target processing
-//          next(env);
-          env.response.end(content); // bypass all later processing, including .use()
+          encoder.setFromCache(buffer, resp);
         }
       };
 
@@ -80,22 +72,10 @@ CacheArgo.prototype.cache = function(id) {
         var end = resp.end;
         resp.end = function(chunk, encoding) {
           resp.end = end;
-          var buffer;
-          if (chunk) {
-            var contentType = resp._headers['content-type'];
-            var size = chunk.length + contentType.length + 1;
-            buffer = new Buffer(size);
-            buffer.writeUInt8(contentType.length.valueOf(), 0);
-            buffer.write(contentType, 1);
-            if (Buffer.isBuffer(chunk)) {
-              chunk.copy(buffer, contentType.length + 1, 0);
-            } else {
-              buffer.write(chunk, contentType.length + 1);
-            }
-          }
-          cb(null, buffer);
           resp.end(chunk, encoding);
+          encoder.cache(resp._headers, chunk, cb);
         };
+
         next(env);
       };
 

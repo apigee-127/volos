@@ -29,6 +29,7 @@ var memoryCache = require('../memory');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
 var async = require('async');
+var _ = require('underscore');
 
 var ttl = 20;
 
@@ -61,6 +62,7 @@ function verifyCache(server) {
         res.status.should.eql(200);
         should.exist(res.header['cache-control']);
         res.body.count.should.equal(1);
+        var headers = res.headers;
 
         request(server)
           .get('/count')
@@ -68,7 +70,7 @@ function verifyCache(server) {
             should.not.exist(err);
             res.status.should.eql(200);
             res.body.count.should.equal(1);
-
+            _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
             request(server)
               .get('/count')
@@ -76,6 +78,7 @@ function verifyCache(server) {
                 should.not.exist(err);
                 res.status.should.eql(200);
                 res.body.count.should.equal(1);
+                _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
                 done();
               });
@@ -150,7 +153,7 @@ function verifyCache(server) {
               });
           });
         cb();
-      }, ttl + 5);
+      }, ttl + 10);
     };
     for (var funcs = []; funcs.length < times;) { funcs.push(func); }
 

@@ -24,6 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
+var encoder = require('./cache-encoder');
 
 function CacheConnect(cache, options) {
   if (!(this instanceof CacheConnect)) {
@@ -51,36 +52,31 @@ CacheConnect.prototype.cache = function(id) {
     var key = id ? id : req.originalUrl;
     debug('Cache check');
 
-    var getSetCallback = function(err, reply, fromCache) {
+    var getSetCallback = function(err, buffer, fromCache) {
       if (err) { return console.log('Cache error: ' + err); }
 
-      if (reply && fromCache) {
+      if (buffer && fromCache) {
         if (debugEnabled) { debug('cache hit: ' + key); }
-        var len = reply.readUInt8(0);
-        var contentType = reply.toString('utf8', 1, len + 1);
-        var content = reply.toString('utf8', len + 1);
-        if (contentType !== '') {
-          resp.setHeader('Content-Type', contentType);
-        }
-        return resp.end(content);
+        return encoder.setFromCache(buffer, resp);
       }
     };
 
     var populate = function(key, cb) {
       if (debugEnabled) { debug('cache miss: ' + key); }
-      var cacheValue, contentType;
+      var doCache, content, headers;
 
       // replace write() to intercept the content sent to the client
       resp._v_write = resp.write;
       resp.write = function (chunk, encoding) {
         resp._v_write(chunk, encoding);
         if (chunk) {
-          if (cacheValue) {
+          if (content) {
             debug('multiple writes, no cache');
-            cacheValue = undefined; // multiple writes, don't cache
+            doCache = false;
           } else {
-            contentType = resp._headers['content-type'] || '';
-            cacheValue = chunk;
+            doCache = true;
+            headers = resp._headers;
+            content = chunk;
           }
         }
       };
@@ -90,20 +86,23 @@ CacheConnect.prototype.cache = function(id) {
       resp.end = function (chunk, encoding) {
         resp.end = end;
         if (chunk) {
-          if (cacheValue) {
+          if (content) {
             debug('multiple writes, no cache');
-            cacheValue = undefined; // multiple writes, don't cache
+            doCache = false;
           } else {
             resp.on('finish', function () {
-              contentType = resp._headers['content-type'] || '';
-              cacheValue = chunk;
+              doCache = true;
+              headers = resp._headers;
+              content = chunk;
             });
           }
         }
         resp.end(chunk, encoding);
 
-        cache(contentType, cacheValue, cb);
+        if (!doCache) { headers = content = null; }
+        encoder.cache(headers, content, cb);
       };
+
       return next();
     };
 
@@ -111,22 +110,6 @@ CacheConnect.prototype.cache = function(id) {
     self.internalCache.getSet(key, populate, options, getSetCallback);
   };
 };
-
-function cache(contentType, chunk, cb) {
-  var buffer;
-  if (chunk) {
-    var size = chunk.length + contentType.length + 1;
-    buffer = new Buffer(size);
-    buffer.writeUInt8(contentType.length.valueOf(), 0);
-    buffer.write(contentType, 1);
-    if (Buffer.isBuffer(chunk)) {
-      chunk.copy(buffer, contentType.length + 1, 0);
-    } else {
-      buffer.write(chunk, contentType.length + 1);
-    }
-  }
-  cb(null, buffer);
-}
 
 var debug;
 var debugEnabled;
