@@ -36,7 +36,6 @@ module.exports = function(cache) {
     .get('/count',
       function(handle) {
         handle('request', function(env, next) {
-          console.log('direct access');
           env.response.body = { count: counter++ };
           next(env);
         });

@@ -173,6 +173,7 @@ function verifyCache(server) {
       request(server)
         .get('/count')
         .end(function(err, res) {
+          should.not.exist(err);
           res.status.should.eql(200);
           cb(err);
         });
