@@ -49,7 +49,7 @@ CacheConnect.prototype.cache = function(id) {
     if (req.method !== 'GET') { return next(); }
 
     if (_.isFunction(id)) { id = id(req); }
-    var key = id ? id : req.originalUrl;
+    var key = id ? id : req.url;
     debug('Cache check');
 
     var getSetCallback = function(err, buffer, fromCache) {
