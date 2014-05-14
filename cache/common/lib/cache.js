@@ -65,14 +65,20 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
     if (err || reply) { return callback(err, reply, true); }
 
     var event = self.name + key;
-    eventEmitter.once(event, callback);
-    if (EM.listenerCount(eventEmitter, event) > 1) { return; }
+    if (EM.listenerCount(eventEmitter, event) === 0) {
+      eventEmitter.once(event, function(err, reply) {
+        callback(err, reply, false); // special case for the populate (fromCache == false)
+      });
+    } else {
+      eventEmitter.once(event, callback);
+      return;
+    }
 
     populate(key, function(err, reply) {
       if (err) { return eventEmitter.emit(event, err, reply); }
 
       self.set(key, reply, options, function(err) {
-        eventEmitter.emit(event, err, reply);
+        eventEmitter.emit(event, err, reply, true);
       });
     });
   });

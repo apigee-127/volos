@@ -25,7 +25,8 @@
 
 var should = require('should');
 var request = require('supertest');
-var memoryCache = require('../memory');
+//var memoryCache = require('../memory');
+var memoryCache = require('../redis');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
 var async = require('async');
@@ -157,17 +158,13 @@ function verifyCache(server) {
     };
     for (var funcs = []; funcs.length < times;) { funcs.push(func); }
 
-    async.series(funcs, function(err, results) {
-      done();
-    });
+    async.series(funcs, done);
   });
 
   it('must be parallel', function(done) {
 
-    this.timeout(240000);
-
     var concurrent = 3;
-    var times = 200;
+    var times = 50;
 
     var task = function(cb) {
       request(server)
@@ -181,13 +178,9 @@ function verifyCache(server) {
 
     for (var tasks = []; tasks.length < times;) { tasks.push(task); }
     var thread = function(cb) {
-      async.series(tasks, function(err, results) {
-        cb();
-      });
+      async.series(tasks, cb);
     };
     for (var threads = []; threads.length < concurrent;) { threads.push(thread); }
-    async.parallel(threads, function(err, reply) {
-      done(err);
-    });
+    async.parallel(threads, done);
   });
 }
