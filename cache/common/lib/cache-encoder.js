@@ -60,10 +60,12 @@ exports.cache = function(headers, content, cb) {
       buffer.write(pair[1], pos);
       pos += Buffer._charsWritten;
     }
-    if (Buffer.isBuffer(content)) {
-      content.copy(buffer, pos, 0);
-    } else {
-      buffer.write(content, pos);
+    if (content) {
+      if (Buffer.isBuffer(content)) {
+        content.copy(buffer, pos, 0);
+      } else {
+        buffer.write(content, pos);
+      }
     }
   }
   cb(null, buffer);
