@@ -36,12 +36,23 @@ function QuotaArgo(quota, options) {
 module.exports = QuotaArgo;
 
 
+// applies quota and returns (403) error on exceeded
+// options contains:
+// identifier (optional) may be a string or a function that takes the request and generates a string id
+//   if not specified, id will default to the request originalUrl
+// weight (optional) may be a number or a function that takes the request and generates a number
 QuotaArgo.prototype.apply = function(options, env, next) {
   if (!next) { next = env; env = options; options = undefined; }
   var opts = calcOptions(env.request, options);
   applyQuota(this, opts, env.response, next);
 };
 
+// applies quota on a per-caller address basis and returns (403) error on exceeded
+// options contains:
+// identifier (required, may be null) may be a string or a function that takes the request and generates a string id
+//   if not specified, id will be set to the request originalUrl
+// weight (optional) may be a number or a function that takes the request and generates a number
+//   if weight is specified, id is required (may be null)
 QuotaArgo.prototype.applyPerAddress = function(options, env, next) {
   if (!next) { next = env; env = options; options = undefined; }
   var opts = calcOptions(env.request, options);
@@ -70,6 +81,9 @@ function applyQuota(self, options, response, next) {
         response.body = { error: 'error applying quota' };
         return;
       }
+      response.setHeader('X-RateLimit-Limit', reply.allowed);
+      response.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
+      response.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
         if (debugEnabled) { debug('Quota exceeded: ' + options.identifier); }
         response.statusCode = 403;

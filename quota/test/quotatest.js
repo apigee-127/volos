@@ -26,6 +26,7 @@
 var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');
+var should = require('should');
 
 // clone & extend hash
 function extend(a, b) {
@@ -62,6 +63,7 @@ exports.testQuota = function(config, Spi) {
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
+        result.expiryTime.should.be.approximately(Date.now() + 60000, 20);
 
         pm.apply({
           identifier: id('Two'),
@@ -143,6 +145,7 @@ exports.testQuota = function(config, Spi) {
             pm.apply(hit, function(err, result) {
               assert(!err);
               checkResult(result, 2, 1, true);
+              result.expiryTime.should.be.approximately(Date.now() + 60000, 20);
 
               setTimeout(function() {
                 pm.apply(hit, function(err, result) {
@@ -185,6 +188,8 @@ exports.testQuota = function(config, Spi) {
           pm.apply(hit, function(err, result) {
             assert(!err);
             checkResult(result, 1, 1, true);
+            var exp = (startTime + 60000) / 1000;
+            result.expiryTime.should.be.approximately(startTime + 60000, 20);
 
             setTimeout(function() {
               pm.apply(hit, function(err, result) {

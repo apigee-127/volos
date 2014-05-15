@@ -82,7 +82,8 @@ MemoryQuotaSpi.prototype.apply = function(options, cb) {
   var result = {
     allowed: allow,
     used: bucket.count,
-    isAllowed: (bucket.count <= allow)
+    isAllowed: (bucket.count <= allow),
+    expiryTime: bucket.expires
   };
   cb(undefined, result);
 };

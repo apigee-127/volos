@@ -28,6 +28,7 @@ var config = require('../../../testconfig/testconfig-apigee').config;
 var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');
+var should = require('should');
 
 describe('Apigee', function() {
 
@@ -66,6 +67,7 @@ describe('Apigee', function() {
       pm.apply(hit, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
+        result.expiryTime.should.be.approximately(Date.now() + 60000, 10000);
 
         var offset = result.expiryTime - (Date.now() + 60000);
 
@@ -97,6 +99,7 @@ describe('Apigee', function() {
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
+        result.expiryTime.should.be.approximately(Date.now() + 60000, 10000);
 
         pm.apply({
           identifier: id('Two'),

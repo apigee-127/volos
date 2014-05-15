@@ -50,7 +50,7 @@ QuotaConnect.prototype.apply = function(options) {
 
 // applies quota on a per-caller address basis and returns (403) error on exceeded
 // options contains:
-// id (required, may be null) may be a string or a function that takes the request and generates a string id
+// identifier (required, may be null) may be a string or a function that takes the request and generates a string id
 //   if not specified, id will be set to the request originalUrl
 // weight (optional) may be a number or a function that takes the request and generates a number
 //   if weight is specified, id is required (may be null)
@@ -79,6 +79,9 @@ function applyQuota(self, options, resp, next) {
     options,
     function(err, reply) {
       if (err) { return next(err); }
+      resp.setHeader('X-RateLimit-Limit', reply.allowed);
+      resp.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
+      resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
         if (debugEnabled) { debug('Quota exceeded: ' + options.identifier); }
         resp.statusCode = 403;

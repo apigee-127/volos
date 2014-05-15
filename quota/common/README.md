@@ -47,7 +47,7 @@ place. Currently the options are:
 
 ### Class: Quota
 
-### Quota.apply(options, callback)
+#### Quota.apply(options, callback)
 
 Apply the quota and invoke "callback" with a result. Options can have the following parameters:
 
@@ -66,5 +66,59 @@ passed to the "apply" method, or the default that came from the overall object.
 * used: (number) How much of the quota bucket is used up.
 * isAllowed: (boolean) Whether the quota bucket has been used up. Basically the same as checking whether
 "used > allowed".
+* expiryTime: (number) The number of milliseconds until the quota bucket "used" amount is reset to zero.
 
+### Middleware
 
+#### Middleware.apply(options)
+
+Applies quota and returns (403) error on exceeded.
+
+Options (optional) may contain:
+
+* identifier (optional) may be a string or a function that takes the request and generates a string id.
+    if not specified, id will default to the request originalUrl
+* weight (optional) may be a number or a function that takes the request and generates a number
+
+#### Middleware.applyPerAddress(options)
+
+Applies quota on a per-caller address basis and returns (403) error on exceeded.
+
+Options (optional) may contain:
+
+* identifier (optional) may be a string or a function that takes the request and generates a string id.
+    if not specified, id will default to the request originalUrl
+* weight (optional) may be a number or a function that takes the request and generates a number
+
+#### Middleware usage examples: 
+
+##### Quota.connectMiddleware()
+
+Returns middleware that may be used in a Connect server.
+
+```
+   server.get('/',
+     quota.connectMiddleware().apply(),
+     ...
+```
+ 
+##### Quota.expressMiddleware()
+
+Returns middleware that may be used in a Express server. 
+
+```
+   server.get('/',
+     quota.expressMiddleware().apply(),
+     ...
+```
+
+##### Quota.argoMiddleware()
+
+Returns middleware that may be used in an Argo server. 
+
+```
+    server.get('/', function(handle) {
+      handle('request', function(env, next) {
+        oauth.argoMiddleware().apply(env, function() {
+        ...
+```

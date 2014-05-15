@@ -62,8 +62,10 @@ RedisQuotaSpi.prototype.apply = function(options, cb) {
   self.client.incrby(options.identifier, options.weight, function(err, count) {
     if (err) { return cb(err, null); }
 
+    var now = Date.now();
+    var exp = self.calculateExpiration(now);
+    var ttl = (exp / 1000) >> 0;
     if (count === options.weight) {
-      var ttl = ((self.calculateExpiration(Date.now()) / 1000) >> 0);
       self.client.expireat(options.identifier, ttl);
     }
 
@@ -72,7 +74,8 @@ RedisQuotaSpi.prototype.apply = function(options, cb) {
     var result = {
       allowed: allow,
       used: count,
-      isAllowed: (count <= allow)
+      isAllowed: (count <= allow),
+      expiryTime: exp
     };
     cb(undefined, result);
   });

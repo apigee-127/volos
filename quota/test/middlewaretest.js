@@ -28,6 +28,7 @@ var request = require('supertest');
 var memoryQuota = require('../memory');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
+var should = require('should');
 
 describe('Middleware', function() {
 
@@ -55,6 +56,12 @@ describe('Middleware', function() {
 
 });
 
+function checkHeaders(res, limit, remaining, reset) {
+  parseInt(res.headers['x-ratelimit-limit']).should.equal(limit);
+  parseInt(res.headers['x-ratelimit-remaining']).should.equal(remaining);
+  parseInt(res.headers['x-ratelimit-reset']).should.be.approximately(reset / 1000, 5);
+}
+
  function verifyQuota(server) {
 
    describe('count', function() {
@@ -64,18 +71,21 @@ describe('Middleware', function() {
          .end(function(err, res) {
            should.not.exist(err);
            res.status.should.eql(200);
+           checkHeaders(res, 2, 1, Date.now() + 60000);
 
            request(server)
              .get('/count')
              .end(function(err, res) {
                should.not.exist(err);
                res.status.should.eql(200);
+               checkHeaders(res, 2, 0, Date.now() + 60000);
 
                request(server)
                  .get('/count')
                  .end(function(err, res) {
                    should.not.exist(err);
                    res.status.should.eql(403);
+                   checkHeaders(res, 2, -1, Date.now() + 60000);
 
                    done();
                  });
@@ -235,6 +245,7 @@ describe('Middleware', function() {
          .end(function(err, res) {
            should.not.exist(err);
            res.status.should.eql(200);
+           checkHeaders(res, 2, 1, Date.now() + 60000);
 
            request(server)
              .get('/countPerAddress')
@@ -242,6 +253,7 @@ describe('Middleware', function() {
              .end(function(err, res) {
                should.not.exist(err);
                res.status.should.eql(200);
+               checkHeaders(res, 2, 0, Date.now() + 60000);
 
                request(server)
                  .get('/countPerAddress')
@@ -249,6 +261,7 @@ describe('Middleware', function() {
                  .end(function(err, res) {
                    should.not.exist(err);
                    res.status.should.eql(200);
+                   checkHeaders(res, 2, 1, Date.now() + 60000);
 
                    request(server)
                      .get('/countPerAddress')
@@ -256,6 +269,7 @@ describe('Middleware', function() {
                      .end(function(err, res) {
                        should.not.exist(err);
                        res.status.should.eql(403);
+                       checkHeaders(res, 2, -1, Date.now() + 60000);
 
                        done();
                      });
