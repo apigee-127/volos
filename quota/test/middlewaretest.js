@@ -26,6 +26,7 @@
 var should = require('should');
 var request = require('supertest');
 var memoryQuota = require('../memory');
+var redisQuota = require('../redis');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
 var should = require('should');
@@ -38,9 +39,16 @@ describe('Middleware', function() {
       interval: 1,
       allow: 2
     };
-    var quota = memoryQuota.create(options);
-    var server = expressServer(quota);
-    verifyQuota(server);
+    describe('Memory', function() {
+      var quota = memoryQuota.create(options);
+      var server = expressServer(quota);
+      verifyQuota(server);
+    });
+    describe('Redis', function() {
+      var quota = redisQuota.create(options);
+      var server = expressServer(quota);
+      verifyQuota(server);
+    });
   });
 
   describe('Argo', function() {
@@ -49,9 +57,16 @@ describe('Middleware', function() {
       interval: 1,
       allow: 2
     };
-    var quota = memoryQuota.create(options);
-    var server = argoServer(quota);
-    verifyQuota(server);
+    describe('Memory', function() {
+      var quota = memoryQuota.create(options);
+      var server = argoServer(quota);
+      verifyQuota(server);
+    });
+//    describe('Redis', function() {
+//      var quota = redisQuota.create(options);
+//      var server = argoServer(quota);
+//      verifyQuota(server);
+//    });
   });
 
 });
@@ -59,7 +74,7 @@ describe('Middleware', function() {
 function checkHeaders(res, limit, remaining, reset) {
   parseInt(res.headers['x-ratelimit-limit']).should.equal(limit);
   parseInt(res.headers['x-ratelimit-remaining']).should.equal(remaining);
-  parseInt(res.headers['x-ratelimit-reset']).should.be.approximately(reset / 1000, 5);
+  parseInt(res.headers['x-ratelimit-reset']).should.be.approximately(reset, 5);
 }
 
  function verifyQuota(server) {
@@ -71,21 +86,21 @@ function checkHeaders(res, limit, remaining, reset) {
          .end(function(err, res) {
            should.not.exist(err);
            res.status.should.eql(200);
-           checkHeaders(res, 2, 1, Date.now() + 60000);
+           checkHeaders(res, 2, 1, 60);
 
            request(server)
              .get('/count')
              .end(function(err, res) {
                should.not.exist(err);
                res.status.should.eql(200);
-               checkHeaders(res, 2, 0, Date.now() + 60000);
+               checkHeaders(res, 2, 0, 60);
 
                request(server)
                  .get('/count')
                  .end(function(err, res) {
                    should.not.exist(err);
                    res.status.should.eql(403);
-                   checkHeaders(res, 2, -1, Date.now() + 60000);
+                   checkHeaders(res, 2, -1, 60);
 
                    done();
                  });
@@ -245,7 +260,7 @@ function checkHeaders(res, limit, remaining, reset) {
          .end(function(err, res) {
            should.not.exist(err);
            res.status.should.eql(200);
-           checkHeaders(res, 2, 1, Date.now() + 60000);
+           checkHeaders(res, 2, 1, 60);
 
            request(server)
              .get('/countPerAddress')
@@ -253,7 +268,7 @@ function checkHeaders(res, limit, remaining, reset) {
              .end(function(err, res) {
                should.not.exist(err);
                res.status.should.eql(200);
-               checkHeaders(res, 2, 0, Date.now() + 60000);
+               checkHeaders(res, 2, 0, 60);
 
                request(server)
                  .get('/countPerAddress')
@@ -261,7 +276,7 @@ function checkHeaders(res, limit, remaining, reset) {
                  .end(function(err, res) {
                    should.not.exist(err);
                    res.status.should.eql(200);
-                   checkHeaders(res, 2, 1, Date.now() + 60000);
+                   checkHeaders(res, 2, 1, 60);
 
                    request(server)
                      .get('/countPerAddress')
@@ -269,7 +284,7 @@ function checkHeaders(res, limit, remaining, reset) {
                      .end(function(err, res) {
                        should.not.exist(err);
                        res.status.should.eql(403);
-                       checkHeaders(res, 2, -1, Date.now() + 60000);
+                       checkHeaders(res, 2, -1, 60);
 
                        done();
                      });

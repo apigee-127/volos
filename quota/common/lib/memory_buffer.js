@@ -142,8 +142,9 @@ Bucket.prototype.calculateExpiration = function() {
 };
 
 Bucket.prototype.apply = function(time, options, cb) {
+  var now = _.now();
   if (time > this.expires) {
-    this.reset(_.now()); // Quota bucket has expired. The timer also runs but only periodically
+    this.reset(now); // Quota bucket has expired. The timer also runs but only periodically
   }
 
   this.count += options.weight;
@@ -155,7 +156,7 @@ Bucket.prototype.apply = function(time, options, cb) {
     allowed: allow,
     used: count,
     isAllowed: (count <= allow),
-    expiryTime: this.expires
+    expiryTime: this.expires - now
   };
 
   cb(null, result);

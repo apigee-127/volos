@@ -26,10 +26,16 @@
 var assert = require('assert');
 var Quota = require('volos-quota-common');
 var redis = require("redis");
+var KEY_PREFIX = "volos:quota:";
 
 /*
  * This is a quota implementation that uses buckets in Redis. Each quota bucket is simply
  * an object with a ttl.
+ */
+
+/*
+ schema:
+ volos:quota:identifier -> count
  */
 
 var create = function(options) {
@@ -59,25 +65,33 @@ RedisQuotaSpi.prototype.destroy = function() {
 
 RedisQuotaSpi.prototype.apply = function(options, cb) {
   var self = this;
-  self.client.incrby(options.identifier, options.weight, function(err, count) {
+  var key = KEY_PREFIX + options.identifier;
+  self.client.incrby(key, options.weight, function(err, count) {
     if (err) { return cb(err, null); }
 
     var now = Date.now();
-    var exp = self.calculateExpiration(now);
-    var ttl = (exp / 1000) >> 0;
     if (count === options.weight) {
-      self.client.expireat(options.identifier, ttl);
+      var ttl = self.calculateExpiration(now) - now;
+      self.client.expire(key, (ttl / 1000) >> 0);
+      returnResult(ttl);
+    } else {
+      self.client.ttl(key, function(err, ttl) {
+        if (err) { return cb(err); }
+        returnResult(ttl * 1000);
+      });
     }
 
-    var allow = options.allow || self.options.allow;
+    function returnResult(ttl) {
+      var allow = options.allow || self.options.allow;
 
-    var result = {
-      allowed: allow,
-      used: count,
-      isAllowed: (count <= allow),
-      expiryTime: exp
-    };
-    cb(undefined, result);
+      var result = {
+        allowed: allow,
+        used: count,
+        isAllowed: (count <= allow),
+        expiryTime: ttl
+      };
+      cb(undefined, result);
+    }
   });
 };
 

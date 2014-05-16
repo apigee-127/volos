@@ -63,7 +63,7 @@ exports.testQuota = function(config, Spi) {
       }, function(err, result) {
         assert(!err);
         checkResult(result, 2, 1, true);
-        result.expiryTime.should.be.approximately(Date.now() + 60000, 20);
+        result.expiryTime.should.be.approximately(60000, 20);
 
         pm.apply({
           identifier: id('Two'),
@@ -145,18 +145,20 @@ exports.testQuota = function(config, Spi) {
             pm.apply(hit, function(err, result) {
               assert(!err);
               checkResult(result, 2, 1, true);
-              result.expiryTime.should.be.approximately(Date.now() + 60000, 20);
+              result.expiryTime.should.be.approximately(60000, 20);
 
               setTimeout(function() {
                 pm.apply(hit, function(err, result) {
                   assert(!err);
                   checkResult(result, 2, 2, true);
+                  result.expiryTime.should.be.approximately(30000, 100);
 
                   // Ensure quota is reset within a minute
                   setTimeout(function() {
                     pm.apply(hit, function(err, result) {
                       assert(!err);
                       checkResult(result, 2, 1, true);
+                      result.expiryTime.should.be.approximately(60000, 200);
                       done();
                     });
                   }, 30001);
@@ -188,8 +190,8 @@ exports.testQuota = function(config, Spi) {
           pm.apply(hit, function(err, result) {
             assert(!err);
             checkResult(result, 1, 1, true);
-            var exp = (startTime + 60000) / 1000;
-            result.expiryTime.should.be.approximately(startTime + 60000, 20);
+            var exp = ((startTime + 60000) - Date.now()) / 1000;
+            result.expiryTime.should.be.approximately(250, 20);
 
             setTimeout(function() {
               pm.apply(hit, function(err, result) {
