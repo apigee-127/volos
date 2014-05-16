@@ -74,6 +74,12 @@ passed to the "apply" method, or the default that came from the overall object.
 
 Applies quota and returns (403) error on exceeded.
 
+Automatically sets the following headers on the response: 
+
+* X-RateLimit-Limit
+* X-RateLimit-Remaining
+* X-RateLimit-Reset
+
 Options (optional) may contain:
 
 * identifier (optional) may be a string or a function that takes the request and generates a string id.
