@@ -193,7 +193,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
  
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
   var self = this;
-  this.getAppIdForClientId(self, app.credentials[0].key, function(err, reply){
+  getAppIdForClientId(self, app.credentials[0].key, function(err, reply){
     if (err) { return cb(err); }
     if (reply === app.id) {
       self.createApp(app, cb);
@@ -234,7 +234,7 @@ RedisManagementSpi.prototype.listDeveloperApps = function(developerEmail, cb) {
 
 RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   var self = this;
-  self.getAppIdForClientId(self, key, function(err, reply) {
+  getAppIdForClientId(self, key, function(err, reply) {
     if (err) { return cb(err); }
     self.getApp(reply, cb);
   });
