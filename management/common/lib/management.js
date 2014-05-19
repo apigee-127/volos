@@ -86,6 +86,11 @@ Management.prototype.deleteDeveloper = function(uuid, cb) {
   this.management.deleteDeveloper(uuid, cb);
 };
 
+// returns array of developer emails
+Management.prototype.listDevelopers = function(cb) {
+  this.management.listDevelopers(cb);
+};
+
 // Operations on applications
 
 Management.prototype.createApp = function(app, cb) {
@@ -108,6 +113,11 @@ Management.prototype.updateApp = function(app, cb) {
   this.management.updateApp(app, cb);
 };
 
+// returns array of app names
+Management.prototype.listDeveloperApps = function(developerEmail, cb) {
+  this.management.listDeveloperApps(developerEmail, cb);
+};
+
 // Apigee-specific
 
 //ManagementSpi.prototype.createApiProduct = function(product, cb) {
@@ -124,9 +134,6 @@ Management.prototype.updateApp = function(app, cb) {
 
 // Redis-specific
 
-//Management.prototype.getAppIdForClientId = function(key, cb) {
-//};
-//
 //Management.prototype.getAppForClientId = function(key, cb) {
 //};
 //

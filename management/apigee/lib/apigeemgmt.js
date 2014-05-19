@@ -98,32 +98,26 @@ function ApigeeManagementSpi(config) {
 
 ApigeeManagementSpi.prototype.createDeveloper = function(developer, cb) {
   makeRequest(this, 'POST', '/developers', makeDeveloper(developer), function(err, created) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, parseDeveloper(created));
-    }
+    cb(err, parseDeveloper(created));
   });
 };
 
 ApigeeManagementSpi.prototype.getDeveloper = function(uuid, cb) {
   makeRequest(this, 'GET', path.join('/developers', uuid), function(err, dev) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, parseDeveloper(dev));
-    }
+    cb(err, parseDeveloper(dev));
+  });
+};
+
+ApigeeManagementSpi.prototype.listDevelopers = function(cb) {
+  makeRequest(this, 'GET', '/developers', function(err, emails) {
+    cb(err, emails);
   });
 };
 
 ApigeeManagementSpi.prototype.updateDeveloper = function(developer, cb) {
   makeRequest(this, 'PUT', path.join('/developers', developer.uuid),
               makeDeveloper(developer), function(err, created) {
-    if (err) {
-      cb(err);
-    } else {
-      cb(undefined, parseDeveloper(created));
-    }
+    cb(err, parseDeveloper(created));
   });
 };
 
@@ -145,6 +139,7 @@ function makeDeveloper(d) {
 }
 
 function parseDeveloper(o) {
+  if (!o) { return o; }
   return {
     email: o.email,
     userName: o.userName,
@@ -205,6 +200,13 @@ ApigeeManagementSpi.prototype.getApp = function(uuid, cb) {
     addScopesToApp(self, app, function(err, app) {
       cb(undefined, parseApp(app));
     });
+  });
+};
+
+ApigeeManagementSpi.prototype.listDeveloperApps = function(developerName, cb) {
+  var self = this;
+  makeRequest(this, 'GET', path.join('/developers', developerName, '/apps'), function(err, apps) {
+    cb(err, apps);
   });
 };
 

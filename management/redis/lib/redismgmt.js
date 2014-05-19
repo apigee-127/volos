@@ -98,16 +98,14 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
   }
   var dev = makeDeveloper(developer);
   this.client.set(_key(dev.uuid), JSON.stringify(dev), function(err, reply) {
-    if (err) { return cb(err); }
-    return cb(undefined, dev);
+    cb(err, dev);
   });
 };
 
 RedisManagementSpi.prototype.getDeveloper = function(uuid, cb) {
   getWith404(this.client, uuid, function(err, reply) {
     if (err) { return cb(err); }
-    var dev = makeDeveloper(reply);
-    return cb(undefined, dev);
+    cb(undefined, makeDeveloper(reply));
   });
 };
 
@@ -116,9 +114,20 @@ RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
 };
 
 RedisManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
-  this.client.del(_key(uuid), function(err, reply) {
-    if (err) { return cb(err); }
-    return cb(undefined, reply);
+  this.client.del(_key(uuid), cb);
+};
+
+// todo: this is pretty rinky-dink, ought to consider this case in the schema
+RedisManagementSpi.prototype.listDevelopers = function(cb) {
+  var devs = [];
+  var prefixLen = KEY_PREFIX.length + 1;
+  this.client.keys(_key('*@*:*'), function(err, keys) {
+    _.each(keys, function(key) {
+      var nopref = key.substring(prefixLen);
+      var sep = nopref.indexOf(":");
+      devs.push(nopref.substring(0, sep));
+    });
+    cb(null, devs);
   });
 };
 
@@ -184,7 +193,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
  
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
   var self = this;
-  this.getAppIdForClientId(app.credentials[0].key, function(err, reply){
+  this.getAppIdForClientId(self, app.credentials[0].key, function(err, reply){
     if (err) { return cb(err); }
     if (reply === app.id) {
       self.createApp(app, cb);
@@ -210,13 +219,22 @@ RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName,
   });
 };
 
-RedisManagementSpi.prototype.getAppIdForClientId = function(key, cb) {
-  this.client.get(_key(key), cb);
+RedisManagementSpi.prototype.listDeveloperApps = function(developerEmail, cb) {
+  var self = this;
+  var prefix = _key(developerEmail);
+  var prefixLen = prefix.length + 1;
+  self.client.keys(_key(developerEmail, '*'), function(err, keys) {
+    if (err) { return cb(err); }
+    var names = _.map(keys, function(key) {
+      return key.substring(prefixLen);
+    });
+    cb(null, names);
+  });
 };
 
 RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   var self = this;
-  self.getAppIdForClientId(key, function(err, reply) {
+  self.getAppIdForClientId(self, key, function(err, reply) {
     if (err) { return cb(err); }
     self.getApp(reply, cb);
   });
@@ -251,6 +269,10 @@ RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
 
 // utility functions
 
+function getAppIdForClientId(self, key, cb) {
+  self.client.get(_key(key), cb);
+}
+
 function getWith404(client, key, cb) {
   if (!key) { return cb(make404()); }
   client.get(_key(key), function(err, reply) {
@@ -276,7 +298,7 @@ function saveApplication(client, application, developer, cb) {
   // application_id: -> application
   multi.set(_key(application.uuid), JSON.stringify(application));
 
-  // developer_name:application_name -> application_id
+  // developer_email:application_name -> application_id
   multi.set(_key(developer.email, application.name), application.id);
 
   // credentials[i].key -> application_id
@@ -306,7 +328,7 @@ function deleteApplication(client, uuid, cb) {
     // application_id: -> application
     multi.del(_key(uuid));
 
-    // developer_name:application_name -> application_id
+    // developer_email:application_name -> application_id
     getWith404(client, uuid, function(err, dev) {
       if (dev) {
         multi.del(_key(dev.email, application.name));

@@ -88,6 +88,15 @@ exports.testManagement = function(config) {
       });
     });
 
+    it('List Developers', function(done) {
+      mgmt.listDevelopers(function(err, devs) {
+        assert(!err);
+        devs.should.be.an.Array;
+        devs.should.containEql(developer.email);
+        done();
+      });
+    });
+
     it('Create App', function(done) {
       var na = {
         name: TEST_APP_NAME,
@@ -121,6 +130,14 @@ exports.testManagement = function(config) {
       mgmt.getApp(app.id, function(err, foundApp) {
         assert(!err);
         assert.equal(foundApp.name, app.name);
+        done();
+      });
+    });
+
+    it('List Developer Apps', function(done) {
+      mgmt.listDeveloperApps(TEST_DEVELOPER_EMAIL, function(err, apps) {
+        assert(!err);
+        apps.should.be.an.Array;
         done();
       });
     });
