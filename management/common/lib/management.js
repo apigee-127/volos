@@ -74,16 +74,16 @@ Management.prototype.createDeveloper = function(developer, cb) {
   this.management.createDeveloper(developer, cb);
 };
 
-Management.prototype.getDeveloper = function(uuid, cb) {
-  this.management.getDeveloper(uuid, cb);
+Management.prototype.getDeveloper = function(uuid_or_email, cb) {
+  this.management.getDeveloper(uuid_or_email, cb);
 };
 
 Management.prototype.updateDeveloper = function(developer, cb) {
   this.management.updateDeveloper(developer, cb);
 };
 
-Management.prototype.deleteDeveloper = function(uuid, cb) {
-  this.management.deleteDeveloper(uuid, cb);
+Management.prototype.deleteDeveloper = function(uuid_or_email, cb) {
+  this.management.deleteDeveloper(uuid_or_email, cb);
 };
 
 // returns array of developer emails

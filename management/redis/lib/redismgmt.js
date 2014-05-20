@@ -102,7 +102,7 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
   });
 };
 
-RedisManagementSpi.prototype.getDeveloper = function(uuid, cb) {
+RedisManagementSpi.prototype.getDeveloper = function(uuid_or_email, cb) {
   getWith404(this.client, uuid, function(err, reply) {
     if (err) { return cb(err); }
     cb(undefined, makeDeveloper(reply));
@@ -113,7 +113,7 @@ RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
   this.createDeveloper(developer, cb);
 };
 
-RedisManagementSpi.prototype.deleteDeveloper = function(uuid, cb) {
+RedisManagementSpi.prototype.deleteDeveloper = function(uuid_or_email, cb) {
   this.client.del(_key(uuid), cb);
 };
 

@@ -88,6 +88,14 @@ exports.testManagement = function(config) {
       });
     });
 
+    it('Get Developer by email', function(done) {
+      mgmt.getDeveloper(developer.email, function(err, dev) {
+        assert(!err);
+        assert.deepEqual(developer, dev);
+        done();
+      });
+    });
+
     it('List Developers', function(done) {
       mgmt.listDevelopers(function(err, devs) {
         assert(!err);
