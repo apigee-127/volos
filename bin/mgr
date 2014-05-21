@@ -1,0 +1,208 @@
+#!/usr/bin/env node
+'use strict';
+
+var path = require('path');
+var fs = require('fs');
+var app = require('commander');
+var inquirer = require('inquirer');
+var async = require('async');
+var _ = require('underscore');
+var mgr;
+
+var APIGEE_CONFIG_QUESTIONS = [
+  { name: 'user',         message: 'User?'  },
+  { name: 'password',     message: 'Password?', type: "password" },
+  { name: 'organization', message: 'User?'  },
+  { name: 'uri',          message: 'URI?'   },
+  { name: 'key',          message: 'Key?'   }
+];
+
+app
+  .option('-t, --target [redis|apigee]', 'target: redis|apigee')
+  .option('-c, --config [file]', 'config file')
+  .option('-u, --user [username]', 'user')
+  .option('-p, --password [password]', 'password')
+  .option('-o, --organization [organization]', 'organization name')
+  .option('-u, --uri [uri]', 'proxy uri')
+  .option('-k, --key [key]', 'key');
+
+app
+  .command('devs')
+  .description('list developers')
+  .action(function(args) {
+    init(function() {
+      mgr.listDevelopers(function(err, devs) {
+        printAndExit(err, devs);
+      });
+    });
+  });
+
+app
+  .command('dev')
+  .description('display developer')
+  .action(function(email) {
+    init(function() {
+      async.waterfall([
+        function (cb) {
+          if (typeof email === 'string') {
+            return cb(null, email);
+          }
+          mgr.listDevelopers(function (err, devs) {
+            if (err) { return cb(err); }
+            chooseOne('Which developer?', devs, function (email) {
+              cb(null, email);
+            });
+          });
+        },
+        function (email, cb) {
+          mgr.getDeveloper(email, function (err, dev) {
+            if (err) { return cb(err); }
+            printAndExit(err, dev);
+          });
+        }
+      ]);
+    });
+  });
+
+app
+  .command('apps')
+  .description('list apps for a developer')
+  .usage('apps [email]')
+  .action(function(email) {
+    init(function() {
+      async.waterfall([
+        function (cb) {
+          if (typeof email === 'string') {
+            return cb(null, email);
+          }
+          mgr.listDevelopers(function (err, devs) {
+            if (err) { return cb(err); }
+            chooseOne('Which developer?', devs, function (email) {
+              cb(null, email);
+            });
+          });
+        },
+        function (email, cb) {
+          mgr.listDeveloperApps(email, function (err, apps) {
+            printAndExit(err, apps);
+          });
+        }
+      ]);
+    });
+  });
+
+app
+  .command('app')
+  .description('display app')
+  .usage('app [name]')
+  .action(function(email) {
+    init(function() {
+      async.waterfall([
+        function (cb) {
+          if (typeof email === 'string') {
+            return cb(null, email);
+          }
+          mgr.listDevelopers(function (err, devs) {
+            if (err) { return cb(err); }
+            chooseOne('Which developer?', devs, function (email) {
+              cb(null, email);
+            });
+          });
+        },
+        function (email, cb) {
+          mgr.listDeveloperApps(email, function (err, apps) {
+            if (err) { return cb(err); }
+            if (!apps.length) { return cb(new Error('no apps')); }
+            chooseOne('Which application?', apps, function (app) {
+              cb(null, email, app);
+            });
+          });
+        },
+        function (email, app, cb) {
+          mgr.getDeveloperApp(email, app, function(err, app) {
+            printAndExit(err, app);
+          });
+        }
+      ]);
+    });
+  });
+
+app.on('--help', function() {
+  var file = configFile();
+  if (file) {
+    console.log('Using config file for defaults: %s\n', file);
+  } else {
+    console.log("No config file for defaults (create 'bin/mgr-config.js' or specify via --config)");
+  }
+});
+
+app.parse(process.argv);
+
+function init(done) {
+  var config = _.defaults({}, app);
+  var file = configFile();
+  if (file) {
+    var fromConfigFile = require(file);
+    if (!config.target) { config.target = fromConfigFile.default; }
+    _.defaults(config, (fromConfigFile[config.target] || 'redis'));
+  }
+  console.log('Target: %s', config.target);
+  if (config.target === 'redis') {
+    var redis = require('../management/redis');
+    mgr = redis.create(config.redis);
+    done();
+  } else {
+    var apigee = require('../management/apigee');
+    requireAnswers(config, APIGEE_CONFIG_QUESTIONS, function() {
+      mgr = apigee.create(config);
+      done();
+    });
+  }
+}
+
+function configFile() {
+  if (app.config) {
+    return path.join(fs.realpathSync(path.dirname(app.config)), path.basename(app.config));
+  } else {
+    var result = path.join(__dirname, './mgr-config.js');
+    return fs.existsSync(result) ? result : null;
+  }
+}
+
+function requireAnswers(config, questions, cb) {
+    var unanswered = [];
+    for (var i = 0; i < questions.length; i++) {
+      var question = questions[i];
+      if (!config[question.name]) {
+        unanswered.push(question);
+      }
+    }
+    if (unanswered.length === 0) {
+      return cb(config);
+    }
+    inquirer.prompt(unanswered, function(answers) {
+      _.extend(config, answers);
+      cb(config);
+    });
+}
+
+function printAndExit(err, output, code) {
+  if (err) {
+    console.log(err);
+    code = code || 1;
+  } else if (Array.isArray(output)) {
+    for (var i = 0; i < output.length; i++) {
+      console.log(output[i]);
+    }
+  } else {
+    console.log(output);
+  }
+  process.exit(code || 0);
+}
+
+function chooseOne(message, choices, cb) {
+  var questions = { name: 'x', message: message, type: 'list', choices: choices };
+  inquirer.prompt(questions, function(answers) {
+    cb(answers.x);
+  });
+}

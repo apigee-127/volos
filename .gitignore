@@ -6,3 +6,4 @@ testconfig-redis.js
 .*.swo
 .*.swp
 npm-debug.log
+mgr-config.js

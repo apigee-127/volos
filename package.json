@@ -14,7 +14,9 @@
     "underscore" : "1.6.x",
     "twit": "1.1.x",
     "async": "0.8.x",
-    "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master"
+    "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master",
+    "commander": "2.2.x",
+    "inquirer": "0.5.x"
   },
   "scripts": {
     "install": "bin/link"
