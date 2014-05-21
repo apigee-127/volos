@@ -61,7 +61,7 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
   if (typeof callback !== 'function') { throw new Error('callback must be a function'); }
 
   var self = this;
-  this.cache.get(key, function(err, reply) {
+  this.get(key, function(err, reply) {
     if (err || reply) { return callback(err, reply, true); }
 
     var event = self.name + key;
@@ -78,6 +78,9 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
       if (err) { return eventEmitter.emit(event, err, reply); }
 
       self.set(key, reply, options, function(err) {
+        if (reply && options.encoding) {
+          reply = reply.toString(options.encoding);
+        }
         eventEmitter.emit(event, err, reply, true);
       });
     });
