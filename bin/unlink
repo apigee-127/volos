@@ -22,5 +22,6 @@ rm -f volos-quota-redis
 rm -f volos-cache-common
 rm -f volos-cache-memory
 rm -f volos-cache-redis
+rm -f volos-cache-apigee
 
 popd

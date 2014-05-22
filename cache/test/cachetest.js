@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var assert = require('assert');
 var should = require('should');
@@ -44,8 +44,8 @@ exports.testCache = function(config, Spi) {
 
     it('Empty cache', function(done) {
       tc.get('nope', function(err, val) {
-        assert.equal(err, undefined);
-        assert.equal(val, undefined);
+        should.not.exist(err);
+        should.not.exist(val);
         done();
       });
     });
@@ -53,10 +53,10 @@ exports.testCache = function(config, Spi) {
     it('One element', function(done) {
       var ts = 'TestString1';
       tc.set('1', ts, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.get('1', function(err, val) {
-          assert.equal(err, undefined);
-          assert.equal(val, ts);
+          should.not.exist(err);
+          val.should.eql(ts);
           done();
         });
       });
@@ -65,9 +65,9 @@ exports.testCache = function(config, Spi) {
     it('Buffer', function(done) {
       var tb = 'TestString2';
       tc.set('1b', new Buffer(tb, 'utf8'), function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.get('1b', function(err, val) {
-          assert.equal(err, undefined);
+          should.not.exist(err);
           assert.equal(val, tb);
           done();
         });
@@ -81,12 +81,12 @@ exports.testCache = function(config, Spi) {
     it('Replace key', function(done) {
       var tf = 'Final Value';
       tc.set('1r', 'Initial value', function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.set('1r', tf, function(err) {
-          assert.equal(err, undefined);
+          should.not.exist(err);
           tc.get('1r', function(err, val) {
-            assert.equal(err, undefined);
-            assert.equal(val, tf);
+            should.not.exist(err);
+            val.should.eql(tf);
             done();
           });
         });
@@ -96,15 +96,15 @@ exports.testCache = function(config, Spi) {
     it('Delete', function(done) {
       var ts = 'TestDelete';
       tc.set('delete', ts, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.get('delete', function(err, val) {
-          assert.equal(err, undefined);
-          assert.equal(val, ts);
+          should.not.exist(err);
+          val.should.eql(ts);
           tc.delete('delete', function(err) {
-            assert.equal(err, undefined);
+            should.not.exist(err);
             tc.get('delete', function(err, val) {
-              assert.equal(err, undefined);
-              assert.equal(val, undefined);
+              should.not.exist(err);
+              should.not.exist(val);
               done();
             });
           });
@@ -113,36 +113,34 @@ exports.testCache = function(config, Spi) {
     });
 
     it('Default Expiration', function(done) {
-      this.timeout(2000);
       var ts = 'TestString2';
       tc.set('2', ts, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         // Value should be gone from the cache 500 ms after insert (default is 300)
-        var timeout = setTimeout(function() {
+        setTimeout(function() {
           tc.get('2', function(err, val) {
-            assert.equal(err, undefined);
-            assert.equal(val, undefined);
+            should.not.exist(err);
+            should.not.exist(val);
             done();
           });
-        }, 500);
+        }, 1500);
       });
     });
 
     it('Explicit Expiration', function(done) {
-      this.timeout(2000);
       var ts = 'TestString2';
       tc.set('2', ts, { ttl: 1000 }, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         // Value should still be in the cache 500 ms after insert
-        var timeout = setTimeout(function() {
+        setTimeout(function() {
           tc.get('2', function(err, val) {
-            assert.equal(err, undefined);
-            assert.equal(val, ts);
+            should.not.exist(err);
+            val.should.eql(ts);
             // Value should have been removed because of ttl
-            var timeout = setTimeout(function() {
+            setTimeout(function() {
               tc.get('2', function(err, val) {
-                assert.equal(err, undefined);
-                assert.equal(val, undefined);
+                should.not.exist(err);
+                should.not.exist(val);
                 done();
               });
             }, 500);
@@ -152,21 +150,20 @@ exports.testCache = function(config, Spi) {
     });
 
     it('Set Default Expiration', function(done) {
-      this.timeout(2000);
       var xc = Spi.create('xxx', { ttl: 1000, encoding: 'utf8'});
       var ts = 'TestString2';
       xc.set('2', ts, { ttl: 1000 }, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         // Value should still be in the cache 500 ms after insert
-        var timeout = setTimeout(function() {
+        setTimeout(function() {
           xc.get('2', function(err, val) {
-            assert.equal(err, undefined);
-            assert.equal(val, ts);
+            should.not.exist(err);
+            val.should.eql(ts);
             // Value should have been removed because of ttl
-            var timeout = setTimeout(function() {
+            setTimeout(function() {
               xc.get('2', function(err, val) {
-                assert.equal(err, undefined);
-                assert.equal(val, undefined);
+                should.not.exist(err);
+                should.not.exist(val);
                 done();
               });
             }, 500);
@@ -192,15 +189,13 @@ exports.testCache = function(config, Spi) {
   });
 
   describe('Cache encodings', function() {
-    var tc;
-
     it('Binary', function(done) {
       var tc = Spi.create(CACHE_NAME);
       var ts = new Buffer('TestString1');
       tc.set('B1', ts, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.get('B1', function(err, val) {
-          assert.equal(err, undefined);
+          should.not.exist(err);
           assert.deepEqual(val, ts);
           done();
         });
@@ -212,10 +207,10 @@ exports.testCache = function(config, Spi) {
       tc.setEncoding('base64');
       var tb = new Buffer('TestInBase64Yay').toString('base64');
       tc.set('b641', tb, { encoding: 'base64' }, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc.get('b641', function(err, val) {
-          assert.equal(err, undefined);
-          assert.equal(tb, val);
+          should.not.exist(err);
+          val.should.eql(tb);
           done();
         });
       });
@@ -235,9 +230,9 @@ exports.testCache = function(config, Spi) {
     it('Two Buffers', function(done) {
       var tb = new Buffer('TestTwo1');
       tc1.set('21', tb, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc2.get('21', function(err, val) {
-          assert.equal(err, undefined);
+          should.not.exist(err);
           assert.deepEqual(val, tb);
           done();
         });
@@ -247,10 +242,10 @@ exports.testCache = function(config, Spi) {
     it('Two Buffers Other Way', function(done) {
       var tc = 'TestTwo2';
       tc2.set('22', tc, { encoding: 'utf8'}, function(err) {
-        assert.equal(err, undefined);
+        should.not.exist(err);
         tc1.get('22', function(err, val) {
-          assert.equal(err, undefined);
-          assert.equal(val, tc);
+          should.not.exist(err);
+          val.should.eql(tc);
           done();
         });
       });
@@ -294,4 +289,4 @@ exports.testCache = function(config, Spi) {
       tc.getSet(keys[i], populate, callback);
     }
   });
-}
+};

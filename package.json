@@ -16,7 +16,8 @@
     "async": "0.8.x",
     "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master",
     "commander": "2.2.x",
-    "inquirer": "0.5.x"
+    "inquirer": "0.5.x",
+    "apigee-access": "1.0.x"
   },
   "scripts": {
     "install": "bin/link"
