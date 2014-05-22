@@ -1,6 +1,6 @@
 {
   "name": "volos-cache-common",
-  "version": "0.9.6",
+  "version": "0.9.8",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic caching library for the Volos system.",
