@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+'use strict';
+
+/*
+schema:
+volos:management:application_id -> application
+volos:management:developer_id -> developer
+volos:management:developer_email -> developer_id
+volos:management:credentials.key -> application_id
+volos:management:credentials.key:credentials.secret -> application_id
+volos:management:developer_email:application_name -> application_id
+*/
+
+var redis = require('redis');
+var client = redis.createClient();
+var Management = require('..');
+var management = Management.create();
+var PREFIX = 'volos:management:';
+
+client.keys(PREFIX + '*', function(err, keys) {
+  if (err) { throw err; }
+
+  // email -> id
+  var developers = {};
+
+  var shouldCall = 1;
+  client.mget(keys, function(err, values) {
+    if (err) { throw err; }
+    if (values.length === 0) { return finish(); }
+    shouldCall = values.length;
+
+    for (var i = 0; i < values.length; i++) {
+      var reply = values[i];
+      if (reply && reply.substring(0,1) === '{') {
+        var dev = JSON.parse(reply);
+        if (dev.email) {
+          client.get(PREFIX + dev.email, function (err, reply) {
+            if (err) { throw err; }
+            if (!reply) {
+              developers[dev.email] = dev.id;
+            }
+            finish();
+          });
+        }
+      }
+    }
+
+    var called = 0;
+    var finish = function() {
+      if (++called >= shouldCall) { return; }
+      var emails = Object.keys(developers);
+      if (emails.length === 0) {
+        console.log('nothing to do');
+      } else {
+        console.log('upgrading:');
+        console.log(emails);
+
+        console.log('');
+        var keysAndVals = [];
+        for (i = 0; i < emails.length; i++) {
+          var email = emails[i];
+          keysAndVals.push(PREFIX + email);
+          keysAndVals.push(developers[email]);
+        }
+        client.mset(keysAndVals, function(err, reply) {
+          console.log(reply);
+        });
+      }
+
+      process.exit(0);
+
+    }
+  });
+
+});

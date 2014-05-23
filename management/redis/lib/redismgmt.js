@@ -62,6 +62,7 @@
  schema:
  volos:management:application_id -> application
  volos:management:developer_id -> developer
+ volos:management:developer_email -> developer_id
  volos:management:credentials.key -> application_id
  volos:management:credentials.key:credentials.secret -> application_id
  volos:management:developer_email:application_name -> application_id
@@ -92,40 +93,66 @@ function RedisManagementSpi(config) {
 // Operations on developers
 
 RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
+  var self = this;
   if (!developer.id) { developer.id = developer.uuid; }
   if (!developer.id) {
-    developer.id = developer.uuid = uuid.v4();
+    getDeveloperIdForEmail(this.client, developer.email, function(err, id) {
+      if (!err && id) {
+        err = new Error('duplicate email');
+        err.statusCode = 409;
+      }
+      if (err) { return cb(err); }
+      developer.id = developer.uuid = uuid.v4();
+      doSave();
+    });
+  } else {
+    doSave();
   }
-  var dev = makeDeveloper(developer);
-  this.client.set(_key(dev.uuid), JSON.stringify(dev), function(err, reply) {
-    cb(err, dev);
-  });
+  var doSave = function() {
+    var dev = makeDeveloper(developer);
+    saveDeveloper(self.client, dev, cb);
+  };
 };
 
 RedisManagementSpi.prototype.getDeveloper = function(uuid_or_email, cb) {
-  getWith404(this.client, uuid, function(err, reply) {
-    if (err) { return cb(err); }
-    cb(undefined, makeDeveloper(reply));
-  });
+  var self = this;
+  var respond = function(id) {
+    getWith404(self.client, id, function(err, reply) {
+      if (err) { return cb(err); }
+      cb(undefined, makeDeveloper(reply));
+    });
+  };
+  if (!isUUID(uuid_or_email)) {
+    getDeveloperIdForEmail(self.client, uuid_or_email, function(err, id) {
+      if (err) { return cb(err); }
+      respond(id);
+    });
+  } else {
+    respond(uuid_or_email);
+  }
 };
 
 RedisManagementSpi.prototype.updateDeveloper = function(developer, cb) {
   this.createDeveloper(developer, cb);
 };
 
+// cascades delete to associated apps
 RedisManagementSpi.prototype.deleteDeveloper = function(uuid_or_email, cb) {
-  this.client.del(_key(uuid), cb);
+  var self = this;
+  this.getDeveloper(uuid_or_email, function(err, dev) {
+    if (err) { return cb(err); }
+    deleteDeveloper(self, dev, cb);
+  });
 };
 
-// todo: this is pretty rinky-dink, ought to consider this case in the schema
 RedisManagementSpi.prototype.listDevelopers = function(cb) {
   var devs = [];
   var prefixLen = KEY_PREFIX.length + 1;
-  this.client.keys(_key('*@*:*'), function(err, keys) {
+  this.client.keys(_key('*@*.*'), function(err, keys) {
     _.each(keys, function(key) {
       var nopref = key.substring(prefixLen);
       var sep = nopref.indexOf(":");
-      devs.push(nopref.substring(0, sep));
+      if (sep < 0) { devs.push(nopref); }
     });
     cb(null, devs);
   });
@@ -174,7 +201,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     developerId: app.developerId,
     callbackUrl: app.callbackUrl,
     attributes: app.attributes,
-    credentials: [app.credentials],
+    credentials: Array.isArray(app.credentials) ? app.credentials : [app.credentials],
     defaultScope: app.defaultScope,
     scopes: app.scopes
   };
@@ -193,7 +220,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
  
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
   var self = this;
-  getAppIdForClientId(self, app.credentials[0].key, function(err, reply){
+  getAppIdForClientId(self.client, app.credentials[0].key, function(err, reply){
     if (err) { return cb(err); }
     if (reply === app.id) {
       self.createApp(app, cb);
@@ -234,7 +261,7 @@ RedisManagementSpi.prototype.listDeveloperApps = function(developerEmail, cb) {
 
 RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   var self = this;
-  getAppIdForClientId(self, key, function(err, reply) {
+  getAppIdForClientId(self.client, key, function(err, reply) {
     if (err) { return cb(err); }
     self.getApp(reply, cb);
   });
@@ -269,8 +296,12 @@ RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
 
 // utility functions
 
-function getAppIdForClientId(self, key, cb) {
-  self.client.get(_key(key), cb);
+function getDeveloperIdForEmail(client, email, cb) {
+  client.get(_key(email), cb);
+}
+
+function getAppIdForClientId(client, key, cb) {
+  client.get(_key(key), cb);
 }
 
 function getWith404(client, key, cb) {
@@ -292,10 +323,61 @@ function make404() {
   return err;
 }
 
+function saveDeveloper(client, developer, cb) {
+  var multi = client.multi();
+
+  // developer_uuid -> developer
+  multi.set(_key(developer.id), JSON.stringify(developer));
+
+  // developer_email -> developer_id
+  multi.set(_key(developer.email), developer.id);
+
+  multi.exec(function(err, reply) {
+    cb(err, developer);
+  });
+}
+
+// must match saveDeveloper for deleting created keys
+function deleteDeveloper(self, developer, cb) {
+
+  var multi = self.client.multi();
+
+  // developer_uuid -> developer
+  multi.del(_key(developer.id));
+
+  // developer_uuid -> developer_id
+  multi.del(_key(developer.email));
+
+  // cascade delete to associated apps
+  self.client.keys(_key(developer.email, '*'), function(err, keys) {
+    if (err) { return cb(err); }
+    if (!keys.length) { return multi.exec(cb); }
+
+    self.client.mget(keys, function(err, appIds) {
+      if (err) { return cb(err); }
+
+      var called = 0;
+      var gotError;
+      var finish = function(err) {
+        if (err && !gotError) { gotError = (err.statusCode !== 404); }
+        if (++called === appIds.length) {
+          if (gotError) { return cb(err); }
+          multi.exec(cb);
+        }
+      };
+
+      if (appIds.length === 0) { return multi.exec(cb); }
+      for (var i = 0; i < appIds.length; i++) {
+        addAppDeletes(self.client, multi, appIds[i], finish);
+      }
+    });
+  });
+}
+
 function saveApplication(client, application, developer, cb) {
   var multi = client.multi();
 
-  // application_id: -> application
+  // application_id -> application
   multi.set(_key(application.uuid), JSON.stringify(application));
 
   // developer_email:application_name -> application_id
@@ -313,10 +395,17 @@ function saveApplication(client, application, developer, cb) {
 
 // must match saveApplication for deleting created keys
 function deleteApplication(client, uuid, cb) {
+  var multi = client.multi();
+  addAppDeletes(client, multi, uuid, function(err) {
+    if (err) { return cb(err); }
+    multi.exec(cb);
+  });
+}
+
+function addAppDeletes(client, multi, uuid, cb) {
+
   getWith404(client, uuid, function(err, application) {
     if (err) { return cb(err); }
-
-    var multi = client.multi();
 
     // credentials[i].key -> application_id
     // credentials[i].key:credentials[i].secret -> application_id
@@ -325,19 +414,19 @@ function deleteApplication(client, uuid, cb) {
       multi.del(_key(application.credentials[i].key, application.credentials[i].secret));
     }
 
-    // application_id: -> application
+    // application_id -> application
     multi.del(_key(uuid));
 
-    // developer_email:application_name -> application_id
-    getWith404(client, uuid, function(err, dev) {
-      if (dev) {
-        multi.del(_key(dev.email, application.name));
-      }
-
-      // must do here instead of outside because of async callback
-      multi.exec(cb);
+    client.keys(_key('*@*.*', application.name), function(err, keys) {
+      multi.del(keys);
+      cb(err);
     });
   });
+}
+
+function isUUID(str) {
+  if (typeof str !== 'string') { return false; }
+  return str.search(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i) !== -1;
 }
 
 function genSecureToken() {
