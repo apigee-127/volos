@@ -56,7 +56,6 @@ app
         },
         function (email, cb) {
           mgr.getDeveloper(email, function (err, dev) {
-            if (err) { return cb(err); }
             printAndExit(err, dev);
           });
         }
@@ -143,8 +142,8 @@ function init(done) {
   var file = configFile();
   if (file) {
     var fromConfigFile = require(file);
-    if (!config.target) { config.target = fromConfigFile.default; }
-    _.defaults(config, (fromConfigFile[config.target] || 'redis'));
+    if (!config.target) { config.target = fromConfigFile.default || 'redis'; }
+    _.defaults(config, fromConfigFile[config.target]);
   }
   console.log('Target: %s', config.target);
   if (config.target === 'redis') {
