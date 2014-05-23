@@ -95,6 +95,10 @@ function RedisManagementSpi(config) {
 RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
   var self = this;
   if (!developer.id) { developer.id = developer.uuid; }
+  var doSave = function() {
+    var dev = makeDeveloper(developer);
+    saveDeveloper(self.client, dev, cb);
+  };
   if (!developer.id) {
     getDeveloperIdForEmail(this.client, developer.email, function(err, id) {
       if (!err && id) {
@@ -108,10 +112,6 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
   } else {
     doSave();
   }
-  var doSave = function() {
-    var dev = makeDeveloper(developer);
-    saveDeveloper(self.client, dev, cb);
-  };
 };
 
 RedisManagementSpi.prototype.getDeveloper = function(uuid_or_email, cb) {
