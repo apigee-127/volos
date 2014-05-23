@@ -20,6 +20,8 @@
     "apigee-access": "1.0.x"
   },
   "scripts": {
-    "install": "bin/link"
+    "install": "bin/link",
+    "test": "mocha --recursive cache/memory/ cache/redis/ management/redis oauth/redis quota/memory quota/redis",
+    "test-apigee": "mocha --recursive cache/apigee/ management/apigee oauth/apigee quota/apigee"
   }
 }
