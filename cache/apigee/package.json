@@ -1,5 +1,5 @@
 {
-  "name": "volos-cache-memory",
+  "name": "volos-cache-apigee",
   "version": "0.9.5",
   "main": "lib/cache.js",
   "license": "MIT",

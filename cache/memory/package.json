@@ -1,6 +1,6 @@
 {
   "name": "volos-cache-memory",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic in-memory caching library for the Volos system.",
