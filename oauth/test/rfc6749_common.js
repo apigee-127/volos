@@ -68,17 +68,6 @@ exports.verifyOauth = function(config, server) {
     }, exp);
   }
 
-  // just ensure the checkAccessToken() method is valid
-  it('access should fail without token', function(done) {
-    request(server)
-      .get('/dogs')
-      .end(function(err, res) {
-        if (err) { return done ? done(err) : err; }
-        res.status.should.eql(400);
-        if (done) { done(); }
-      });
-  });
-
   describe('OAuth 2.0 rfc6749', function() {
 
     before(function(done) {
@@ -97,6 +86,17 @@ exports.verifyOauth = function(config, server) {
       creator.destroyFixtures(function(err) {
         done(err);
       });
+    });
+
+    // just ensure the checkAccessToken() method is valid
+    it('access should fail without token', function(done) {
+      request(server)
+        .get('/dogs')
+        .end(function(err, res) {
+          if (err) { return done ? done(err) : err; }
+          res.status.should.eql(400);
+          if (done) { done(); }
+        });
     });
 
     it('invalid grant format', function(done) {
