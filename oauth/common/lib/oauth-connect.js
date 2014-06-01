@@ -43,7 +43,7 @@ OAuthConnect.prototype.handleAuthorize = function() {
     if (!req.query) {
       req.query = Url.parse(req.url).query;
     }
-    self.oauth.authorize(req.query, function(err, result) {
+    self.oauth.authorize(req.query, req, function(err, result) {
       if (err) {
         if (debugEnabled) {
           debug('Authorization error: ' + err);
@@ -64,7 +64,7 @@ OAuthConnect.prototype.handleAccessToken = function() {
     debug('Express accessToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.generateToken(body, { authorizeHeader: req.headers.authorization },
+      self.oauth.generateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
             if (debugEnabled) {
@@ -109,7 +109,7 @@ OAuthConnect.prototype.refreshToken = function() {
     debug('Express refreshToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.refreshToken(body, { authorizeHeader: req.headers.authorization },
+      self.oauth.refreshToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
             if (debugEnabled) {
@@ -132,7 +132,7 @@ OAuthConnect.prototype.invalidateToken = function() {
     debug('Express invalidateToken');
     getRequestBody(req, function(body) {
       req.body = body;
-      self.oauth.invalidateToken(body, { authorizeHeader: req.headers.authorization },
+      self.oauth.invalidateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
             if (debugEnabled) {

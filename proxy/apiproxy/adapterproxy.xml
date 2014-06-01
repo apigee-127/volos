@@ -25,6 +25,7 @@
         <Policy>distributedquota</Policy>
         <Policy>extractquotaparams</Policy>
         <Policy>setquotaresponse</Policy>
+        <Policy>AssignOAuthVariables</Policy>
     </Policies>
     <ProxyEndpoints>
         <ProxyEndpoint>default</ProxyEndpoint>

@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 /*
  * This module implements the runtime SPI by talking to a proxy that is hosted inside Apigee.
@@ -38,6 +38,7 @@ var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
 var OAuthCommon = require('volos-oauth-common');
+var apigee = require('apigee-access');
 
 var debug;
 var debugEnabled;
@@ -86,7 +87,7 @@ ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) 
     grant_type: 'client_credentials'
   };
   if (options.attributes) {
-    attributes: options.attributes;
+    qs.attributes = options.attributes;
   }
   if (options.scope) {
     qs.scope = options.scope;
@@ -98,6 +99,21 @@ ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) 
       cb(err, result);
     });
 };
+
+function setFlowVariables(req, resp) {
+  if (!req) { return; }
+  var keys = Object.keys(resp.headers);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (key.indexOf('x-v.') === 0) {
+      var varName = key.substring(4);
+      if (resp.headers[key].length) {
+        apigee.setVariable(req, varName, resp.headers[key]);
+        if (debugEnabled) { debug('VAR: ' + varName + ' = ' + resp.headers[key]); }
+      }
+    }
+  }
+}
 
 /*
  * Generate an access token using password credentials. Options:
@@ -117,7 +133,7 @@ ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb
     password: options.password
   };
   if (options.attributes) {
-    attributes: options.attributes;
+    qs.attributes = options.attributes;
   }
   if (options.scope) {
     qs.scope = options.scope;
@@ -212,7 +228,7 @@ ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
     client_id: options.clientId
   };
   if (options.attributes) {
-    attributes: options.attributes;
+    qs.attributes = options.attributes;
   }
   if (options.redirectUri) {
     qs.redirect_uri = options.redirectUri;
@@ -338,19 +354,16 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
 
-  var req;
-  if (r.protocol === 'http:') {
-    req = http.request(r, function(resp) {
-      requestComplete(resp, options, cb);
-    });
-  } else if (r.protocol === 'https:') {
-    req = https.request(r, function(resp) {
-      requestComplete(resp, options, cb);
-    });
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
+  if (r.protocol !== 'http:' && r.protocol !== 'https:') {
+    return cb(new Error('Unsupported protocol ' + r.protocol));
   }
+
+  var req = http.request(r, function(resp) {
+    requestComplete(resp, options, function() {
+      setFlowVariables(options.request, resp);
+      cb.apply(this, arguments);
+    });
+  });
 
   req.on('error', function(err) {
     cb(err);
@@ -374,19 +387,16 @@ function makeGetRequest(self, uriPath, qs, options, cb) {
     debug('GET ' + finalUri);
   }
 
-  var req;
-  if (r.protocol === 'http:') {
-    req = http.request(r, function(resp) {
-      getRequestComplete(resp, options, cb);
-    });
-  } else if (r.protocol === 'https:') {
-    req = https.request(r, function(resp) {
-      getRequestComplete(resp, options, cb);
-    });
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
+  if (r.protocol !== 'http:' && r.protocol !== 'https:') {
+    return cb(new Error('Unsupported protocol ' + r.protocol));
   }
+
+  var req = http.request(r, function(resp) {
+    getRequestComplete(resp, options, function() {
+      setFlowVariables(options.request, resp);
+      cb.apply(this, arguments);
+    });
+  });
 
   req.on('error', function(err) {
     cb(err);

@@ -18,7 +18,12 @@
                     <Name>GenerateTokenClientCredentials</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/client/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
         </Flow>
         <Flow name="Password Credentials Tokens">
@@ -29,7 +34,12 @@
                     <Name>GenerateTokenPasswordCredentials</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/password/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
         </Flow>
         <Flow name="Get Authorization Code">
@@ -40,7 +50,12 @@
                     <Name>GenerateAuthorizationCode</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/authcode/authcodes&quot;) and (request.verb = &quot;GET&quot;)</Condition>
         </Flow>
         <Flow name="Authorization Code Tokens">
@@ -51,7 +66,12 @@
                     <Name>GenerateTokenAuthorizationCode</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/authcode/tokens&quot;) and (request.verb = &quot;POST&quot;)</Condition>
         </Flow>
         <Flow name="Implicit Grant Tokens">
@@ -62,7 +82,12 @@
                     <Name>GenerateTokenImplicit</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/implicit/tokens&quot;) and (request.verb = &quot;GET&quot;)</Condition>
         </Flow>
         <Flow name="Refresh Tokens">
@@ -73,7 +98,12 @@
                     <Name>RefreshToken</Name>
                 </Step>
             </Request>
-            <Response/>
+            <Response>
+              <Step>
+                <FaultRules/>
+                <Name>AssignOAuthVariables</Name>
+              </Step>
+            </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/tokentypes/all/refresh&quot;) and (request.verb = &quot;POST&quot;)</Condition>
         </Flow>
         <Flow name="Invalidate Tokens">

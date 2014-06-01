@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 var querystring = require('querystring');
@@ -112,7 +112,7 @@ OAuthArgo.prototype.authorize = function(env, next) {
 
   var self = this;
   var auth = function(params, env, next) {
-    self.oauth.authorize(params, function(err, result) {
+    self.oauth.authorize(params, env.request, function(err, result) {
       if (err) {
         if (debugEnabled) {
           debug('Authorization error: ' + err);
@@ -155,7 +155,7 @@ OAuthArgo.prototype.accessToken = function(env, next) {
     if (debugEnabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
-    self.oauth.generateToken(body, { authorizeHeader: env.request.headers.authorization },
+    self.oauth.generateToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
           if (debugEnabled) {
@@ -219,7 +219,7 @@ OAuthArgo.prototype.refreshToken = function(env, next) {
     if (debugEnabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
-    self.oauth.refreshToken(body, { authorizeHeader: env.request.headers.authorization },
+    self.oauth.refreshToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
           if (debugEnabled) {
@@ -254,7 +254,7 @@ OAuthArgo.prototype.invalidateToken = function(env, next) {
     if (debugEnabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
-    self.oauth.invalidateToken(body, { authorizeHeader: env.request.headers.authorization },
+    self.oauth.invalidateToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
           if (debugEnabled) {

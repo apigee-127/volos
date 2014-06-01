@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AssignOAuthVariables">
+  <DisplayName>Assign OAuth Variables</DisplayName>
+  <Set>
+    <Headers>
+      <Header name="X-V.organization_name">{organization_name}</Header>
+      <Header name="X-V.developer.id">{developer.id}</Header>
+      <Header name="X-V.developer.app.name">{developer.app.name}</Header>
+      <Header name="X-V.client_id">{client_id}</Header>
+      <Header name="X-V.grant_type">{grant_type}</Header>
+      <Header name="X-V.token_type">{token_type}</Header>
+      <Header name="X-V.access_token">{access_token}</Header>
+      <Header name="X-V.issued_at">{issued_at}</Header>
+      <Header name="X-V.expires_in">{expires_in}</Header>
+      <Header name="X-V.status">{status}</Header>
+      <Header name="X-V.scope">{scope}</Header>
+    </Headers>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

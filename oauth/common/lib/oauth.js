@@ -110,7 +110,7 @@ function applyModuleDefaults(options) {
  * "Location" header along with a 302 status. The client must pass the query string that was passed
  * to the request. This request handles both the authorization_code and implicit grant types.
  */
-OAuth.prototype.authorize = function(queryString, cb) {
+OAuth.prototype.authorize = function(queryString, request, cb) {
   if (debugEnabled) {
     debug('authorize: ' + JSON.stringify(queryString));
   }
@@ -123,19 +123,24 @@ OAuth.prototype.authorize = function(queryString, cb) {
     cb(makeError('invalid_request', 'Query string must be a string or an object'));
   }
 
+  if (typeof request === 'function') {
+      cb = request;
+      request = undefined;
+  }
+
   if (q.response_type === 'code') {
     if (!isSupportedGrantType(this, 'authorization_code')) {
       cb(makeError('unsupported_grant_type', 'Invalid code type'));
       return;
     }
-    doAuthorize(this, 'code', q, cb);
+    doAuthorize(this, 'code', q, request, cb);
 
   } else if (q.response_type === 'token') {
     if (!isSupportedGrantType(this, 'implicit_grant')) {
       cb(makeError('unsupported_grant_type', 'Invalid code type'));
       return;
     }
-    doAuthorize(this, 'token', q, cb);
+    doAuthorize(this, 'token', q, request, cb);
 
   } else {
     cb(makeError('unsupported_grant_type', 'Invalid code type'));
@@ -143,7 +148,7 @@ OAuth.prototype.authorize = function(queryString, cb) {
   }
 };
 
-function doAuthorize(self, grantType, q, cb) {
+function doAuthorize(self, grantType, q, request, cb) {
   var addProps = {};
   if (q.state) { addProps.state = q.state; }
   if (!q.client_id) {
@@ -151,7 +156,8 @@ function doAuthorize(self, grantType, q, cb) {
   }
 
   var rq = {
-    clientId: q.client_id
+    clientId: q.client_id,
+    request: request
   };
   if (q.redirect_uri) {
     rq.redirectUri = q.redirect_uri;
@@ -466,28 +472,6 @@ OAuth.prototype.verifyToken = function(authorizationHeader, requiredScopes, cb) 
 
   debug('verifyToken : ' + hdr[1]);
   this.spi.verifyToken(hdr[1], requiredScopes,
-    function(err, result) {
-      if (err) {
-        cb(makeError('invalid_grant', err.message));
-      } else {
-        cb(undefined, result);
-      }
-  });
-};
-
-/*
- * Verify an API key, which could have come from various places.
- */
-OAuth.prototype.verifyApiKey = function(apiKey, verb, path, cb) {
-  if (typeof verb === 'function') {
-    cb = verb;
-    verb = undefined;
-  } else if (typeof path === 'function') {
-    cb = path;
-    path = undefined;
-  }
-
-  this.spi.verifyApiKey(apiKey, verb, path,
     function(err, result) {
       if (err) {
         cb(makeError('invalid_grant', err.message));

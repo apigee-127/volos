@@ -10,7 +10,8 @@
     "node.js"
   ],
   "dependencies": {
-    "volos-oauth-common": "0.9.x"
+    "volos-oauth-common": "0.9.x",
+    "apigee-access": "1.0.x"
   },
   "devDependencies": {
     "supertest" : "0.8.x"
