@@ -38,7 +38,7 @@ function createApp(cb) {
     userName: 'sganyo'
   };
 
-  management.deleteDeveloper(devRequest.userName, function() {
+  management.deleteDeveloper(devRequest.email, function() {
 
     console.log('Creating developer %s', devRequest.userName);
     management.createDeveloper(devRequest , function(err, developer) {
