@@ -310,19 +310,19 @@ ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   r.headers['x-DNA-Api-Key'] = this.key;
   r.method = 'GET';
 
-  var req;
+  var requestor;
   if (r.protocol === 'http:') {
-    req = http.request(r, function(resp) {
-      verifyRequestComplete(resp, cb);
-    });
+    requestor = http;
   } else if (r.protocol === 'https:') {
-    req = https.request(r, function(resp) {
-      verifyRequestComplete(resp, cb);
-    });
+    requestor = https;
   } else {
     cb(new Error('Unsupported protocol ' + r.protocol));
     return;
   }
+
+  var req = requestor.request(r, function(resp) {
+    verifyRequestComplete(resp, cb);
+  });
 
   req.on('error', function(err) {
     cb(err);
@@ -354,11 +354,17 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
     r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
 
-  if (r.protocol !== 'http:' && r.protocol !== 'https:') {
-    return cb(new Error('Unsupported protocol ' + r.protocol));
+  var requestor;
+  if (r.protocol === 'http:') {
+    requestor = http;
+  } else if (r.protocol === 'https:') {
+    requestor = https;
+  } else {
+    cb(new Error('Unsupported protocol ' + r.protocol));
+    return;
   }
 
-  var req = http.request(r, function(resp) {
+  var req = requestor.request(r, function(resp) {
     requestComplete(resp, options, function() {
       setFlowVariables(options.request, resp);
       cb.apply(this, arguments);
@@ -387,11 +393,17 @@ function makeGetRequest(self, uriPath, qs, options, cb) {
     debug('GET ' + finalUri);
   }
 
-  if (r.protocol !== 'http:' && r.protocol !== 'https:') {
-    return cb(new Error('Unsupported protocol ' + r.protocol));
+  var requestor;
+  if (r.protocol === 'http:') {
+    requestor = http;
+  } else if (r.protocol === 'https:') {
+    requestor = https;
+  } else {
+    cb(new Error('Unsupported protocol ' + r.protocol));
+    return;
   }
 
-  var req = http.request(r, function(resp) {
+  var req = requestor.request(r, function(resp) {
     getRequestComplete(resp, options, function() {
       setFlowVariables(options.request, resp);
       cb.apply(this, arguments);
