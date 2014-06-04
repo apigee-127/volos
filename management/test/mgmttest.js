@@ -123,7 +123,8 @@ exports.testManagement = function(config) {
       var na = {
         name: TEST_APP_NAME,
         developerId: developer.id,
-        scopes: 'scope1 scope2'
+        scopes: 'scope1 scope2',
+        attributes: { test1: 'foo', test2: 'bar' }
       };
       mgmt.createApp(na, function(err, newApp) {
         if (err) { console.error('%j', err); }
@@ -135,16 +136,21 @@ exports.testManagement = function(config) {
         newApp.should.have.property('scopes');
         newApp.scopes.should.include('scope1');
         newApp.scopes.should.include('scope2');
+        newApp.should.have.property('attributes');
+        newApp.attributes.test1.should.equal(na.attributes.test1);
+        newApp.attributes.test2.should.equal(na.attributes.test2);
         done();
       });
     });
 
     it('Update App', function(done) {
       app.callbackUrl = 'http://localhost';
+      app.attributes.test2 = 'baz';
       mgmt.updateApp(app, function(err, foundApp) {
         if (err) { console.error('%j', err); }
         should.not.exist(err);
-        assert.equal(foundApp.callbackUrl, app.callbackUrl);
+        foundApp.callbackUrl.should.equal(app.callbackUrl);
+        foundApp.attributes.test2.should.equal(app.attributes.test2);
         done();
       });
     });
@@ -153,7 +159,8 @@ exports.testManagement = function(config) {
       mgmt.getApp(app.id, function(err, foundApp) {
         if (err) { console.error('%j', err); }
         should.not.exist(err);
-        assert.equal(foundApp.name, app.name);
+        foundApp.name.should.equal(app.name);
+        foundApp.attributes.test2.should.equal('baz');
         done();
       });
     });
@@ -171,7 +178,8 @@ exports.testManagement = function(config) {
       mgmt.getDeveloperApp(TEST_DEVELOPER_EMAIL, TEST_APP_NAME, function(err, foundApp) {
         if (err) { console.error('%j', err); }
         should.not.exist(err);
-        assert.equal(foundApp.name, app.name);
+        foundApp.name.should.equal(app.name);
+        foundApp.attributes.test2.should.equal(app.attributes.test2);
         done();
       });
     });

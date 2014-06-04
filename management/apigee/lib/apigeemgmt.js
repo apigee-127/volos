@@ -156,20 +156,12 @@ function parseDeveloper(o) {
 
 ApigeeManagementSpi.prototype.createApp = function(app, cb) {
   var self = this;
-  var ar = {
-    name: app.name,
-    status: app.status,
-    callbackUrl: app.callbackUrl,
-//    scopes: app.scopes,
-    attributes: app.attributes
-  };
+  var ar = makeApp(app);
   makeRequest(this, 'POST', path.join('/developers', app.developerId, '/apps'), ar, function(err, newApp) {
     if (err) { return cb(err); }
-//    return cb(err, parseApp(newApp));
-    // todo: is this really necessary? App looks like it should directly support a scopes prop, but I can't get it to work
 
     // create an ApiProduct
-    if (app.scopes) { // todo: env settings
+    if (app.scopes) {
       var api = {
         name: getApiProductName(app),
         environments: [ 'test', 'prod' ], // todo: which environment(s)?
@@ -226,7 +218,8 @@ ApigeeManagementSpi.prototype.updateApp = function(app, cb) {
 
 ApigeeManagementSpi.prototype.updateDeveloperApp = function(developerName, appName, data, cb) {
   var self = this;
-  makeRequest(this, 'PUT', path.join('/developers', developerName, '/apps', appName), data, function(err, app) {
+  var app = makeApp(data);
+  makeRequest(this, 'PUT', path.join('/developers', developerName, '/apps', appName), app, function(err, app) {
     if (err) { return cb(err); }
     addScopesToApp(self, app, function(err, app) {
       cb(undefined, parseApp(app));
@@ -267,6 +260,20 @@ function getApiProductName(app) {
   return app.name + ' product';
 }
 
+function makeApp(data) {
+  var app = {
+    name: data.name,
+    status: data.status,
+    callbackUrl: data.callbackUrl,
+    attributes: []
+  };
+  var keys = Object.keys(data.attributes);
+  for (var i = 0; i < keys.length; i++) {
+    app.attributes.push({ name: keys[i], value: data.attributes[keys[i]]});
+  }
+  return app;
+}
+
 function parseApp(a) {
   var app = {
     id: a.appId,
@@ -274,8 +281,8 @@ function parseApp(a) {
     status: a.status,
     developerId: a.developerId,
     callbackUrl: a.callbackUrl,
-    attributes: a.attributes,
     scopes: a.scopes,
+    attributes: {},
     credentials: []
   };
   for (var i = 0; i < a.credentials.length; i++) {
@@ -283,9 +290,12 @@ function parseApp(a) {
       key: a.credentials[i].consumerKey,
       secret: a.credentials[i].consumerSecret,
       status: a.credentials[i].status
-      // TODO attributes
     };
     app.credentials.push(nc);
+  }
+  for (i = 0; i < a.attributes.length; i++) {
+    var attr = a.attributes[i];
+    app.attributes[attr.name] = attr.value;
   }
   return app;
 }
