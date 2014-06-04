@@ -245,7 +245,6 @@ ApigeeManagementSpi.prototype.deleteApp = function(uuid, cb) {
   });
 };
 
-// todo: is this really necessary? App looks like it should directly support a scopes prop, but I can't get it to work
 function addScopesToApp(self, app, cb) {
   self.getApiProduct(getApiProductName(app), function(err, product) {
     if (err) { debug('unable to get scopes for app: ' + app.name); }
