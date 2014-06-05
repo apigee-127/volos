@@ -382,7 +382,7 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
   }
   var parsedBody = querystring.parse(body);
 
-  if (!parsedBody.grant_type || (!parsedBody.grant_type === 'refresh_token')) {
+  if (parsedBody.grant_type !== 'refresh_token') {
     cb(makeError('invalid_request', 'Missing refresh_token grant type'));
     return;
   }
