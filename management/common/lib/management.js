@@ -58,6 +58,8 @@
  * }
  */
 
+var url = require('url');
+
 function Management(Spi, options) {
   this.options = options || {};
   this.management = new Spi(this.options);
@@ -94,7 +96,13 @@ Management.prototype.listDevelopers = function(cb) {
 // Operations on applications
 
 Management.prototype.createApp = function(app, cb) {
-  this.management.createApp(app, cb);
+
+  var self = this;
+  checkApp(app, function(err) {
+    if (err) { return cb(err); }
+    self.management.createApp(app, cb);
+  });
+
 };
 
 Management.prototype.getApp = function(key, cb) {
@@ -110,13 +118,34 @@ Management.prototype.deleteApp = function(uuid, cb) {
 };
 
 Management.prototype.updateApp = function(app, cb) {
-  this.management.updateApp(app, cb);
+
+  var self = this;
+  checkApp(app, function(err) {
+    if (err) { return cb(err); }
+    self.management.updateApp(app, cb);
+  });
 };
 
 // returns array of app names
 Management.prototype.listDeveloperApps = function(developerEmail, cb) {
   this.management.listDeveloperApps(developerEmail, cb);
 };
+
+function checkApp(app, cb) {
+
+  if (app.callbackUrl) {
+    var uri = url.parse(app.callbackUrl);
+    // must not be relative
+    if (uri.protocol !== 'http:' && uri.protocol !== 'https:') {
+      return cb(new Error('invalid callbackUrl - must be http or https'));
+    }
+    if (uri.hash) {
+      return cb(new Error('invalid callbackUrl - must not include fragment'));
+    }
+  }
+
+  cb();
+}
 
 // Apigee-specific
 

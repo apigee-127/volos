@@ -171,7 +171,7 @@ ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) 
   options.grantType = 'authorization_code';
   makeRequest(this, 'POST', '/tokentypes/authcode/tokens',
     body, options, function(err, result) {
-      // todo: fix at source (spec p. 29)
+      // todo: fix at source (spec p. 45)
       if (err) {
         if (err.message === 'Invalid Authorization Code' || err.message === 'Required param : redirect_uri') {
           err.code = 'invalid_grant';
@@ -265,7 +265,7 @@ ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
   options.grantType = 'refresh_token';
   makeRequest(this, 'POST', '/tokentypes/all/refresh',
     body, options, function(err, result) {
-      // todo: fix at source
+      // todo: fix at source (spec p. 45)
       if (err && err.message === 'Invalid Scope') {
         err.code = 'invalid_scope';
       }

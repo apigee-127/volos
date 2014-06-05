@@ -21,14 +21,19 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 /*
  * Create a developer and app so that we can have them for the rest of the tests.
  */
 
+//        endpoint URI MUST be an absolute URI
+//        endpoint URI MAY include query component which MUST be retained
+//        endpoint MUST NOT include a fragment
+
 var DEFAULT_SCOPE = 'scope1';
 var SCOPES = 'scope1 scope2 scope3';
+var CALLBACK_URL = 'http://example.org?query=true';
 
 var DEV_1 = {
   firstName: 'Dyniss',
@@ -40,7 +45,7 @@ var DEV_1 = {
 var APP_1 = {
   name: 'ApigeenTestApp',
   developerId: DEV_1.email,
-  callbackUrl: 'http://example.org',
+  callbackUrl: CALLBACK_URL,
   defaultScope: DEFAULT_SCOPE,
   scopes: SCOPES
 };
@@ -55,7 +60,7 @@ var DEV_2 = {
 var APP_2 = {
   name: 'ApigeenTestApp2',
   developerId: DEV_2.email,
-  callbackUrl: 'http://example.org',
+  callbackUrl: CALLBACK_URL,
   defaultScope: DEFAULT_SCOPE,
   scopes: SCOPES
 };
@@ -79,12 +84,40 @@ Creator.prototype.createFixtures = function(cb) {
 
 Creator.prototype.destroyFixtures = function(cb) {
   var self = this;
-  deleteApp(self, APP_1, function(err, reply) {
-    deleteApp(self, APP_2, function(err, reply) {
-      deleteDeveloper(self, DEV_1, function(err, reply) {
-        deleteDeveloper(self, DEV_2, cb);
-      });
-    });
+  deleteDeveloper(self, DEV_1, function(err, reply) {
+    deleteDeveloper(self, DEV_2, cb);
+  });
+};
+
+Creator.prototype.createAppURLWithFragmentError = function(cb) {
+  var APP_FRAG_ERR = {
+    name: 'ApigeenTestApp3',
+    developerId: null,
+    callbackUrl: (CALLBACK_URL + '#frag'),
+    defaultScope: DEFAULT_SCOPE,
+    scopes: SCOPES
+  };
+  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
+  var self = this;
+  self.management.getDeveloper(DEV_2.email, function(err, dev) {
+    APP_FRAG_ERR.developerId = dev.id;
+    self.management.createApp(APP_FRAG_ERR, cb);
+  });
+};
+
+Creator.prototype.createAppURLRelativeError = function(cb) {
+  var APP_FRAG_ERR = {
+    name: 'ApigeenTestApp4',
+    developerId: null,
+    callbackUrl: ('relative/url'),
+    defaultScope: DEFAULT_SCOPE,
+    scopes: SCOPES
+  };
+  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
+  var self = this;
+  self.management.getDeveloper(DEV_2.email, function(err, dev) {
+    APP_FRAG_ERR.developerId = dev.id;
+    self.management.createApp(APP_FRAG_ERR, cb);
   });
 };
 

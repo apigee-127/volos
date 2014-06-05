@@ -92,7 +92,7 @@ var create = function(config) {
 module.exports.create = create;
 
 var RedisRuntimeSpi = function(mgmt, config) {
-  config = config || {}
+  config = config || {};
   var host = config.host || '127.0.0.1';
   var port = config.port || 6379;
   var ropts = config.options || {};
@@ -182,7 +182,7 @@ RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
   self.mgmt.checkRedirectUri(options.clientId, options.redirectUri, function(err, redirectUri) {
     if (err) { return cb(err); }
     // past this point, errors must be part of the redirect uri
-    createAndStoreAuthCode(self, options.clientId, options.scope, redirectUri, function(err, hash) {
+    createAndStoreAuthCode(self, options.clientId, options.scope, options.redirectUri, function(err, hash) {
       var qs = {};
       if (err) {
         qs.error = err.errorCode;
@@ -193,6 +193,7 @@ RedisRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
       if (options.state) { qs.state = options.state; }
       var url = Url.parse(redirectUri, true);
       url.query = extend(url.query, qs);
+      url.search = null;
       var uri = Url.format(url);
       return cb(null, uri);
     });
@@ -228,6 +229,7 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
       url.query = extend(url.query, qs);
       url.hash = querystring.stringify(url.query);
       url.query = null;
+      url.search = null;
       var uri = Url.format(url);
       return cb(null, uri);
     });

@@ -58,17 +58,16 @@ x server MAY support POST
 x  (or registered extension - space-delimited commutative values)
 
 3.1.2 Redirection Endpoint
-endpoint URI MUST be an absolute URI
-endpoint URI MAY include query component which MUST be retained
-endpoint MUST NOT include a fragment
+/ endpoint URI MUST be an absolute URI
+/ endpoint URI MAY include query component which MUST be retained
+/ endpoint MUST NOT include a fragment
 
 3.1.2.1
-x redirection endpoint SHOULD require the use of TLS when response_type = "code" or "token"
-  (or when the redirection request will result in the transmission of sensitive credentials over an open network)
+x redirection endpoint SHOULD require the use of TLS when response_type = "code" or "token" (or when the redirection request will result in the transmission of sensitive credentials over an open network)
 x if to TLS, the authorization server SHOULD warn the resource owner about the insecure endpoint prior to redirection
 
 3.1.2.2
-server MUST require public and confidential clients utilizing implicit grants to register their endpoints
+/ server MUST require public and confidential clients utilizing implicit grants to register their endpoints
 x server SHOULD require all clients to register their redirection endpoint prior to utilizing the authorization
 / server SHOULD require the client to provide the complete redirection URI
 x   (client MAY use the "state" request parameter to achieve per-request customization)
@@ -77,10 +76,8 @@ x  (allowing the client to dynamically vary only the query component)
 server MAY allow the client to register multiple redirection endpoints
 
 3.1.2.3 Dynamic Configuration
-If multiple redirection URIs, only part of the URI, or if no redirection URI has been registered
-  the client MUST include a redirection URI with the authorization request using the "redirect_uri" request parameter
-When a redirection URI is included, authorization server MUST compare and match the value received against at least one of the registered redirection URIs (or URI components) as defined in [RFC3986] Section 6, if any redirection URIs were registered. If the client registration included the full redirection URI, the authorization server MUST compare the two URIs using simple string comparison as defined in [RFC3986] Section 6.2.1.
-  (http://tools.ietf.org/pdf/rfc3986.pdf) (https://npmjs.org/package/URIjs)
+/ If multiple redirection URIs, only part of the URI, or if no redirection URI has been registered the client MUST include a redirection URI with the authorization request using the "redirect_uri" request parameter
+/ When a redirection URI is included, authorization server MUST compare and match the value received against at least one of the registered redirection URIs (or URI components) as defined in [RFC3986] Section 6, if any redirection URIs were registered. If the client registration included the full redirection URI, the authorization server MUST compare the two URIs using simple string comparison as defined in [RFC3986] Section 6.2.1.
 
 
 3.1.2.4 Invalid Endpoint
@@ -89,7 +86,7 @@ When a redirection URI is included, authorization server MUST compare and match 
 
 3.2 Token Endpoint
 / endpoint URI MAY include query component which MUST be retained
-  but MUST NOT include a fragment
+/  but MUST NOT include a fragment
 x server MUST require the use of TLS
 / client MUST use HTTP POST
 / Parameters sent without a value MUST be treated as if they were omitted
@@ -123,7 +120,7 @@ x server SHOULD document its scope requirements and default value (if defined)
 4.1.2 Authorization Response
 / server issues an authorization code and delivers it to the client by adding parameters to QUERY component of URI:
 / code - required
-   MUST expire shortly after it is issued (max lifetime of 10 minutes is RECOMMENDED)
+x   MUST expire shortly after it is issued (max lifetime of 10 minutes is RECOMMENDED)
 /  client MUST NOT use the authorization code more than once
 /  otherwise, server MUST deny the request
 x     and SHOULD revoke (when possible) all tokens based on that authorization code
@@ -183,7 +180,7 @@ x state - recommended (authorization server includes this value when redirecting
 x expires_in - recommended - lifetime in seconds
 x  if omitted, server SHOULD provide the expiration time via other means or document the default
 x scope - OPTIONAL, if identical to the scope requested by the client
-  otherwise, REQUIRED (3.3)
+/  otherwise, REQUIRED (3.3)
 / state - REQUIRED if the "state" was present in the client request (identical to client value)
 / authorization server MUST NOT issue a refresh token
 x server SHOULD document the size of any value it issues
@@ -269,12 +266,11 @@ x server MAY revoke the old refresh token after issuing a new refresh token
 
 7.2 Error Response
 x server SHOULD inform the client of the error
-x If the error code is returned using a named parameter, the parameter name SHOULD be "error"
-error values: (11.4)
+x If the error code is returned using a named parameter, the parameter name SHOULD be "error" - error values: (11.4)
 
 
-4.5 Extension Grants - not covered
-8. Extensibility - not covered
-9. Native Applications - not covered
-10. Security Considerations - not covered
-11. IANA Considerations - not covered
+x 4.5 Extension Grants
+x 8. Extensibility
+x 9. Native Applications
+x 10. Security Considerations
+x 11. IANA Considerations

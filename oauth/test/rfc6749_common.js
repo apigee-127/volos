@@ -110,6 +110,23 @@ exports.verifyOauth = function(config, server) {
         });
     });
 
+    describe('3.1.2 Redirection Endpoint', function() {
+
+      it('must be an absolute uri', function(done) {
+        creator.createAppURLWithFragmentError(function(err) {
+          should.exist(err);
+          done();
+        });
+      });
+
+      it('uri must not include a fragment', function(done) {
+        creator.createAppURLRelativeError(function(err) {
+          should.exist(err);
+          done();
+        });
+      });
+
+    });
 
     describe('4.1. Authorization Code Grant', function() {
 
@@ -1000,6 +1017,10 @@ exports.verifyOauth = function(config, server) {
 
       validateRedirectBase(reqHash.redirect_uri, res.headers.location);
 
+      // 3.1.2. URI MAY include query component which MUST be retained
+      resHash.should.have.property('query');
+      resHash.query.should.equal('true');
+
       if (reqHash.state) {
         resHash.should.have.property('state');
         resHash.state.should.eql(reqHash.state);
@@ -1024,6 +1045,10 @@ exports.verifyOauth = function(config, server) {
       res.status.should.be.within(300, 399);
 
       validateRedirectBase(reqHash.redirect_uri, res.headers.location);
+
+      // it('URI MAY include query component which MUST be retained');
+      resHash.should.have.property('query');
+      resHash.query.should.equal('true');
 
       resHash.should.have.property('state');
       resHash.state.should.eql(reqHash.state);

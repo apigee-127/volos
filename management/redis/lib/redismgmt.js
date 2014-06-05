@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 /**
  * This module implements the management SPI interface using redis.
@@ -76,6 +76,7 @@ var uuid = require('node-uuid');
 var redis = require("redis");
 var _ = require('underscore');
 var Common = require('volos-management-common');
+var url = require('url');
 
 var create = function(config) {
   return new Common(RedisManagementSpi, config);
@@ -192,7 +193,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
   }
   if (app.defaultScope) { validScopes.push(app.defaultScope); }
   app.scopes = _.uniq(_.flatten(validScopes));
- 
+
   var application = {
     id: app.uuid,
     uuid: app.uuid,
@@ -271,8 +272,21 @@ RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
 RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, cb) {
   this.getAppForClientId(clientId, function(err, reply) {
     if (err) { return cb(err); }
-    if (redirectUri && redirectUri !== reply.callbackUrl) { // todo: better comparison, ignore state, etc
-      return cb(new Error('callback url mismatch'));
+    if (redirectUri) {
+      if (redirectUri !== reply.callbackUrl) {
+        var url1 = url.parse(redirectUri, true);
+        var url2 = url.parse(reply.callbackUrl, true);
+        if (url1.protocol !== url2.protocol ||
+          url1.host !== url2.host ||
+          url1.port !== url2.port ||
+          url1.pathname !== url2.pathname) {
+          return cb(new Error('callback url mismatch'));
+       } else {
+          _.extend(url1.query, url2.query); // ensure registered query params are returned
+          url1.search = null;
+          return cb(null, url.format(url1));
+        }
+      }
     }
     return cb(null, redirectUri || reply.callbackUrl);
   });
