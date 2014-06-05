@@ -102,7 +102,6 @@ OAuthArgo.prototype.package = function(argo) {
           }
         );
       }
-      // TODO the existing OAuth package overrides the default argo "route" method -- why?
     }
   };
 };

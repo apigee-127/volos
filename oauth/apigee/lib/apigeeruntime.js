@@ -31,8 +31,6 @@
  *   key: The API key for your adapter
  */
 
-// todo: Implement token attributes for Apigee
-
 var url = require('url');
 var http = require('http');
 var https = require('https');
