@@ -46,7 +46,7 @@
  *   developerId: (string)
  *   attributes: (hash)
  *   credentials: [(credentials)],
- *   defaultScope: (string) - optional - if exists, assigned when no scope is requested
+ *   defaultScope: (string) - optional - if exists, assigned when no scope is requested (note: not currently supported by Apigee Edge)
  *   scopes: (string) or [(string)]
  * }
  *

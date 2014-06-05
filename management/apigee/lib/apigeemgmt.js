@@ -63,7 +63,7 @@
  *   managementUri: (string) optional URI for Apigee API endpoint to happen -- otherwise it hits api.enterprise.apigee.com.
  */
 
-// todo: support defaultScope on Application
+// future: add support for defaultScope if/when Apigee Edge supports it
 
 var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
 
