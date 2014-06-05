@@ -266,9 +266,11 @@ function makeApp(data) {
     callbackUrl: data.callbackUrl,
     attributes: []
   };
-  var keys = Object.keys(data.attributes);
-  for (var i = 0; i < keys.length; i++) {
-    app.attributes.push({ name: keys[i], value: data.attributes[keys[i]]});
+  if (data.attributes) {
+    var keys = Object.keys(data.attributes);
+    for (var i = 0; i < keys.length; i++) {
+      app.attributes.push({ name: keys[i], value: data.attributes[keys[i]]});
+    }
   }
   return app;
 }
