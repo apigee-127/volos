@@ -29,7 +29,7 @@ app
 app
   .command('devs')
   .description('list developers')
-  .action(function(args) {
+  .action(function() {
     init(function() {
       mgr.listDevelopers(function(err, devs) {
         printAndExit(err, devs);
@@ -137,6 +137,7 @@ app.on('--help', function() {
 });
 
 app.parse(process.argv);
+if (!app.args.length) { app.help(); }
 
 function init(done) {
   var config = _.defaults({}, app);
@@ -150,12 +151,12 @@ function init(done) {
   if (config.target === 'redis') {
     var redis = require('../management/redis');
     mgr = redis.create(config.redis);
-    done();
+    done(config);
   } else {
     var apigee = require('../management/apigee');
     requireAnswers(config, APIGEE_CONFIG_QUESTIONS, function() {
       mgr = apigee.create(config);
-      done();
+      done(config);
     });
   }
 }
