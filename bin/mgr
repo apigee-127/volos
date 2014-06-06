@@ -40,6 +40,7 @@ app
 app
   .command('dev')
   .description('display developer')
+  .usage('dev [email]')
   .action(function(email) {
     init(function() {
       async.waterfall([
