@@ -19,19 +19,79 @@ This module supports the following features:
 * Support for bearer tokens as defined by [RFC 6750](http://tools.ietf.org/html/rfc6750)
 * Support for token revocation as defined by [RFC 7009](http://tools.ietf.org/html/rfc7009)
 * Support for "API key" validation, using the same data supported by the OAuth implementation
+* Optionally accepts a Volos Cache to improve token validation performance.
 
-## Example
+## Examples
 
-    var om = require('volos-oauth-redis');
-    var oauth = om.createOAuth({
-      foo: 'foo',
-      bar: 123
-      });
+### Prerequisite: Create a Developer and Organization
 
-    // Create an access token
-    // Validate an access token
+    var management = require('volos-management-redis'),
+    
+    function createDev(cb) {
+        var devRequest =  {
+          firstName: 'Scott',
+          lastName: 'Ganyo',
+          email: 'sganyo@apigee.com',
+          userName: 'sganyo'
+        };
 
-## Express Example
+        management.createDeveloper(devRequest, function(err, developer) {
+        cb(developer);
+    };
+
+    function createApp(developer, cb) {
+        var appRequest = {
+          developerId = developer.id,
+          name: 'MyApplication',
+          scopes: 'scope1 scope2'
+        };
+        management.createApp(appRequest, cb);        
+    };
+    
+    createDev(function(developer) {
+        createApp(developer, function() {
+          ...
+        );
+    );
+
+### Initialize your oauth
+
+    var oauthProvider = require('volos-oauth-redis');
+    var oauthConfig = {
+        validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ];
+        passwordCheck: function (user, pw, cb) { return true; }
+    };
+    var oauth = oauthProvider.create(oauthConfig);
+
+### Set up Express using Middleware
+
+    var app = require('express')();
+    app.get('/authorize', oauth.expressMiddleware().handleAuthorize());
+    app.post('/accesstoken', oauth.expressMiddleware().handleAccessToken());
+    app.post('/invalidate', oauth.expressMiddleware().invalidateToken());
+    app.post('/refresh', oauth.expressMiddleware().refreshToken());
+    app.get('/',
+        oauth.expressMiddleware().authenticate('scope2'),
+        function(req, resp) {
+          resp.json(['hello', 'world']);
+        }
+    );
+    app.listen(9999);
+    
+### Generate a Token using password
+
+    var request = {
+        grant_type: 'password',
+        client_id: 'key',
+        client_secret: 'secret',
+        username: 'username',
+        password: 'password',
+        scope: 'scope1 scope2'
+    };
+    oauth.generateToken(request, function(err, reply) {
+        var token = reply.access_token;
+    });
+
 
 ## Interface
 
@@ -40,6 +100,17 @@ This module supports the following features:
 Nearly all the methods in this module take a "callback" as a parameter. In all cases, the first parameter of
 the callback will be set to an Error object if the operation fails for any reason, and are "undefined" if the
 operation succeeds.
+
+## Cache
+
+The OAuth module can also accept a Volos Cache to reduce contention and delay in validating tokens.
+
+### Example
+
+      var Cache = require('volos-cache-memory');
+      var cache = Cache.create('OAuth cache');
+      oauth.useCache(cache);
+
 
 ## Middleware
 
