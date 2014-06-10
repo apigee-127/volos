@@ -34,7 +34,7 @@
 
 /*
 token_details = {
-  access_token: token,
+  access_token: token, // returned, not stored
   issued_at: time, // in ms
   ttl: ttl, // in secs
   scope: scope,
@@ -48,13 +48,14 @@ auth_details = {
 }
 
 schema:
- volos:oauth:access_token -> token_details
+ volos:oauth:hash(access_token) -> token_details
  volos:oauth:client_id:refresh_token -> token_details
  volos:oauth:client_id:auth_code -> auth_details
 */
 
 var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
+var HASH_IMPL = 'sha256';
 var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
 var REFRESH_TYPE = 'refresh';
 var AUTH_TTL = 60 * 5; // 5 minutes
@@ -244,14 +245,15 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
-  self.client.get(_key(options.clientId, options.refreshToken), function(err, reply) {
+  var key = _key(options.clientId, hashToken(options.refreshToken));
+  self.client.get(key, function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
       var token = JSON.parse(reply);
       options.scope = token.scope;
       createAndStoreToken(self, options, function(err, reply) {
         if (err) { return cb(err); }
-        self.client.del(_key(options.clientId, options.refreshToken));
+        self.client.del(key);
         return cb(null, reply);
       });
     } else {
@@ -273,8 +275,9 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
 
-    client.del(_key(options.token));
-    client.del(_key(options.clientId, options.token));
+    var hashedToken = hashToken(options.token);
+    client.del(_key(hashedToken));
+    client.del(_key(options.clientId, hashedToken));
     return cb(null, 'OK');
   });
 };
@@ -285,7 +288,7 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   debug('verifyToken: ' + token);
   var self = this;
-  self.client.get(_key(token), function(err, reply) {
+  self.client.get(_key(hashToken(token)), function(err, reply) {
     if (err || !reply) { return cb(invalidRequestError()); }
 
     var token_details = JSON.parse(reply);
@@ -327,7 +330,7 @@ function createAndStoreAuthCode(self, clientId, requestedScope, redirectUri, cb)
 
       var code = genSecureToken();
       var hash = JSON.stringify({ redirectUri: redirectUri, scope: grantedScope });
-      self.client.setex(_key(clientId, code), AUTH_TTL, hash, function(err, reply) {
+      self.client.setex(_key(clientId, code), AUTH_TTL, hash, function(err) {
         if (err) { return err; }
         return cb(null, { code: code, scope: grantedScope });
       });
@@ -339,7 +342,7 @@ function consumeAuthCode(client, clientId, code, cb) {
   client.get(_key(clientId, code), function(err, hash) {
     if (err) { return cb(err); }
     if (!hash) { return cb(errorWithCode('invalid_grant')); }
-    client.del(_key(clientId, code), function(err, reply) {
+    client.del(_key(clientId, code), function(err) {
       return cb(err, JSON.parse(hash));
     });
   });
@@ -369,7 +372,7 @@ function createAndStoreToken(self, options, cb) {
         if (err) { return cb(err); }
         if (options.refresh) {
           var refreshToken = genSecureToken();
-          storeRefreshToken(self.client, app, refreshToken, options.clientId, grantedScope, options.attributes, function(err, reply) {
+          storeRefreshToken(self.client, app, refreshToken, options.clientId, grantedScope, options.attributes, function(err) {
             if (err) { return cb(err); }
             tokenResponse.refresh_token = refreshToken;
             return cb(null, tokenResponse);
@@ -412,8 +415,12 @@ function genSecureToken() {
   return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
 }
 
+function hashToken(token) {
+  return crypto.createHash(HASH_IMPL).update(token).digest("hex");
+}
+
 function storeToken(client, app, token, type, clientId, ttl, scope, attributes, cb) {
-  debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : ''));
+  if (debugEnabled) { debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : '')); }
   var response = {
     issued_at: new Date().getTime(),
     access_token: token,
@@ -422,16 +429,19 @@ function storeToken(client, app, token, type, clientId, ttl, scope, attributes, 
   };
   if (scope) { response.scope = scope; }
   if (attributes) { response.attributes = attributes; }
-  var stored = JSON.stringify(_.extend({ application_id: app.id, developer_id: app.developerId }, response));
+  var toStore = _.extend({ application_id: app.id, developer_id: app.developerId }, response);
+  delete toStore.access_token;
+  var storeString = JSON.stringify(toStore);
+  var hashedToken = hashToken(token);
   response.expires_in = ttl;
   delete(response.ttl);
-  var key = (type === REFRESH_TYPE) ? _key(clientId, token) :_key(token);
+  var key = (type === REFRESH_TYPE) ? _key(clientId, hashedToken) :_key(hashedToken);
   if (ttl) {
-    client.setex(key, ttl, stored, function(err, reply) {
+    client.setex(key, ttl, storeString, function(err) {
       return cb(err, response);
     });
   } else {
-    client.set(key, stored, function(err, reply) {
+    client.set(key, storeString, function(err) {
       return cb(err, response);
     });
   }
