@@ -55,7 +55,6 @@ schema:
 
 var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
-var HASH_IMPL = 'sha256';
 var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
 var REFRESH_TYPE = 'refresh';
 var AUTH_TTL = 60 * 5; // 5 minutes
@@ -97,6 +96,7 @@ var RedisRuntimeSpi = function(mgmt, config) {
   var host = config.host || '127.0.0.1';
   var port = config.port || 6379;
   var ropts = config.options || {};
+  this.hashAlgo = config.hashAlgo || 'sha256';
   this.client = redis.createClient(port, host, ropts);
   this.mgmt = mgmt;
 };
@@ -245,7 +245,7 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
-  var key = _key(options.clientId, hashToken(options.refreshToken));
+  var key = _key(options.clientId, hashToken(self, options.refreshToken));
   self.client.get(key, function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
@@ -270,14 +270,14 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
  *   tokenTypeHint: optional
  */
 RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
-  var client = this.client;
+  var self = this;
   this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) { return cb(invalidRequestError()); }
 
-    var hashedToken = hashToken(options.token);
-    client.del(_key(hashedToken));
-    client.del(_key(options.clientId, hashedToken));
+    var hashedToken = hashToken(self, options.token);
+    self.client.del(_key(hashedToken));
+    self.client.del(_key(options.clientId, hashedToken));
     return cb(null, 'OK');
   });
 };
@@ -288,7 +288,7 @@ RedisRuntimeSpi.prototype.invalidateToken = function(options, cb) {
 RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   debug('verifyToken: ' + token);
   var self = this;
-  self.client.get(_key(hashToken(token)), function(err, reply) {
+  self.client.get(_key(hashToken(self, token)), function(err, reply) {
     if (err || !reply) { return cb(invalidRequestError()); }
 
     var token_details = JSON.parse(reply);
@@ -367,12 +367,12 @@ function createAndStoreToken(self, options, cb) {
 
       var ttl = options.tokenLifetime ? (options.tokenLifetime / 1000) : DEFAULT_TOKEN_LIFETIME;
       var token = genSecureToken();
-      storeToken(self.client, app, token, options.type, options.clientId, ttl, grantedScope, options.attributes, function(err, reply) {
+      storeToken(self, app, token, options.type, options.clientId, ttl, grantedScope, options.attributes, function(err, reply) {
         var tokenResponse = reply;
         if (err) { return cb(err); }
         if (options.refresh) {
           var refreshToken = genSecureToken();
-          storeRefreshToken(self.client, app, refreshToken, options.clientId, grantedScope, options.attributes, function(err) {
+          storeRefreshToken(self, app, refreshToken, options.clientId, grantedScope, options.attributes, function(err) {
             if (err) { return cb(err); }
             tokenResponse.refresh_token = refreshToken;
             return cb(null, tokenResponse);
@@ -415,11 +415,12 @@ function genSecureToken() {
   return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
 }
 
-function hashToken(token) {
-  return crypto.createHash(HASH_IMPL).update(token).digest("hex");
+function hashToken(self, token) {
+  return crypto.createHash(self.hashAlgo).update(token).digest("hex");
 }
 
-function storeToken(client, app, token, type, clientId, ttl, scope, attributes, cb) {
+function storeToken(self, app, token, type, clientId, ttl, scope, attributes, cb) {
+  var client = self.client;
   if (debugEnabled) { debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : '')); }
   var response = {
     issued_at: new Date().getTime(),
@@ -432,7 +433,7 @@ function storeToken(client, app, token, type, clientId, ttl, scope, attributes, 
   var toStore = _.extend({ application_id: app.id, developer_id: app.developerId }, response);
   delete toStore.access_token;
   var storeString = JSON.stringify(toStore);
-  var hashedToken = hashToken(token);
+  var hashedToken = hashToken(self, token);
   response.expires_in = ttl;
   delete(response.ttl);
   var key = (type === REFRESH_TYPE) ? _key(clientId, hashedToken) :_key(hashedToken);
@@ -447,8 +448,8 @@ function storeToken(client, app, token, type, clientId, ttl, scope, attributes, 
   }
 }
 
-function storeRefreshToken(client, app, token, clientId, scope, attributes, cb) {
-  storeToken(client, app, token, REFRESH_TYPE, clientId, null, scope, attributes, cb);
+function storeRefreshToken(self, app, token, clientId, scope, attributes, cb) {
+  storeToken(self, app, token, REFRESH_TYPE, clientId, null, scope, attributes, cb);
 }
 
 function _key() {
