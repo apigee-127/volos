@@ -31,6 +31,7 @@ var config = {
   host: '127.0.0.1',
   port: 6379,
   options: {},
+  encryptionKey: 'This is the key to encrypt/decrypt stored credentials',
 
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
   tokenLifetime: 1000, // expiration tests will wait this long

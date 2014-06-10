@@ -23,8 +23,7 @@
  ****************************************************************************/
 'use strict';
 
-/**
- * This module implements the management SPI interface using redis.
+/* This module implements the management SPI interface using redis.
  *
  * Objects supported:
  *
@@ -35,7 +34,7 @@
  *   firstName: (string)
  *   lastName: (string)
  *   status: (string)
- *   attributes: (hash)
+ *   attributes: (object)
  * }
  *
  * application: {
@@ -44,8 +43,8 @@
  *   status: (string)
  *   callbackUrl: (string)
  *   developerId: (string)
- *   attributes: (hash)
- *   credentials: [(credentials)],
+ *   attributes: (object)
+ *   credentials: [encrypted(credentials)],
  *   defaultScope: (string) - optional - if exists, assigned when no scope is requested
  *   scopes: (string) or [(string)]
  * }
@@ -64,7 +63,7 @@
  volos:management:developer_id -> developer
  volos:management:developer_email -> developer_id
  volos:management:credentials.key -> application_id
- volos:management:credentials.key:credentials.secret -> application_id
+ volos:management:credentials.key:hashed(credentials.secret) -> application_id
  volos:management:developer_email:application_name -> application_id
  */
 
@@ -88,6 +87,10 @@ function RedisManagementSpi(config) {
   var port = config.port || 6379;
   var host = config.host || '127.0.0.1';
   var ropts = config.options || {};
+  this.hashAlgo = config.hashAlgo || 'sha256';
+  this.cypherAlgo = config.cypherAlgo || 'aes192';
+  if (!config.encryptionKey) { throw new Error('you must provide an encryptionKey in config'); }
+  this.encryptionKey = config.encryptionKey;
   this.client = redis.createClient(port, host, ropts);
 }
 
@@ -118,7 +121,7 @@ RedisManagementSpi.prototype.createDeveloper = function(developer, cb) {
 RedisManagementSpi.prototype.getDeveloper = function(uuid_or_email, cb) {
   var self = this;
   var respond = function(id) {
-    getWith404(self.client, id, function(err, reply) {
+    getWith404(self, id, function(err, reply) {
       if (err) { return cb(err); }
       cb(undefined, makeDeveloper(reply));
     });
@@ -212,7 +215,7 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     if (err) { return cb(err); }
     if (!reply) { return cb(new Error('developer ' + app.developerId + ' not found.')); }
     var developer = JSON.parse(reply);
-    saveApplication(self.client, application, developer, function(err, reply) {
+    saveApplication(self, application, developer, function(err) {
       if (err) { return cb(err); }
       return cb(undefined, application);
     });
@@ -232,18 +235,21 @@ RedisManagementSpi.prototype.updateApp = function(app, cb) {
 };
 
 RedisManagementSpi.prototype.getApp = function(key, cb) {
-  getWith404(this.client, key, cb);
+  var self = this;
+  getWith404(self, key, function(err, app) {
+    if (err) { return cb(err); }
+    if (app.credentials) {
+      app.credentials = decrypt(self, app.credentials);
+    }
+    cb(err, app);
+  });
 };
 
 RedisManagementSpi.prototype.getDeveloperApp = function(developerEmail, appName, cb) {
   var self = this;
-  this.client.get(_key(developerEmail, appName), function(err, reply) {
+  this.client.get(_key(developerEmail, appName), function(err, appId) {
     if (err) { return cb(err); }
-    if (reply) {
-      getWith404(self.client, reply, cb);
-    } else {
-      return cb(make404());
-    }
+    self.getApp(appId, cb);
   });
 };
 
@@ -262,9 +268,9 @@ RedisManagementSpi.prototype.listDeveloperApps = function(developerEmail, cb) {
 
 RedisManagementSpi.prototype.getAppForClientId = function(key, cb) {
   var self = this;
-  getAppIdForClientId(self.client, key, function(err, reply) {
+  getAppIdForClientId(self.client, key, function(err, appId) {
     if (err) { return cb(err); }
-    self.getApp(reply, cb);
+    self.getApp(appId, cb);
   });
 };
 
@@ -293,18 +299,18 @@ RedisManagementSpi.prototype.checkRedirectUri = function(clientId, redirectUri, 
 };
 
 RedisManagementSpi.prototype.deleteApp = function(uuid, cb) {
-  deleteApplication(this.client, uuid, cb);
+  deleteApplication(this, uuid, cb);
 };
 
 RedisManagementSpi.prototype.getAppIdForCredentials = function(key, secret, cb) {
-  this.client.get(_key(key, secret), cb);
+  this.client.get(_key(key, hashToken(this, secret)), cb);
 };
 
 RedisManagementSpi.prototype.getAppForCredentials = function(key, secret, cb) {
   var self = this;
-  self.getAppIdForCredentials(key, secret, function(err, reply) {
+  self.getAppIdForCredentials(key, secret, function(err, appId) {
     if (err) { return cb(err); }
-    getWith404(self.client, reply, cb);
+    self.getApp(appId, cb);
   });
 };
 
@@ -318,8 +324,9 @@ function getAppIdForClientId(client, key, cb) {
   client.get(_key(key), cb);
 }
 
-function getWith404(client, key, cb) {
+function getWith404(self, key, cb) {
   if (!key) { return cb(make404()); }
+  var client = self.client;
   client.get(_key(key), function(err, reply) {
     if (err) { return cb(err); }
     if (reply) {
@@ -382,17 +389,20 @@ function deleteDeveloper(self, developer, cb) {
 
       if (appIds.length === 0) { return multi.exec(cb); }
       for (var i = 0; i < appIds.length; i++) {
-        addAppDeletes(self.client, multi, appIds[i], finish);
+        addAppDeletes(self, multi, appIds[i], finish);
       }
     });
   });
 }
 
-function saveApplication(client, application, developer, cb) {
+function saveApplication(self, application, developer, cb) {
+  var client = self.client;
   var multi = client.multi();
 
   // application_id -> application
-  multi.set(_key(application.uuid), JSON.stringify(application));
+  var storedApp = _.extend({}, application);
+  storedApp.credentials = encrypt(self, application.credentials);
+  multi.set(_key(application.uuid), JSON.stringify(storedApp));
 
   // developer_email:application_name -> application_id
   multi.set(_key(developer.email, application.name), application.id);
@@ -401,31 +411,32 @@ function saveApplication(client, application, developer, cb) {
   // credentials[i].key:credentials[i].secret -> application_id
   for (var i = 0; i < application.credentials.length; i++) {
     multi.set(_key(application.credentials[i].key), application.id);
-    multi.set(_key(application.credentials[i].key, application.credentials[i].secret), application.id);
+    multi.set(_key(application.credentials[i].key, hashToken(self, application.credentials[i].secret)), application.id);
   }
 
   multi.exec(cb);
 }
 
 // must match saveApplication for deleting created keys
-function deleteApplication(client, uuid, cb) {
+function deleteApplication(self, uuid, cb) {
+  var client = self.client;
   var multi = client.multi();
-  addAppDeletes(client, multi, uuid, function(err) {
+  addAppDeletes(self, multi, uuid, function(err) {
     if (err) { return cb(err); }
     multi.exec(cb);
   });
 }
 
-function addAppDeletes(client, multi, uuid, cb) {
-
-  getWith404(client, uuid, function(err, application) {
+function addAppDeletes(self, multi, uuid, cb) {
+  var client = self.client;
+  self.getApp(uuid, function(err, application) {
     if (err) { return cb(err); }
 
     // credentials[i].key -> application_id
     // credentials[i].key:credentials[i].secret -> application_id
     for (var i = 0; i < application.credentials.length; i++) {
       multi.del(_key(application.credentials[i].key));
-      multi.del(_key(application.credentials[i].key, application.credentials[i].secret));
+      multi.del(_key(application.credentials[i].key, hashToken(self, application.credentials[i].secret)));
     }
 
     // application_id -> application
@@ -445,6 +456,28 @@ function isUUID(str) {
 
 function genSecureToken() {
   return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
+}
+
+function hashToken(self, token) {
+  return crypto.createHash(self.hashAlgo).update(token).digest("hex");
+}
+
+// returns Buffer
+function encrypt(self, object) {
+  var cipher = crypto.createCipher(self.cypherAlgo, self.encryptionKey);
+  var json = JSON.stringify(object);
+  var buffers = [cipher.update(new Buffer(json))];
+  buffers.push(cipher.final());
+  var encrypted = Buffer.concat(buffers);
+  return encrypted;
+}
+
+function decrypt(self, data) {
+  var decipher = crypto.createDecipher(self.cypherAlgo, self.encryptionKey);
+  var buffers = [decipher.update(new Buffer(data))];
+  buffers.push(decipher.final());
+  var decrypted = Buffer.concat(buffers).toString();
+  return JSON.parse(decrypted);
 }
 
 function _key() {
