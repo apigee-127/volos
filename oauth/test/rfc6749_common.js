@@ -679,7 +679,7 @@ exports.verifyOauth = function(config, server) {
           });
       });
 
-      it.only('can obtain a valid token from unscoped app', function(done) {
+      it('can obtain a valid token from unscoped app', function(done) {
         var q = {
           grant_type: 'client_credentials'
         };
