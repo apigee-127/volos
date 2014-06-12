@@ -24,7 +24,7 @@
 'use strict';
 
 var argo = require('argo');
-var port = 10011;
+var port = 10010;
 var assert = require('assert');
 
 module.exports = function(cache) {

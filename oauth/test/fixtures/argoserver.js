@@ -24,7 +24,7 @@
 "use strict";
 
 var argo = require('argo');
-var port = 10011;
+var port = 10012;
 
 module.exports = function(oauth) {
   var app = argo();
