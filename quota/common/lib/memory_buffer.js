@@ -79,7 +79,7 @@ MemoryBuffer.prototype.apply = function(options, cb) {
     bucket = new Bucket(now, options, this);
     this.buckets[options.identifier] = bucket;
 
-    bucket.flushBucket(function(err, reply) { // sync count (and possibly time) with remote
+    bucket.flushBucket(function(err) { // sync count (and possibly time) with remote
       if (err) { return cb(err); }
       bucket.apply(now, options, cb);
     });
@@ -152,6 +152,7 @@ Bucket.prototype.apply = function(time, options, cb) {
   var allow = options.allow || this.options.allow;
 
   var count = this.count + this.remoteCount;
+  if (!this.expiryTime) { this.calculateExpiration(); }
   var result = {
     allowed: allow,
     used: count,

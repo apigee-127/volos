@@ -91,6 +91,25 @@ exports.testQuota = function(config, Spi) {
         should.ok(Spi.create(options));
         done();
       });
+
+      it('apply options must have an identifier', function(done) {
+        pm.apply({
+          weight: 1
+        }, function(err) {
+          should.exist(err);
+          done();
+        });
+      });
+
+      it('apply options must have a string identifier', function(done) {
+        pm.apply({
+          identifier: 1,
+          weight: 1
+        }, function(err) {
+          should.exist(err);
+          done();
+        });
+      });
     });
 
     it('Basic per-minute', function(done) {

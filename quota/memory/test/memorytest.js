@@ -30,4 +30,8 @@ describe('Memory', function() {
 
   commonTest.testQuota({}, Spi);
 
+  describe('w/ buffer', function() {
+    commonTest.testQuota({ bufferSize: 1 }, Spi);
+  });
+
 });

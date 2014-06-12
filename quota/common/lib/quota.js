@@ -116,14 +116,18 @@ module.exports = Quota;
 
 Quota.prototype.apply = function(o, cb) {
   var options = o || {};
-  options.weight = checkNumber(o.weight, 'weight') || 1;
-  options.allow = checkNumber(o.allow, 'allow') || this.options.allow;
+  try {
+    options.weight = checkNumber(o.weight, 'weight') || 1;
+    options.allow = checkNumber(o.allow, 'allow') || this.options.allow;
+  } catch (err) {
+    return cb(err);
+  }
 
   if (!options.identifier) {
-    throw new Error('identifier must be set');
+    return cb(new Error('identifier must be set'));
   }
   if (typeof options.identifier !== 'string') {
-    throw new Error('identifier must be a string');
+    return cb(new Error('identifier must be a string'));
   }
 
   this.quota.apply(options, function(err, result) {
