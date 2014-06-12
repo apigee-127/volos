@@ -172,6 +172,21 @@ exports.testCache = function(config, Spi) {
       });
     });
 
+    it('Clear cache', function(done) {
+      var ts = 'TestString1';
+      tc.set('1', ts, function(err) {
+        should.not.exist(err);
+        tc.clear(function() {
+          tc.get('1', function(err, val) {
+            should.not.exist(err);
+            should.not.exist(val);
+            done();
+          });
+        });
+      });
+    });
+
+
     it('Param checks', function() {
       assert.throws(function() {
         tc.set(1, 'one');

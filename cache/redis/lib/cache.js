@@ -91,9 +91,10 @@ Cache.prototype.delete = function(key, callback) {
 // Clear the entire cache. If callback is supplied, call it when delete is complete with
 // the error as the first element.
 Cache.prototype.clear = function(callback) {
+  var self = this;
   this.client.keys(this._key('*'), function(err, reply) {
     if (err) { return callback ? callback(err, reply) : null; }
-    var multi = this.client.multi();
+    var multi = self.client.multi();
     for (var i = 0; i < reply.length; i++) {
       multi.del(reply[i]);
     }
