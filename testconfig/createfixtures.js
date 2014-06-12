@@ -65,6 +65,13 @@ var APP_2 = {
   scopes: SCOPES
 };
 
+// no scopes
+var APP_3 = {
+  name: 'ApigeenTestApp3',
+  developerId: DEV_2.email,
+  callbackUrl: CALLBACK_URL
+};
+
 
 function Creator(management) {
   this.management = management;
@@ -77,7 +84,10 @@ Creator.prototype.createFixtures = function(cb) {
     if (err) { return cb(err); }
     checkDeveloper(self, DEV_2, APP_2, function(err, app2) {
       if (err) { return cb(err); }
-      cb(undefined, [app1, app2]);
+      checkDeveloper(self, DEV_2, APP_3, function(err, app3) {
+        if (err) { return cb(err); }
+        cb(undefined, [app1, app2, app3]);
+      });
     });
   });
 };

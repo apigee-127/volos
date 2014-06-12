@@ -679,6 +679,20 @@ exports.verifyOauth = function(config, server) {
           });
       });
 
+      it.only('can obtain a valid token from unscoped app', function(done) {
+        var q = {
+          grant_type: 'client_credentials'
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(apps[2].credentials[0].key, apps[2].credentials[0].secret)
+          .send(qs)
+          .end(function(err, res) {
+            verify51SuccessfulResponse(err, res, done);
+          });
+      });
+
       it('must fail after expiration', function(done) {
         var q = {
           grant_type: 'client_credentials',
@@ -986,7 +1000,7 @@ exports.verifyOauth = function(config, server) {
       res.headers.pragma.should.eql('no-cache');
 
       res.body.should.have.properties('access_token', 'token_type');
-      if (res.body.scope.indexOf(DOGS_SCOPE) > 0) { // can only verify if appropriate scope
+      if (res.body.scope && res.body.scope.indexOf(DOGS_SCOPE) > 0) { // can only verify if appropriate scope
         verifyAccessToken(res.body.access_token);
       }
 
