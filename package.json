@@ -1,7 +1,7 @@
 {
   "name": "Volos",
   "version": "1.0.0",
-  "comments": "This package.json is here so we can get dependencies installed to run tests",
+  "comments": "This package.json is here so we can get dependencies installed to run tests. Install mocha and istanbul globally.",
   "private": true,
   "dependencies":  {
     "express": "3.4.x",
@@ -21,7 +21,8 @@
   },
   "scripts": {
     "install": "bin/link",
-    "test": "mocha --recursive cache/memory/ cache/redis/ management/redis oauth/redis quota/memory quota/redis",
-    "test-apigee": "mocha --recursive cache/apigee/ management/apigee oauth/apigee quota/apigee"
+    "test": "mocha -u exports -R spec cache/memory/test cache/redis/test management/redis/test oauth/redis/test quota/memory/test quota/redis/test",
+    "test-apigee": "mocha -u exports -R spec cache/apigee/test management/apigee/test oauth/apigee quota/apigee/test",
+    "cover": "ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test management/redis/test oauth/redis/test quota/memory/test quota/redis/test"
   }
 }
