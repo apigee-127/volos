@@ -11,6 +11,7 @@
   ],
   "dependencies": {
     "volos-quota-common": "0.9.x",
+    "debug": "1.0.x",
     "redis": "0.10.x"
   },
   "devDependencies": {},

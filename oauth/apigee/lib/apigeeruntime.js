@@ -37,17 +37,7 @@ var https = require('https');
 var querystring = require('querystring');
 var OAuthCommon = require('volos-oauth-common');
 var apigee = require('apigee-access');
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var debug = require('debug')('apigee');
 
 var create = function(options) {
   var spi = new ApigeeRuntimeSpi(options);
@@ -107,7 +97,7 @@ function setFlowVariables(req, resp) {
       var varName = key.substring(4);
       if (resp.headers[key].length) {
         apigee.setVariable(req, varName, resp.headers[key]);
-        if (debugEnabled) { debug('VAR: ' + varName + ' = ' + resp.headers[key]); }
+        if (debug.enabled) { debug('VAR: ' + varName + ' = ' + resp.headers[key]); }
       }
     }
   }
@@ -387,7 +377,7 @@ function makeGetRequest(self, uriPath, qs, options, cb) {
   r.headers['x-DNA-Api-Key'] = self.key;
   r.method = 'GET';
 
-  if (debugEnabled) {
+  if (debug.enabled) {
     debug('GET ' + finalUri);
   }
 

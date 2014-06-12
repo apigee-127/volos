@@ -25,6 +25,7 @@
 
 var _ = require('underscore');
 var encoder = require('./cache-encoder');
+var debug = require('debug')('cache');
 
 function CacheConnect(cache, options) {
   if (!(this instanceof CacheConnect)) {
@@ -56,13 +57,13 @@ CacheConnect.prototype.cache = function(id) {
       if (err) { return console.log('Cache error: ' + err); }
 
       if (buffer && fromCache) {
-        if (debugEnabled) { debug('cache hit: ' + key); }
+        if (debug.enabled) { debug('cache hit: ' + key); }
         return encoder.setFromCache(buffer, resp);
       }
     };
 
     var populate = function(key, cb) {
-      if (debugEnabled) { debug('cache miss: ' + key); }
+      if (debug.enabled) { debug('cache miss: ' + key); }
       var doCache, content, headers;
 
       // replace write() to intercept the content sent to the client
@@ -110,14 +111,3 @@ CacheConnect.prototype.cache = function(id) {
     self.internalCache.getSet(key, populate, options, getSetCallback);
   };
 };
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Cache: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}

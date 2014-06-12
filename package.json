@@ -17,12 +17,13 @@
     "lru-cache" : "git://github.com/scottganyo/node-lru-cache.git#master",
     "commander": "2.2.x",
     "inquirer": "0.5.x",
-    "apigee-access": "1.0.x"
+    "apigee-access": "1.0.x",
+    "debug": "1.0.x"
   },
   "scripts": {
     "install": "bin/link",
     "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js",
-    "test-apigee": "mocha -u exports -R spec cache/apigee/test management/apigee/test oauth/apigee quota/apigee/test",
+    "test-apigee": "mocha -u exports -R spec cache/apigee/test/apigeetest.js management/apigee/test oauth/apigee quota/apigee/test",
     "cover": "ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js"
   }
 }

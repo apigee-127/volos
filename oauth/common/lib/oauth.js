@@ -23,21 +23,11 @@
  ****************************************************************************/
 "use strict";
 
+var debug = require('debug')('oauth');
 var _ = require('underscore');
 var querystring = require('querystring');
 var Url = require('url');
 var TOKEN_TYPE = 'bearer';
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('OAuth: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
 
 // Map grant type names to functions so we can avoid a big if / then / else
 var GrantTypeFunctions = {
@@ -111,7 +101,7 @@ function applyModuleDefaults(options) {
  * to the request. This request handles both the authorization_code and implicit grant types.
  */
 OAuth.prototype.authorize = function(queryString, request, cb) {
-  if (debugEnabled) {
+  if (debug.enabled) {
     debug('authorize: ' + JSON.stringify(queryString));
   }
   var q;
@@ -221,7 +211,7 @@ OAuth.prototype.generateToken = function(body, options, cb) {
 
   if (!createTokenFunction) { return cb(makeError('unsupported_grant_type', 'Unsupported grant type')); }
 
-  if (debugEnabled) { debug("grant_type: " + parsedBody.grant_type); }
+  if (debug.enabled) { debug("grant_type: " + parsedBody.grant_type); }
 
   var self = this;
   this.beforeCreateToken(parsedBody, options, function(err) {

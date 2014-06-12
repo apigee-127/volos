@@ -70,6 +70,7 @@
 var KEY_PREFIX = 'volos:management';
 var CRYPTO_BYTES = 256 / 8;
 
+var debug = require('debug')('apigee');
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 var redis = require("redis");
@@ -485,15 +486,3 @@ function _key() {
   argsArray.unshift(KEY_PREFIX);
   return argsArray.join(':');
 }
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
-

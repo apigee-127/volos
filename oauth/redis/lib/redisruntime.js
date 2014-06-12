@@ -66,17 +66,7 @@ var OAuthCommon = require('volos-oauth-common');
 var Management = require('volos-management-redis');
 var Url = require('url');
 var _ = require('underscore');
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /redis/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Redis: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var debug = require('debug')('redis');
 
 // clone & extend hash
 function extend(a, b) {
@@ -421,7 +411,7 @@ function hashToken(self, token) {
 
 function storeToken(self, app, token, type, clientId, ttl, scope, attributes, cb) {
   var client = self.client;
-  if (debugEnabled) { debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : '')); }
+  if (debug.enabled) { debug('storeToken: ' + token + ((type === REFRESH_TYPE) ? ' (refresh)' : '')); }
   var response = {
     issued_at: new Date().getTime(),
     access_token: token,

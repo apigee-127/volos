@@ -10,6 +10,7 @@
     "apigee"
   ],
   "dependencies": {
+    "debug": "1.0.x",
     "volos-quota-common": "0.9.x"
   },
   "devDependencies": {},

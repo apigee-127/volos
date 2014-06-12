@@ -12,6 +12,7 @@
     "node.js"
   ],
   "dependencies": {
+    "debug": "1.0.x",
     "underscore": "1.6.x"
   },
   "devDependencies": {},

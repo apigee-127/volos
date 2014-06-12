@@ -23,6 +23,7 @@
  ****************************************************************************/
 'use strict';
 
+var debug = require('debug')('cache');
 var _ = require('underscore');
 var encoder = require('./cache-encoder');
 var eventEmitter = new (require('events').EventEmitter)();
@@ -61,13 +62,13 @@ CacheArgo.prototype.cache = function(id) {
         if (err) { console.log('Cache error: ' + err); }
 
         if (buffer && fromCache) {
-          if (debugEnabled) { debug('cache hit: ' + key); }
+          if (debug.enabled) { debug('cache hit: ' + key); }
           encoder.setFromCache(buffer, resp);
         }
       };
 
       var populate = function(key, cb) {
-        if (debugEnabled) { debug('cache miss: ' + key); }
+        if (debug.enabled) { debug('cache miss: ' + key); }
 
         var end = resp.end;
         resp.end = function(chunk, encoding) {
@@ -84,14 +85,3 @@ CacheArgo.prototype.cache = function(id) {
     });
   };
 };
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /cache/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Cache: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}

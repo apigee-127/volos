@@ -26,17 +26,7 @@
 var _ = require('underscore');
 var querystring = require('querystring');
 var url = require('url');
-
-var debugEnabled;
-var debug;
-if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('OAuth: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var debug = require('debug')('oauth');
 
 function OAuthArgo(oauth, options) {
   if (!(this instanceof OAuthArgo)) {
@@ -63,7 +53,7 @@ OAuthArgo.prototype.package = function(argo) {
         });
       });
       if (self.options.authorizeUri) {
-        if (debugEnabled) { debug('authorize = ' + self.options.authorizeUri); }
+        if (debug.enabled) { debug('authorize = ' + self.options.authorizeUri); }
         argo.route(self.options.authorizeUri, { methods: ['GET'] },
           function(handle) {
             handle('request', function(env, next) {
@@ -73,7 +63,7 @@ OAuthArgo.prototype.package = function(argo) {
         );
       }
       if (self.options.accessTokenUri) {
-        if (debugEnabled) { debug('access token = ' + self.options.accessTokenUri); }
+        if (debug.enabled) { debug('access token = ' + self.options.accessTokenUri); }
         argo.route(self.options.accessTokenUri, { methods: ['POST'] },
           function(handle) {
             handle('request', function(env, next) {
@@ -83,7 +73,7 @@ OAuthArgo.prototype.package = function(argo) {
         );
       }
       if (self.options.refreshTokenUri) {
-        if (debugEnabled) { debug('refresh token = ' + self.options.refreshTokenUri); }
+        if (debug.enabled) { debug('refresh token = ' + self.options.refreshTokenUri); }
         argo.route(self.options.refreshTokenUri, { methods: ['POST'] },
           function(handle) {
             handle('request', function(env, next) {
@@ -93,7 +83,7 @@ OAuthArgo.prototype.package = function(argo) {
         );
       }
       if (self.options.invalidateTokenUri) {
-        if (debugEnabled) { debug('invalidate token = ' + self.options.refreshTokenUri); }
+        if (debug.enabled) { debug('invalidate token = ' + self.options.refreshTokenUri); }
         argo.route(self.options.invalidateTokenUri, { methods: ['POST'] },
           function(handle) {
             handle('request', function(env, next) {
@@ -113,7 +103,7 @@ OAuthArgo.prototype.authorize = function(env, next) {
   var auth = function(params, env, next) {
     self.oauth.authorize(params, env.request, function(err, result) {
       if (err) {
-        if (debugEnabled) {
+        if (debug.enabled) {
           debug('Authorization error: ' + err);
         }
         makeError(err, env);
@@ -151,13 +141,13 @@ OAuthArgo.prototype.accessToken = function(env, next) {
     if (body instanceof Buffer) {
       body = body.toString('ascii');
     }
-    if (debugEnabled) {
+    if (debug.enabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
     self.oauth.generateToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
-          if (debugEnabled) {
+          if (debug.enabled) {
             debug('Access token error: ' + err);
           }
           makeError(err, env);
@@ -183,7 +173,7 @@ OAuthArgo.prototype.authenticate = function(scopes, env, next) {
       scopes,
       function(err, result) {
         if (err) {
-          if (debugEnabled) {
+          if (debug.enabled) {
             debug('Authentication error: ' + err);
           }
           makeError(err, env);
@@ -215,13 +205,13 @@ OAuthArgo.prototype.refreshToken = function(env, next) {
     if (body instanceof Buffer) {
       body = body.toString('ascii');
     }
-    if (debugEnabled) {
+    if (debug.enabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
     self.oauth.refreshToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
-          if (debugEnabled) {
+          if (debug.enabled) {
             debug('Access token error: ' + err);
           }
           makeError(err, env);
@@ -250,13 +240,13 @@ OAuthArgo.prototype.invalidateToken = function(env, next) {
     if (body instanceof Buffer) {
       body = body.toString('ascii');
     }
-    if (debugEnabled) {
+    if (debug.enabled) {
       debug('Access token body: ' + JSON.stringify(body) + ' type ' + typeof body);
     }
     self.oauth.invalidateToken(body, { authorizeHeader: env.request.headers.authorization, request: env.request },
       function(err, result) {
         if (err) {
-          if (debugEnabled) {
+          if (debug.enabled) {
             debug('Access token error: ' + err);
           }
           makeError(err, env);

@@ -24,6 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
+var debug = require('debug')('quota');
 
 function QuotaConnect(quota, options) {
   if (!(this instanceof QuotaConnect)) {
@@ -60,7 +61,7 @@ QuotaConnect.prototype.applyPerAddress = function(options) {
     var opts = calcOptions(req, options);
     var remoteAddress = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
     opts.identifier = opts.identifier + '/' + remoteAddress;
-    if (debugEnabled) { debug('Quota check: ' + opts.identifier); }
+    if (debug.enabled) { debug('Quota check: ' + opts.identifier); }
     applyQuota(self, opts, resp, next);
   };
 };
@@ -74,7 +75,7 @@ function calcOptions(req, opts) {
 }
 
 function applyQuota(self, options, resp, next) {
-  if (debugEnabled) { debug('Quota check: ' + options.identifier); }
+  if (debug.enabled) { debug('Quota check: ' + options.identifier); }
   self.quota.apply(
     options,
     function(err, reply) {
@@ -83,7 +84,7 @@ function applyQuota(self, options, resp, next) {
       resp.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
       resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
-        if (debugEnabled) { debug('Quota exceeded: ' + options.identifier); }
+        if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
         resp.statusCode = 403;
         return resp.end(JSON.stringify({ error: 'exceeded quota' }));
       }
@@ -91,15 +92,3 @@ function applyQuota(self, options, resp, next) {
     }
   );
 }
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /quota/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Quota: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
-

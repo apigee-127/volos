@@ -5,17 +5,7 @@ cache: token (as JSON) -> time added (in ms)
 */
 
 var _ = require('underscore');
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('OAuth: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
-
+var debug = require('debug')('oauth');
 
 var create = function(cache, target) {
   return new OAuthCache(cache, target);
@@ -33,7 +23,7 @@ OAuthCache.prototype.cacheToken = function(err, token, cb) {
     var key = token.access_token;
     token.cached_at = new Date().getTime();
     var target = JSON.stringify(token);
-    if (debugEnabled) { debug('cache token: ' + target); }
+    if (debug.enabled) { debug('cache token: ' + target); }
     var opts = null;
     if (token.expires_in) {
       var ttl = token.expires_in * 1000;  // expires_in is seconds, ttl is ms
@@ -52,7 +42,7 @@ OAuthCache.prototype.getCachedToken = function(token, cb) {
   this.cache.get(key, function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) {
-      if (debugEnabled) { debug('cache miss: ' + key); }
+      if (debug.enabled) { debug('cache miss: ' + key); }
       return cb(err, reply);
     }
 
@@ -61,7 +51,7 @@ OAuthCache.prototype.getCachedToken = function(token, cb) {
       token = JSON.parse(reply.toString());
     }
     catch (err) {
-      if (debugEnabled) { debug('err:  ' + err); }
+      if (debug.enabled) { debug('err:  ' + err); }
       cb(err, null);
     }
 
@@ -70,7 +60,7 @@ OAuthCache.prototype.getCachedToken = function(token, cb) {
     token.expires_in = token.expires_in - (elapsed / 1000);
     delete(token.cached_at);
 
-    if (debugEnabled) { debug('cache hit:  ' + key); }
+    if (debug.enabled) { debug('cache hit:  ' + key); }
     cb(err, token);
   });
 };

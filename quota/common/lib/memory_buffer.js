@@ -26,6 +26,7 @@
 var assert = require('assert');
 var Quota = require('./quota');
 var _ = require('underscore');
+var debug = require('debug')('apigee');
 
 /*
  * options.bufferSize (Number) optional, use a memory buffer up to bufferSize to hold quota elements
@@ -115,7 +116,7 @@ function Bucket(time, options, owner) {
 }
 
 Bucket.prototype.reset = function(time) {
-  if (debugEnabled) { debug('bucket reset'); }
+  if (debug.enabled) { debug('bucket reset'); }
   this.count = 0;
   this.resetAt = time;
   this.expires = undefined;
@@ -189,12 +190,12 @@ Bucket.prototype.flushBucket = function(cb) {
       }
       var offset = reply.timestamp ? reply.timestamp - _.now() : 0;
       self.owner.clockOffset = offset;
-      if (debugEnabled) { debug('clockOffset: ' + offset); }
+      if (debug.enabled) { debug('clockOffset: ' + offset); }
     }
 
     var sameTimeBucket = (self.expires === localExpires) &&                        // same local time bucket?
                          (!remoteExpires || remoteExpires === self.remoteExpires); // same remote time bucket?
-    if (debugEnabled && !sameTimeBucket) { debug('new time bucket'); }
+    if (debug.enabled && !sameTimeBucket) { debug('new time bucket'); }
     if (!sameTimeBucket) { return cb ? cb() : null; }
 
     self.remoteExpires = reply.expiryTime;
@@ -207,14 +208,3 @@ Bucket.prototype.flushBucket = function(cb) {
     if (cb) { cb(null); }
   });
 };
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}

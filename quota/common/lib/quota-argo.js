@@ -24,6 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
+var debug = require('debug')('quota');
 
 function QuotaArgo(quota, options) {
   if (!(this instanceof QuotaArgo)) {
@@ -71,12 +72,12 @@ function calcOptions(req, opts) {
 }
 
 function applyQuota(self, options, response, next) {
-  if (debugEnabled) { debug('Quota check: ' + options.identifier); }
+  if (debug.enabled) { debug('Quota check: ' + options.identifier); }
   self.quota.apply(
     options,
     function(err, reply) {
       if (err) {
-        if (debugEnabled) { debug('Quota apply error: ' + err); }
+        if (debug.enabled) { debug('Quota apply error: ' + err); }
         response.statusCode = 500;
         response.body = { error: 'error applying quota' };
         return;
@@ -85,7 +86,7 @@ function applyQuota(self, options, response, next) {
       response.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
       response.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
-        if (debugEnabled) { debug('Quota exceeded: ' + options.identifier); }
+        if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
         response.statusCode = 403;
         response.body = { error: 'exceeded quota' };
       }
@@ -93,15 +94,3 @@ function applyQuota(self, options, response, next) {
     }
   );
 }
-
-var debugEnabled;
-var debug;
-if (process.env.NODE_DEBUG && /quota/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Quota: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
-

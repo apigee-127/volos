@@ -23,6 +23,7 @@
  ****************************************************************************/
 'use strict';
 
+var debug = require('debug')('oauth');
 var _ = require('underscore');
 var Url = require('url');
 
@@ -45,7 +46,7 @@ OAuthConnect.prototype.handleAuthorize = function() {
     }
     self.oauth.authorize(req.query, req, function(err, result) {
       if (err) {
-        if (debugEnabled) {
+        if (debug.enabled) {
           debug('Authorization error: ' + err);
         }
         makeError(err, resp);
@@ -67,7 +68,7 @@ OAuthConnect.prototype.handleAccessToken = function() {
       self.oauth.generateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debugEnabled) {
+            if (debug.enabled) {
               debug('Access token error: ' + err);
             }
             makeError(err, resp);
@@ -90,7 +91,7 @@ OAuthConnect.prototype.authenticate = function(scopes) {
       scopes,
       function(err, result) {
         if (err) {
-          if (debugEnabled) {
+          if (debug.enabled) {
             debug('Authentication error: ' + err);
           }
           makeError(err, resp);
@@ -112,7 +113,7 @@ OAuthConnect.prototype.refreshToken = function() {
       self.oauth.refreshToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debugEnabled) {
+            if (debug.enabled) {
               debug('Refresh token error: ' + err);
             }
             makeError(err, resp);
@@ -135,7 +136,7 @@ OAuthConnect.prototype.invalidateToken = function() {
       self.oauth.invalidateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debugEnabled) {
+            if (debug.enabled) {
               debug('Refresh token error: ' + err);
             }
             makeError(err, resp);
@@ -190,15 +191,4 @@ function sendJson(resp, code, body) {
   if (code) { resp.statusCode = code; }
   resp.setHeader('Content-Type', 'application/json');
   resp.end(JSON.stringify(body));
-}
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /oauth/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('OAuth: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
 }

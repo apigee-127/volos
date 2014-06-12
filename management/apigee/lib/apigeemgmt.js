@@ -68,6 +68,7 @@
 var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
 var DEFAULT_ENVIRONMENTS = ['test', 'prod'];
 
+var debug = require('debug')('apigee');
 var url = require('url');
 var path = require('path');
 var http = require('http');
@@ -367,7 +368,7 @@ function makeRequest(self, verb, uriPath, o, cb) {
   }
 
   var finalUri = self.uri + path.join('/v1/o', self.organization, uriPath);
-  if (debugEnabled) {
+  if (debug.enabled) {
     debug(verb + ' ' + finalUri);
   }
 
@@ -380,7 +381,7 @@ function makeRequest(self, verb, uriPath, o, cb) {
   if (o) {
     r.headers['Content-Type'] = 'application/json';
   }
-  if (debugEnabled) {
+  if (debug.enabled) {
     debug(JSON.stringify(r));
   }
 
@@ -399,7 +400,7 @@ function makeRequest(self, verb, uriPath, o, cb) {
   }
 
   req.on('error', function(err) {
-    if (debugEnabled) {
+    if (debug.enabled) {
       debug('Error: ' + JSON.stringify(err));
     }
     cb(err);
@@ -437,15 +438,4 @@ function requestComplete(req, resp, cb) {
       cb(undefined, JSON.parse(respData));
     }
   });
-}
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
 }

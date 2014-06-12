@@ -35,19 +35,8 @@ var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
 var util = require('util');
-
 var Quota = require('volos-quota-common');
-
-var debug;
-var debugEnabled;
-if (process.env.NODE_DEBUG && /apigee/.test(process.env.NODE_DEBUG)) {
-  debug = function(x) {
-    console.log('Apigee: ' + x);
-  };
-  debugEnabled = true;
-} else {
-  debug = function() { };
-}
+var debug = require('debug')('apigee');
 
 var create = function(options) {
   return new Quota(ApigeeQuotaSpi, options);
@@ -102,7 +91,7 @@ ApigeeQuotaSpi.prototype.apply = function(options, cb) {
 
 function makeRequest(self, verb, uriPath, body, cb) {
   var finalUri = self.uri + uriPath;
-  if (debugEnabled) {
+  if (debug.enabled) {
     debug(util.format('API call to %s: %s', finalUri, body));
   }
   var r = url.parse(finalUri);
@@ -161,7 +150,7 @@ function requestComplete(resp, cb) {
   });
 
   resp.on('end', function() {
-    if (debugEnabled) {
+    if (debug.enabled) {
       debug(util.format('API response %d: %s', resp.statusCode, respData));
     }
     if (resp.statusCode !== 200) {

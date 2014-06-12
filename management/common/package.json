@@ -6,7 +6,9 @@
   "description": "Management library for the Volos system.",
   "homepage": "https://github.com/apigee/volos",
   "keywords": [],
-  "dependencies": {},
+  "dependencies": {
+    "debug": "1.0.x"
+  },
   "devDependencies": {},
   "repository": {
     "type": "git",
