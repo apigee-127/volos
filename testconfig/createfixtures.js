@@ -121,13 +121,13 @@ Creator.prototype.createAppURLRelativeError = function(cb) {
   });
 };
 
-function deleteApp(self, app, cb) {
-  self.management.getDeveloperApp(app.developerId, app.name, function(err, appRet) {
-    if (err && err.statusCode !== 404) { return cb(err); }
-    if (err) { return cb(); }
-    self.management.deleteApp(appRet.id, cb);
-  });
-}
+//function deleteApp(self, app, cb) {
+//  self.management.getDeveloperApp(app.developerId, app.name, function(err, appRet) {
+//    if (err && err.statusCode !== 404) { return cb(err); }
+//    if (err) { return cb(); }
+//    self.management.deleteApp(appRet.id, cb);
+//  });
+//}
 
 function deleteDeveloper(self, dev, cb) {
   self.management.getDeveloper(dev.email, function(err, devRet) {
