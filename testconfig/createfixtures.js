@@ -107,7 +107,7 @@ Creator.prototype.createAppURLWithFragmentError = function(cb) {
     defaultScope: DEFAULT_SCOPE,
     scopes: SCOPES
   };
-  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
+//  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
   var self = this;
   self.management.getDeveloper(DEV_2.email, function(err, dev) {
     APP_FRAG_ERR.developerId = dev.id;
@@ -123,7 +123,7 @@ Creator.prototype.createAppURLRelativeError = function(cb) {
     defaultScope: DEFAULT_SCOPE,
     scopes: SCOPES
   };
-  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
+//  console.log('Creating new app %s', JSON.stringify(APP_FRAG_ERR));
   var self = this;
   self.management.getDeveloper(DEV_2.email, function(err, dev) {
     APP_FRAG_ERR.developerId = dev.id;
@@ -163,7 +163,7 @@ function checkDeveloper(self, dev, app, cb) {
 }
 
 function createDeveloper(self, dev, app, cb) {
-  console.log('Creating new dev %s', JSON.stringify(dev));
+//  console.log('Creating new dev %s', JSON.stringify(dev));
   self.management.createDeveloper(dev, function(err, dev) {
     if (err) {
       cb(err);
@@ -189,6 +189,6 @@ function checkApp(self, dev, app, cb) {
 }
 
 function createApp(self, app, cb) {
-  console.log('Creating new app %s', JSON.stringify(app));
+//  console.log('Creating new app %s', JSON.stringify(app));
   self.management.createApp(app, cb);
 }
