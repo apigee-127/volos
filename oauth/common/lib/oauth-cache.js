@@ -28,9 +28,8 @@ var OAuthCache = function(cache, target) {
 };
 
 OAuthCache.prototype.cacheToken = function(err, token, cb) {
-  cb(err, token); // no return here... we'll do the rest async
   try {
-    if (err || !token.access_token) { return; }
+    if (err || !token.access_token) { return cb(err, token); }
     var key = token.access_token;
     token.cached_at = new Date().getTime();
     var target = JSON.stringify(token);
@@ -41,15 +40,17 @@ OAuthCache.prototype.cacheToken = function(err, token, cb) {
       opts = { ttl: Math.min(ttl, this.cache.options.ttl) };  // max upper limit at this.cache.options.ttl
     }
     this.cache.set(key, target, opts);
+    cb(null, token);
   } catch (err) {
     debug('err: ' + err);
+    cb(err);
   }
 };
 
 OAuthCache.prototype.getCachedToken = function(token, cb) {
   var key = (_.isString(token)) ? token : token.access_token;
   this.cache.get(key, function(err, reply) {
-    if (err || !reply) { return cb(err, reply); }
+    if (err) { return cb(err); }
     if (!reply) {
       if (debugEnabled) { debug('cache miss: ' + key); }
       return cb(err, reply);
@@ -60,7 +61,7 @@ OAuthCache.prototype.getCachedToken = function(token, cb) {
       token = JSON.parse(reply.toString());
     }
     catch (err) {
-      debug('err:  ' + err);
+      if (debugEnabled) { debug('err:  ' + err); }
       cb(err, null);
     }
 
@@ -196,8 +197,6 @@ OAuthCache.prototype.verifyToken = function(token, requiredScopes, cb) {
         }
         var grantedScopes = reply.scope ? reply.scope.split(' ') : [];
         if (_.difference(requiredScopes, grantedScopes).length > 0) {
-          console.log('requiredScopes: ' + requiredScopes);
-          console.log('grantedScopes: ' + grantedScopes);
           return cb(errorWithCode('invalid_scope'));
         }
       }
