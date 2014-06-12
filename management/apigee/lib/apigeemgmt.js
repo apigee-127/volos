@@ -66,6 +66,7 @@
 // future: add support for defaultScope if/when Apigee Edge supports it
 
 var DEFAULT_APIGEE_URI = 'https://api.enterprise.apigee.com';
+var DEFAULT_ENVIRONMENTS = ['test', 'prod'];
 
 var url = require('url');
 var path = require('path');
@@ -164,7 +165,7 @@ ApigeeManagementSpi.prototype.createApp = function(app, cb) {
     if (app.scopes) {
       var api = {
         name: getApiProductName(app),
-        environments: [ 'test', 'prod' ], // todo: which environment(s)?
+        environments: app.environments || DEFAULT_ENVIRONMENTS,
         scopes: app.scopes
       };
       self.createApiProduct(api, function(err, reply) {
