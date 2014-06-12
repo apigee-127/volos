@@ -25,7 +25,7 @@
 
 var _ = require('underscore');
 var querystring = require('querystring');
-
+var Url = require('url');
 var TOKEN_TYPE = 'bearer';
 
 var debug;
@@ -128,27 +128,6 @@ OAuth.prototype.authorize = function(queryString, request, cb) {
       request = undefined;
   }
 
-  if (q.response_type === 'code') {
-    if (!isSupportedGrantType(this, 'authorization_code')) {
-      cb(makeError('unsupported_grant_type', 'Invalid code type'));
-      return;
-    }
-    doAuthorize(this, 'code', q, request, cb);
-
-  } else if (q.response_type === 'token') {
-    if (!isSupportedGrantType(this, 'implicit_grant')) {
-      cb(makeError('unsupported_grant_type', 'Invalid code type'));
-      return;
-    }
-    doAuthorize(this, 'token', q, request, cb);
-
-  } else {
-    cb(makeError('unsupported_grant_type', 'Invalid code type'));
-    return;
-  }
-};
-
-function doAuthorize(self, grantType, q, request, cb) {
   var addProps = {};
   if (q.state) { addProps.state = q.state; }
   if (!q.client_id) {
@@ -168,27 +147,29 @@ function doAuthorize(self, grantType, q, request, cb) {
   if (q.state) {
     rq.state = q.state;
   }
-
-  if (grantType === 'code') {
-    self.spi.generateAuthorizationCode(rq, function(err, result) {
-      if (err) {
-        cb(makeError('invalid_request', err.message));
-      } else {
-        cb(undefined, result);
-      }
-    });
-  } else if (grantType === 'token') {
-    self.spi.createTokenImplicitGrant(rq, function(err, result) {
-      if (err) {
-        cb(makeError('invalid_request', err.message));
-      } else {
-        cb(undefined, result);
-      }
+  if (q.response_type === 'token' && isSupportedGrantType(this, 'implicit_grant')) {
+    this.spi.createTokenImplicitGrant(rq, function (err, result) {
+      if (err) { return cb(makeError('invalid_request', err.message)); }
+      cb(undefined, result);
     });
   } else {
-    cb(makeError('invalid_grant', 'Invalid grant'));
+    var self = this;
+    this.spi.generateAuthorizationCode(rq, function(err, result) {
+      if (err) { return cb(makeError('invalid_request', err.message)); }
+
+      if (q.response_type === 'code' && isSupportedGrantType(self, 'authorization_code')) {
+        cb(undefined, result);
+      } else {
+        // in this case, we do have an error, but we used the SPI to generate a redirection URL for us anyway
+        var url = Url.parse(result, true);
+        url.query.error = 'unsupported_response_type';
+        delete url.query.code;
+        delete url.search;
+        cb(undefined, Url.format(url));
+      }
+    });
   }
-}
+};
 
 /*
  * Generate an access token.
@@ -382,8 +363,13 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
   }
   var parsedBody = querystring.parse(body);
 
+  if (!parsedBody.grant_type || !parsedBody.refresh_token) {
+    cb(makeError('invalid_request', 'must include grant_type and refresh_token'));
+    return;
+  }
+
   if (parsedBody.grant_type !== 'refresh_token') {
-    cb(makeError('invalid_request', 'Missing refresh_token grant type'));
+    cb(makeError('unsupported_grant_type', 'grant_type must be refresh_token'));
     return;
   }
 

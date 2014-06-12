@@ -167,10 +167,30 @@ exports.verifyOauth = function(config, server) {
 
       describe('Error Response (redirect)', function() {
 
-        it('unauthorized_client');
-        it('unsupported_response_type');
-        it('server_error');
-        it('temporarily_unavailable');
+//        it('unauthorized_client'); // todo
+
+        it('unsupported_response_type', function(done) {
+          var q = {
+            client_id: client_id,
+            response_type: 'not-code'
+          };
+          var qs = querystring.stringify(q);
+
+          request(server)
+            .get('/authorize')
+            .query(qs)
+            .redirects(0)
+            .end(function(err, res) {
+              if (err) { return done(err); }
+              res.headers.should.have.property('location');
+              var location = Url.parse(res.headers.location, true);
+              var hash = location.query;
+              verifyRedirectErrorResponse(err, res, q, hash, done, 'unsupported_response_type');
+            });
+        });
+
+//        it('server_error'); // todo
+//        it('temporarily_unavailable'); // todo
 
         it('invalid_scope', function(done) {
           var q = {
@@ -900,11 +920,34 @@ exports.verifyOauth = function(config, server) {
 
       describe('Error Type', function() {
 
-        it('invalid_request');
-        it('unauthorized_client');
-        it('unsupported_response_type');
-        it('server_error');
-        it('temporarily_unavailable');
+        it('invalid_request', function(done) {
+          var baseBody = getBaseBody();
+          delete baseBody.grant_type;
+          var qs = querystring.stringify(baseBody);
+          request(server)
+            .post(endpoint)
+            .send(qs)
+            .end(function(err, res) {
+              verify52ErrorResponse(err, res, done, 'invalid_request');
+            });
+        });
+
+//        it('unauthorized_client'); // todo
+
+        it('unsupported_grant_type', function(done) {
+          var baseBody = getBaseBody();
+          baseBody.grant_type = 'not-a-good-type';
+          var qs = querystring.stringify(baseBody);
+          request(server)
+            .post(endpoint)
+            .send(qs)
+            .end(function(err, res) {
+              verify52ErrorResponse(err, res, done, 'unsupported_grant_type');
+            });
+        });
+
+//        it('server_error'); // todo
+//        it('temporarily_unavailable'); // todo
 
         it('invalid_scope / default scope', function(done) {
           var baseBody = getBaseBody();
@@ -1050,28 +1093,32 @@ exports.verifyOauth = function(config, server) {
       resHash.should.have.property('query');
       resHash.query.should.equal('true');
 
-      resHash.should.have.property('state');
-      resHash.state.should.eql(reqHash.state);
+      if (reqHash.state) {
+        resHash.should.have.property('state');
+        resHash.state.should.eql(reqHash.state);
+      }
 
       verifyErrorHash(resHash, errorType, done);
     }
 
     function validateRedirectBase(requestedUri, returnedUri) {
-      var requestedRedirectUrl = Url.parse(requestedUri);
-      var returnedRedirectUri = Url.parse(returnedUri);
-      returnedRedirectUri.hostname.should.eql(requestedRedirectUrl.hostname);
-      returnedRedirectUri.pathname.should.eql(requestedRedirectUrl.pathname);
+      if (requestedUri) {
+        var requestedRedirectUrl = Url.parse(requestedUri);
+        var returnedRedirectUri = Url.parse(returnedUri);
+        returnedRedirectUri.hostname.should.eql(requestedRedirectUrl.hostname);
+        returnedRedirectUri.pathname.should.eql(requestedRedirectUrl.pathname);
+      }
     }
 
     function verifyErrorHash(resHash, errorType, done) {
       resHash.should.be.ok;
-      resHash.should.not.have.properties('access_token', 'refresh_token');
+      resHash.should.not.have.properties('access_token', 'refresh_token', 'code');
 
       resHash.should.have.property('error');
       if (errorType !== 'access_denied') {
         errorType = errorType || 'invalid_request';
         ['invalid_request', 'invalid_client', 'invalid_grant',
-          'unauthorized_client', 'unsupported_grant_type', 'invalid_scope'].should.include(errorType);
+          'unauthorized_client', 'unsupported_grant_type', 'invalid_scope', 'unsupported_response_type'].should.include(errorType);
         resHash.error.should.eql(errorType);
       }
 
