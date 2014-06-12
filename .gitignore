@@ -7,3 +7,4 @@ testconfig-redis.js
 .*.swp
 npm-debug.log
 mgr-config.js
+coverage
