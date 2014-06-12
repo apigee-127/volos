@@ -43,7 +43,7 @@ exports.testQuota = function(config, Spi) {
   this.config = config;
   this.Spi = Spi;
 
-  describe('Quota SPI', function() {
+  describe('Quota', function() {
     var pm;
     var ph;
 
@@ -54,6 +54,43 @@ exports.testQuota = function(config, Spi) {
         allow: 2
       });
       pm = Spi.create(options);
+    });
+
+    describe('options', function() {
+
+      it('interval must be a number', function(done) {
+        var options = extend(config, {
+          timeUnit: 'minute',
+          interval: 'hey',
+          allow: 2
+        });
+        assert.throws(Spi.create(options));
+        done();
+      });
+
+      it('allow must be a number', function(done) {
+        var options = extend(config, {
+          timeUnit: 'minute',
+          interval: 1,
+          allow: 'hey'
+        });
+        assert.throws(Spi.create(options));
+        done();
+      });
+
+      it('if a string, startTime must be a valid date', function(done) {
+        var options = extend(config, {
+          timeUnit: 'minute',
+          interval: 1,
+          allow: 2,
+          startTime: 'xxx'
+        });
+        should.throws(Spi.create(options));
+
+        options.startTime = new Date();
+        should.ok(Spi.create(options));
+        done();
+      });
     });
 
     it('Basic per-minute', function(done) {

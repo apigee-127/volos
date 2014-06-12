@@ -40,7 +40,7 @@ exports.testManagement = function(config) {
 
     before(function(done) {
       mgmt.deleteDeveloper(TEST_DEVELOPER_EMAIL, function(err) {
-        if (err) { console.log('Test developer %s doesn\'t exist. Good', TEST_DEVELOPER_EMAIL); }
+//        if (err) { console.log('Test developer %s doesn\'t exist. Good', TEST_DEVELOPER_EMAIL); }
         done();
       });
     });
@@ -64,14 +64,14 @@ exports.testManagement = function(config) {
       mgmt.createDeveloper(js, function(err, dev) {
         if (err) { console.error('%j', err); }
         should.not.exist(err);
-        console.log('Created %j', dev);
+//        console.log('Created %j', dev);
         assert.equal(js.firstName, dev.firstName);
         assert.equal(js.lastName, dev.lastName);
         assert.equal(js.email, dev.email);
         assert.equal(js.userName, dev.userName);
         assert(dev.id);
         developer = dev;
-        console.log('Created %s', developer.id);
+//        console.log('Created %s', developer.id);
         done();
       });
     });

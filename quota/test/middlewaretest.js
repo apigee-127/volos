@@ -26,12 +26,11 @@
 var should = require('should');
 var request = require('supertest');
 var memoryQuota = require('../memory');
-var redisQuota = require('../redis');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
 var should = require('should');
 
-describe('Middleware', function() {
+describe('Quota Middleware', function() {
 
   describe('Express', function() {
     var options = {
@@ -39,16 +38,9 @@ describe('Middleware', function() {
       interval: 1,
       allow: 2
     };
-    describe('Memory', function() {
-      var quota = memoryQuota.create(options);
-      var server = expressServer(quota);
-      verifyQuota(server);
-    });
-    describe('Redis', function() {
-      var quota = redisQuota.create(options);
-      var server = expressServer(quota);
-      verifyQuota(server);
-    });
+    var quota = memoryQuota.create(options);
+    var server = expressServer(quota);
+    verifyQuota(server);
   });
 
   describe('Argo', function() {
@@ -57,16 +49,9 @@ describe('Middleware', function() {
       interval: 1,
       allow: 2
     };
-    describe('Memory', function() {
-      var quota = memoryQuota.create(options);
-      var server = argoServer(quota);
-      verifyQuota(server);
-    });
-//    describe('Redis', function() {
-//      var quota = redisQuota.create(options);
-//      var server = argoServer(quota);
-//      verifyQuota(server);
-//    });
+    var quota = memoryQuota.create(options);
+    var server = argoServer(quota);
+    verifyQuota(server);
   });
 
 });

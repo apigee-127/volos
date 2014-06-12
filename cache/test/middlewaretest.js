@@ -25,8 +25,7 @@
 
 var should = require('should');
 var request = require('supertest');
-//var memoryCache = require('../memory');
-var memoryCache = require('../redis');
+var memoryCache = require('../memory');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
 var async = require('async');
