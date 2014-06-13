@@ -29,7 +29,7 @@ var argoTest = require('../../test/rfc6749_argo_test');
 var extensionsTest = require('../../test/extensions_test');
 
 describe('Apigee', function() {
-  this.timeout(20000);
+  this.timeout(30000);
 
   describe('via Argo', function() {
     argoTest.verifyOauth(config);
