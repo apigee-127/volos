@@ -92,7 +92,7 @@ describe('Apigee', function() {
   });
 
   describe('Basic', function() {
-    it('Basic per-minute', function(done) {
+    it('Minute', function(done) {
       pm.apply({
         identifier: id('One'),
         weight: 1
@@ -102,27 +102,19 @@ describe('Apigee', function() {
         result.expiryTime.should.be.approximately(Date.now() + 60000, 10000);
 
         pm.apply({
-          identifier: id('Two'),
+          identifier: id('One'),
           weight: 1
         }, function(err, result) {
           assert(!err);
-          checkResult(result, 2, 1, true);
+          checkResult(result, 2, 2, true);
 
           pm.apply({
-            identifier: id('One'),
+            identifier: id('Two'),
             weight: 1
           }, function(err, result) {
             assert(!err);
-            checkResult(result, 2, 2, true);
-
-            pm.apply({
-              identifier: id('One'),
-              weight: 1
-            }, function(err, result) {
-              assert(!err);
-              checkResult(result, 2, 3, false);
-              done();
-            });
+            checkResult(result, 2, 1, true);
+            done();
           });
         });
       });
