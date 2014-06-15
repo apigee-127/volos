@@ -6,6 +6,7 @@ cache: token (as JSON) -> time added (in ms)
 
 var _ = require('underscore');
 var debug = require('debug')('oauth');
+var Url = require('url');
 
 var create = function(cache, target) {
   return new OAuthCache(cache, target);
@@ -19,7 +20,12 @@ var OAuthCache = function(cache, target) {
 
 OAuthCache.prototype.cacheToken = function(err, token, cb) {
   try {
-    if (err || !token.access_token) { return cb(err, token); }
+    if (err) { return cb(err); }
+    var result = token;
+    if (typeof token === 'string') {
+      token = Url.parse(token);
+    }
+    if (!token.access_token) { return cb(err, result); }
     var key = token.access_token;
     token.cached_at = new Date().getTime();
     var target = JSON.stringify(token);
@@ -30,7 +36,7 @@ OAuthCache.prototype.cacheToken = function(err, token, cb) {
       opts = { ttl: Math.min(ttl, this.cache.options.ttl) };  // max upper limit at this.cache.options.ttl
     }
     this.cache.set(key, target, opts);
-    cb(null, token);
+    cb(null, result);
   } catch (err) {
     debug('err: ' + err);
     cb(err);
@@ -118,7 +124,10 @@ OAuthCache.prototype.createTokenPasswordCredentials = function(options, cb) {
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
 OAuthCache.prototype.createTokenAuthorizationCode = function(options, cb) {
-  this.target.createTokenAuthorizationCode(options, cb);
+  var self = this;
+  this.target.createTokenAuthorizationCode(options, function(err, reply) {
+    self.cacheToken(err, reply, cb);
+  });
 };
 
 /*
@@ -146,7 +155,10 @@ OAuthCache.prototype.generateAuthorizationCode = function(options, cb) {
  * Returns the redirect URI as a string.
  */
 OAuthCache.prototype.createTokenImplicitGrant = function(options, cb) {
-  this.target.createTokenImplicitGrant(options, cb);
+  var self = this;
+  this.target.createTokenImplicitGrant(options, function(err, reply) {
+    self.cacheToken(err, reply, cb);
+  });
 };
 
 /*
@@ -193,6 +205,8 @@ OAuthCache.prototype.verifyToken = function(token, requiredScopes, cb) {
       cb(null, reply);
     } else {
       self.target.verifyToken(token, requiredScopes, function(err, reply) {
+        if (err) { return cb(err); }
+        reply.access_token = token;
         self.cacheToken(err, reply, cb);
       });
     }

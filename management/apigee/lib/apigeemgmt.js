@@ -163,27 +163,25 @@ ApigeeManagementSpi.prototype.createApp = function(app, cb) {
     if (err) { return cb(err); }
 
     // create an ApiProduct
-    if (app.scopes) {
-      var api = {
-        name: getApiProductName(app),
-        environments: app.environments || DEFAULT_ENVIRONMENTS,
-        scopes: app.scopes
-      };
-      self.createApiProduct(api, function(err, reply) {
-        if (err && err.statusCode !== 409) { // 409 == already exists, assuming this is ok
-          return cb(err);
-        }
-        var key = newApp.credentials[0].consumerKey;
+    var api = {
+      name: getApiProductName(app),
+      environments: app.environments || DEFAULT_ENVIRONMENTS,
+      scopes: app.scopes
+    };
+    self.createApiProduct(api, function(err) {
+      if (err && err.statusCode !== 409) { // 409 == already exists, assuming this is ok
+        return cb(err);
+      }
+      var key = newApp.credentials[0].consumerKey;
 
-        self.addDeveloperAppApiProduct(app.developerId, app.name, key, api.name, function(err, reply) {
-          if (err) { return cb(err); }
-          addScopesToApp(self, newApp, function(err, newApp) {
-            var app = parseApp(newApp);
-            cb(undefined, app);
-          });
+      self.addDeveloperAppApiProduct(app.developerId, app.name, key, api.name, function(err) {
+        if (err) { return cb(err); }
+        addScopesToApp(self, newApp, function(err, newApp) {
+          var app = parseApp(newApp);
+          cb(undefined, app);
         });
       });
-    }
+    });
   });
 };
 
@@ -311,9 +309,11 @@ ApigeeManagementSpi.prototype.createApiProduct = function(product, cb) {
     name: product.name,
     displayName: product.displayName ? product.displayName : product.name,
     approvalType: product.approvalType ? product.approvalType : 'auto',
-    environments: product.environments,
-    scopes: Array.isArray(product.scopes) ? product.scopes : product.scopes.split(' ')
+    environments: product.environments
   };
+  if (product.scopes) {
+    ar.scopes = Array.isArray(product.scopes) ? product.scopes : product.scopes.split(' ');
+  }
   makeRequest(this, 'POST', path.join('/apiproducts'), ar, function(err, apiProd) {
     if (err) {
       cb(err);
