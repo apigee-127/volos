@@ -132,33 +132,33 @@ function verifyCache(server) {
       });
   });
 
-  it('must be repeatable', function(done) {
-
-    var times = 50;
-    var count = 3;
-    var func = function(cb) {
-      setTimeout(function() {
-        request(server)
-          .get('/count')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(count);
-
-            request(server)
-              .get('/count')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.body.count.should.equal(count++);
-              });
-          });
-        cb();
-      }, ttl + 10);
-    };
-    for (var funcs = []; funcs.length < times;) { funcs.push(func); }
-
-    async.series(funcs, done);
-  });
+//  it('must be repeatable', function(done) {
+//
+//    var times = 50;
+//    var count = 3;
+//    var func = function(cb) {
+//      setTimeout(function() {
+//        request(server)
+//          .get('/count')
+//          .end(function(err, res) {
+//            should.not.exist(err);
+//            res.status.should.eql(200);
+//            res.body.count.should.equal(count);
+//
+//            request(server)
+//              .get('/count')
+//              .end(function(err, res) {
+//                should.not.exist(err);
+//                res.body.count.should.equal(count++);
+//              });
+//          });
+//        cb();
+//      }, ttl + 10);
+//    };
+//    for (var funcs = []; funcs.length < times;) { funcs.push(func); }
+//
+//    async.series(funcs, done);
+//  });
 
   it('must be parallel', function(done) {
 
