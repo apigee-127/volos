@@ -295,7 +295,8 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
       appId: token_details.application_id,
       developerId: token_details.developer_id,
       attributes: token_details.attributes,
-      expires_in: expires_in
+      expires_in: expires_in,
+      scope: token_details.scope
     };
     return cb(null, result);
   });
