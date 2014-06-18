@@ -256,7 +256,18 @@ function addScopesToApp(self, app, cb) {
 }
 
 function getApiProductName(app) {
-  return app.name + ' product';
+  // choose the first product that has "approved" status for this app
+  var rc = null;
+  if (app.credentials && app.credentials[0] &&
+      app.credentials[0].apiProducts) {
+    app.credentials[0].apiProducts.forEach(function(item){
+      if (item.status === 'approved' && rc === null) {
+        rc = item.apiproduct;
+      }
+    });
+  }
+  if (rc) {return rc;}
+  return app.name + ' product'; // default (a heuristic)
 }
 
 function makeApp(data) {
