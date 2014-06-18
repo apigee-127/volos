@@ -76,6 +76,7 @@ var uuid = require('node-uuid');
 var redis = require("redis");
 var _ = require('underscore');
 var Common = require('volos-management-common');
+var async = require('async');
 var url = require('url');
 
 var create = function(config) {
@@ -191,6 +192,10 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     };
   }
 
+  updateApp(this, app, true, cb);
+};
+
+function updateApp(self, app, isNew, cb) {
   var validScopes = app.scopes;
   if (validScopes && !Array.isArray(validScopes)) {
     validScopes = validScopes.split(' ');
@@ -210,25 +215,35 @@ RedisManagementSpi.prototype.createApp = function(app, cb) {
     defaultScope: app.defaultScope,
     scopes: app.scopes
   };
- 
-  var self = this;
+
   self.client.get(_key(app.developerId), function(err, reply) {
     if (err) { return cb(err); }
     if (!reply) { return cb(new Error('developer ' + app.developerId + ' not found.')); }
     var developer = JSON.parse(reply);
-    saveApplication(self, application, developer, function(err) {
-      if (err) { return cb(err); }
-      return cb(undefined, application);
-    });
+    async.waterfall([
+      function(cb) {
+        if (!isNew) { return cb(); }
+        self.client.get(_key(developer.email, app.name), function(err, reply) {
+          if (!err && reply) { err = cb(new Error('App with name ' + app.name + ' already exists')); }
+          cb(err);
+        });
+      },
+      function(cb) {
+        saveApplication(self, application, developer, function(err) {
+          if (err) { return cb(err); }
+          cb(undefined, application);
+        });
+      }
+    ], cb);
   });
-};
- 
+}
+
 RedisManagementSpi.prototype.updateApp = function(app, cb) {
   var self = this;
   getAppIdForClientId(self.client, app.credentials[0].key, function(err, reply){
     if (err) { return cb(err); }
     if (reply === app.id) {
-      self.createApp(app, cb);
+      updateApp(self, app, false, cb);
     } else {
       cb(new Error("invalid app"));
     }
