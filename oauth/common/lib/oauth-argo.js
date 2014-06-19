@@ -114,7 +114,7 @@ OAuthArgo.prototype.authorize = function(env, next) {
       env._oauthAuthenticated = true;
       next(env);
     });
-  }
+  };
 
   if (env.request.method === 'GET') {
     var params = url.parse(env.request.url, true).query;

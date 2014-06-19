@@ -27,10 +27,6 @@
  * Create a developer and app so that we can have them for the rest of the tests.
  */
 
-//        endpoint URI MUST be an absolute URI
-//        endpoint URI MAY include query component which MUST be retained
-//        endpoint MUST NOT include a fragment
-
 var DEFAULT_SCOPE = 'scope1';
 var SCOPES = 'scope1 scope2 scope3';
 var CALLBACK_URL = 'http://example.org?query=true';
