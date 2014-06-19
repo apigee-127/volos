@@ -54,12 +54,17 @@ CacheArgo.prototype.cache = function(id) {
       if (req.method !== 'GET') { return next(env); }
 
       var resp = env.response;
-      if (_.isFunction(id)) { id = id(req); }
-      var key = id ? id : req.url;
+      var key;
+      if (_.isFunction(id)) {
+        key = id(req);
+      } else {
+        key = id ? id : req.url;
+      }
       req._key = key;
 
       var getSetCallback = function(err, buffer, fromCache) {
-        if (err) { console.log('Cache error: ' + err); }
+        if (err) {
+          console.log('Cache error: ' + err); }
 
         if (buffer && fromCache) {
           if (debug.enabled) { debug('cache hit: ' + key); }
@@ -74,7 +79,7 @@ CacheArgo.prototype.cache = function(id) {
         resp.end = function(chunk, encoding) {
           resp.end = end;
           resp.end(chunk, encoding);
-          encoder.cache(resp._headers, chunk, cb);
+          encoder.cache(resp.statusCode, resp._headers, chunk, cb);
         };
 
         next(env);

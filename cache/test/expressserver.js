@@ -49,6 +49,16 @@ module.exports = function(cache) {
       resp.json({ count: counter++ });
     });
 
+  app.get('/emit500',
+    function(req, resp) {
+      resp.json(500, { count: counter++ });
+    });
+
+  app.get('/emit201',
+    function(req, resp) {
+      resp.json(201, { count: counter++ });
+    });
+
   return app;
 };
 

@@ -59,6 +59,24 @@ module.exports = function(cache) {
         });
     })
 
+    .get('/emit500',
+      function(handle) {
+        handle('request', function(env, next) {
+          env.response.statusCode = 500;
+          env.response.body = { count: counter++ };
+          next(env);
+        });
+    })
+
+    .get('/emit201',
+      function(handle) {
+        handle('request', function(env, next) {
+          env.response.statusCode = 201;
+          env.response.body = { count: counter++ };
+          next(env);
+        });
+    })
+
     .listen(port);
 
 // supertest expects an address function that returns the port

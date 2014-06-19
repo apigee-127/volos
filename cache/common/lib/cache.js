@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var DEFAULT_TTL = 300;
 var EM = require('events').EventEmitter;
@@ -75,7 +75,7 @@ Cache.prototype.getSet = function(key, populate, options, callback) {
     }
 
     populate(key, function(err, reply) {
-      if (err) { return eventEmitter.emit(event, err, reply); }
+      if (err || !reply) { return eventEmitter.emit(event, err, reply); }
 
       self.set(key, reply, options, function(err) {
         if (reply && options.encoding) {

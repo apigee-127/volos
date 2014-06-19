@@ -23,6 +23,7 @@
  ****************************************************************************/
 'use strict';
 
+var assert = require('assert');
 var should = require('should');
 var request = require('supertest');
 var memoryCache = require('../memory');
@@ -129,6 +130,46 @@ function verifyCache(server) {
         res.body.count.should.equal(2);
 
         done();
+      });
+  });
+
+  it('must cache statusCode', function(done) {
+    request(server)
+      .get('/emit201')
+      .end(function(err, res) {
+        should.not.exist(err);
+        res.status.should.eql(201);
+        res.body.count.should.equal(3);
+
+        request(server)
+          .get('/emit201')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(201);
+            res.body.count.should.equal(3);
+
+            done();
+          });
+      });
+  });
+
+  it('must not cache 500', function(done) {
+    request(server)
+      .get('/emit500')
+      .end(function(err, res) {
+        should.not.exist(err);
+        res.status.should.eql(500);
+        res.body.count.should.equal(4);
+
+        request(server)
+          .get('/emit500')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(500);
+            res.body.count.should.equal(5);
+
+            done();
+          });
       });
   });
 

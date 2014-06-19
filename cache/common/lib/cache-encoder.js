@@ -26,17 +26,18 @@
 var _ = require('underscore');
 
 // buffer schema:
+// statusCode
 // # headers
 //  # header key size
 //  header key
 //  # header value size
 //  header value
 // content
-exports.cache = function(headers, content, cb) {
+exports.cache = function(statusCode, headers, content, cb) {
   var buffer;
-  if (headers || content) {
+  if (statusCode !== 500 && (headers || content)) {
 
-    var size = 1;
+    var size = 2;
     var pair;
     var pairs = _.pairs(headers);
     for (var i = 0; i < pairs.length; i++) {
@@ -50,6 +51,7 @@ exports.cache = function(headers, content, cb) {
 
     buffer = new Buffer(size);
     var pos = 0;
+    buffer.writeUInt8(statusCode, pos++);
     buffer.writeUInt8(pairs.length.valueOf(), pos++); // # pairs
     for (i = 0; i < pairs.length; i++) {
       pair = pairs[i];
@@ -73,6 +75,8 @@ exports.cache = function(headers, content, cb) {
 
 exports.setFromCache = function(buffer, resp) {
   var pos = 0;
+  var statusCode = buffer.readUInt8(pos++);
+  resp.statusCode = statusCode;
   var numHeaders = buffer.readUInt8(pos++);
   for (var i = 0; i < numHeaders; i++) {
     var keyLen = buffer.readUInt8(pos++);

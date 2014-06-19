@@ -49,12 +49,18 @@ CacheConnect.prototype.cache = function(id) {
 
     if (req.method !== 'GET') { return next(); }
 
-    if (_.isFunction(id)) { id = id(req); }
-    var key = id ? id : req.url;
+    var key;
+    if (_.isFunction(id)) {
+      key = id(req);
+    } else {
+      key = id ? id : req.url;
+    }
+    req._key = key;
     debug('Cache check');
 
     var getSetCallback = function(err, buffer, fromCache) {
-      if (err) { return console.log('Cache error: ' + err); }
+      if (err) {
+        return console.log('Cache error: ' + err); }
 
       if (buffer && fromCache) {
         if (debug.enabled) { debug('cache hit: ' + key); }
@@ -101,7 +107,7 @@ CacheConnect.prototype.cache = function(id) {
         resp.end(chunk, encoding);
 
         if (!doCache) { headers = content = null; }
-        encoder.cache(headers, content, cb);
+        encoder.cache(resp.statusCode, headers, content, cb);
       };
 
       return next();
