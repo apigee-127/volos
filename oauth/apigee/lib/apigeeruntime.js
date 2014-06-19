@@ -501,7 +501,9 @@ function verifyRequestComplete(resp, cb) {
       cb(err);
     } else {
       if (cb) {
-        var parsed = querystring.parse(respData);
+        var ctype = resp.headers['content-type'],
+            parsed = (ctype.indexOf('application/json') === 0)?
+          JSON.parse(respData) : querystring.parse(respData);
         if (parsed.attributes) { parsed.attributes = JSON.parse(parsed.attributes); }
         cb(undefined, parsed);
       }
