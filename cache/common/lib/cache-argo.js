@@ -63,8 +63,7 @@ CacheArgo.prototype.cache = function(id) {
       req._key = key;
 
       var getSetCallback = function(err, buffer, fromCache) {
-        if (err) {
-          console.log('Cache error: ' + err); }
+        if (err) { console.log('Cache error: ' + err); }
 
         if (buffer && fromCache) {
           if (debug.enabled) { debug('cache hit: ' + key); }

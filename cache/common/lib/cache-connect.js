@@ -59,8 +59,7 @@ CacheConnect.prototype.cache = function(id) {
     debug('Cache check');
 
     var getSetCallback = function(err, buffer, fromCache) {
-      if (err) {
-        return console.log('Cache error: ' + err); }
+      if (err) { return console.log('Cache error: ' + err); }
 
       if (buffer && fromCache) {
         if (debug.enabled) { debug('cache hit: ' + key); }
