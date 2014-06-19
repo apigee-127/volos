@@ -52,10 +52,11 @@ Three implementations are supported:
 
 A simple cache module, supporting "put, "get," and "delete" of string keys and binary values.
 
-Two implementations are supported:
+Three implementations are supported:
 
 * [volos-cache-memory](https://www.npmjs.org/package/volos-cache-memory): Keeps cache in memory
 * [volos-cache-redis](https://www.npmjs.org/package/volos-cache-redis):  Keeps cache in redis
+* [volos-cache-apigee](https://www.npmjs.org/package/volos-cache-apigee):  Uses Apigee cache (when running on Apigee)
 
 ### Support Modules
 
