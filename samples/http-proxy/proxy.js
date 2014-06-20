@@ -31,7 +31,6 @@ var connect = require('connect');
 var httpProxy = require('http-proxy');
 var memoryQuota = require('volos-quota-memory');
 var memoryCache = require('volos-cache-memory');
-var redisOauth = require('volos-oauth-redis');
 
 // create Volos oauth
 //var oauth = redisOauth.create();
@@ -55,8 +54,6 @@ var proxy = httpProxy.createProxyServer({
 
 // Create proxy server
 connect.createServer(
-
-//  oauth.expressMiddleware().authenticate(),
 
   // apply Volos cache per url requested
   // improves performance and ability to respond before hitting quota
