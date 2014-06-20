@@ -173,6 +173,31 @@ function verifyCache(server) {
       });
   });
 
+  it('must invalidate cache on change', function(done) {
+    request(server)
+      .get('/count')
+      .end(function(err, res) {
+        should.not.exist(err);
+        res.body.count.should.equal(2);
+
+        request(server)
+          .post('/count')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.body.count.should.equal(6);
+
+            request(server)
+              .get('/count')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.body.count.should.equal(7);
+
+                done();
+              });
+          });
+      });
+  });
+
 //  it('must be repeatable', function(done) {
 //
 //    var times = 50;

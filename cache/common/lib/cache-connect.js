@@ -47,8 +47,6 @@ CacheConnect.prototype.cache = function(id) {
   };
   return function(req, resp, next) {
 
-    if (req.method !== 'GET') { return next(); }
-
     var key;
     if (_.isFunction(id)) {
       key = id(req);
@@ -56,7 +54,11 @@ CacheConnect.prototype.cache = function(id) {
       key = id ? id : req.url;
     }
     req._key = key;
-    debug('Cache check');
+
+    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+      self.internalCache.delete(key);
+    }
+    if (req.method !== 'GET') { return next(); }
 
     var getSetCallback = function(err, buffer, fromCache) {
       if (err) { return console.log('Cache error: ' + err); }

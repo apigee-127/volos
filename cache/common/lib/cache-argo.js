@@ -51,8 +51,6 @@ CacheArgo.prototype.cache = function(id) {
 
     handle('request', function(env, next) {
       var req = env.request;
-      if (req.method !== 'GET') { return next(env); }
-
       var resp = env.response;
       var key;
       if (_.isFunction(id)) {
@@ -61,6 +59,11 @@ CacheArgo.prototype.cache = function(id) {
         key = id ? id : req.url;
       }
       req._key = key;
+
+      if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+        self.internalCache.delete(key);
+      }
+      if (req.method !== 'GET') { return next(env); }
 
       var getSetCallback = function(err, buffer, fromCache) {
         if (err) { console.log('Cache error: ' + err); }

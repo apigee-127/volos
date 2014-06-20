@@ -77,6 +77,14 @@ module.exports = function(cache) {
         });
     })
 
+    .post('/count',
+      function(handle) {
+        handle('request', function(env, next) {
+          env.response.body = { count: counter++ };
+          next(env);
+        });
+    })
+
     .listen(port);
 
 // supertest expects an address function that returns the port

@@ -59,6 +59,11 @@ module.exports = function(cache) {
       resp.json(201, { count: counter++ });
     });
 
+  app.post('/count',
+    function(req, resp) {
+      resp.json({ count: counter++ });
+    });
+
   return app;
 };
 
