@@ -32,7 +32,7 @@ var argoServer = require('./argoserver');
 var async = require('async');
 var _ = require('underscore');
 
-var ttl = 20;
+var ttl = 50;
 
 describe('Middleware', function() {
 
