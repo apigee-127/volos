@@ -25,7 +25,7 @@
 
 var _ = require('underscore');
 
-// buffer schema:
+// buffer format:
 // statusCode
 // # headers
 //  # header key size
@@ -83,7 +83,9 @@ exports.setFromCache = function(buffer, resp) {
     var key = buffer.toString('utf8', pos, pos + keyLen); pos += keyLen;
     var valLen = buffer.readUInt8(pos++);
     var value = buffer.toString('utf8', pos, pos + valLen); pos += valLen;
-    resp.setHeader(key, value);
+    if (!resp.getHeader(key)) {
+      resp.setHeader(key, value);
+    }
   }
   var content = buffer.toString('utf8', pos);
   resp.end(content);
