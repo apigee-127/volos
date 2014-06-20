@@ -44,6 +44,13 @@ exports.verifyOauth = function(config) {
     var client_id;
     var client_secret;
 
+    var options = {
+      tokenLifetime: 10000,
+      attributes: {
+        foo: 'bar'
+      }
+    };
+
     before(function(done) {
       creator.createFixtures(function(err, reply) {
         if (err) { return done(err); }
@@ -62,13 +69,6 @@ exports.verifyOauth = function(config) {
 
     describe('token attributes', function() {
 
-      var options = {
-        tokenLifetime: 10000,
-        attributes: {
-          foo: 'bar'
-        }
-      };
-
       it('password credentials', function(done) {
         var body = {
           grant_type: 'password',
@@ -78,12 +78,13 @@ exports.verifyOauth = function(config) {
           client_secret: client_secret
         };
         oauth.generateToken(body, options, function(err, token) {
-          if (err) { done(err); }
+          should.not.exist(err);
           should.exist(token.attributes.foo);
           token.attributes.foo.should.equal(options.attributes.foo);
 
           var header = 'Bearer ' + token.access_token;
           oauth.verifyToken(header, function(err, reply) {
+            should.not.exist(err);
             should.exist(reply.attributes);
             reply.attributes.foo.should.equal(options.attributes.foo);
             done(err);
@@ -98,12 +99,13 @@ exports.verifyOauth = function(config) {
           client_secret: client_secret
         };
         oauth.generateToken(body, options, function(err, token) {
-          if (err) { done(err); }
+          should.not.exist(err);
           should.exist(token.attributes.foo);
           token.attributes.foo.should.equal(options.attributes.foo);
 
           var header = 'Bearer ' + token.access_token;
           oauth.verifyToken(header, function(err, reply) {
+            should.not.exist(err);
             should.exist(reply.attributes);
             reply.attributes.foo.should.equal(options.attributes.foo);
             done(err);
@@ -133,12 +135,13 @@ exports.verifyOauth = function(config) {
           };
 
           oauth.generateToken(body, options, function(err, token) {
-            if (err) { done(err); }
+            should.not.exist(err);
             should.exist(token.attributes.foo);
             token.attributes.foo.should.equal(options.attributes.foo);
 
             var header = 'Bearer ' + token.access_token;
             oauth.verifyToken(header, function(err, reply) {
+              should.not.exist(err);
               should.exist(reply.attributes);
               reply.attributes.foo.should.equal(options.attributes.foo);
               done(err);
@@ -174,6 +177,40 @@ exports.verifyOauth = function(config) {
           };
 
           oauth.generateToken(body, options, done);
+        });
+      });
+
+      it('verify varying scopes', function(done) {
+        var body = {
+          grant_type: 'client_credentials',
+          client_id: client_id,
+          client_secret: client_secret,
+          scope: 'scope1 scope2 scope3'
+        };
+        oauth.generateToken(body, options, function(err, token) {
+          should.not.exist(err);
+          should.exist(token);
+
+          var header = 'Bearer ' + token.access_token;
+          oauth.verifyToken(header, function(err) {
+            should.not.exist(err);
+            should.exist(token);
+
+            // now, add a cache
+            var Cache = require('volos-cache-memory');
+            var cache = Cache.create('OAuth cache');
+            config.oauth.useCache(cache);
+
+            oauth.verifyToken(header, 'scope1', function(err) {
+              should.not.exist(err);
+
+              oauth.verifyToken(header, 'scope2', function(err) {
+                should.not.exist(err);
+
+                done(err);
+              });
+            });
+          });
         });
       });
 
