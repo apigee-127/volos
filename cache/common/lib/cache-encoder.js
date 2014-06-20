@@ -35,7 +35,7 @@ var _ = require('underscore');
 // content
 exports.cache = function(statusCode, headers, content, cb) {
   var buffer;
-  if (statusCode !== 500 && (headers || content)) {
+  if (statusCode && statusCode !== 500 && (headers || content)) {
 
     var size = 2;
     var pair;
