@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var config = require('../../../testconfig/testconfig-apigee');
 var expressTest = require('../../test/rfc6749_express_test');
@@ -41,9 +41,12 @@ describe('Apigee', function() {
     extensionsTest.verifyOauth(config);
 
     describe('with cache', function() {
-      var Cache = require('volos-cache-memory');
-      var cache = Cache.create('OAuth cache');
-      config.oauth.useCache(cache);
+      before(function(done) {
+        var Cache = require('volos-cache-memory');
+        var cache = Cache.create('OAuth cache');
+        config.oauth.useCache(cache);
+        done();
+      });
       expressTest.verifyOauth(config);
       extensionsTest.verifyOauth(config);
     });
