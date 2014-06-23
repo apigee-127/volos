@@ -193,7 +193,7 @@ exports.verifyOauth = function(config) {
         token.scope.should.not.include('scope2');
 
         var header = 'Bearer ' + token.access_token;
-        oauth.verifyToken(header, 'scope2', function(err) {
+        oauth.verifyToken(header, 'scope2', function(err, reply) {
           should.exist(err);
           done();
         });
@@ -224,15 +224,19 @@ exports.verifyOauth = function(config) {
             config.oauth.useCache(cache);
           }
 
-          oauth.verifyToken(header, 'scope1', function(err) {
-            should.not.exist(err);
+          oauth.verifyToken(header, 'badscope', function(err) {
+            should.exist(err);
 
-            oauth.verifyToken(header, 'scope2', function(err) {
+            oauth.verifyToken(header, 'scope1', function(err) {
               should.not.exist(err);
 
-              if (addedCache) { config.oauth.removeCache(); }
+              oauth.verifyToken(header, 'scope2', function(err) {
+                should.not.exist(err);
 
-              done();
+                if (addedCache) { config.oauth.removeCache(); }
+
+                done();
+              });
             });
           });
         });

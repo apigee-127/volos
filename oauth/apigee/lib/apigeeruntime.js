@@ -38,6 +38,7 @@ var querystring = require('querystring');
 var OAuthCommon = require('volos-oauth-common');
 var apigee = require('apigee-access');
 var debug = require('debug')('apigee');
+var _ = require('underscore');
 
 var create = function(options) {
   var spi = new ApigeeRuntimeSpi(options);
@@ -309,7 +310,7 @@ ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   }
 
   var req = requestor.request(r, function(resp) {
-    verifyRequestComplete(resp, cb);
+    verifyRequestComplete(resp, requiredScopes, cb);
   });
 
   req.on('error', function(err) {
@@ -483,7 +484,7 @@ function getRequestComplete(resp, options, cb) {
   });
 }
 
-function verifyRequestComplete(resp, cb) {
+function verifyRequestComplete(resp, requiredScopes, cb) {
   resp.on('error', function(err) {
     cb(err);
   });
@@ -494,14 +495,25 @@ function verifyRequestComplete(resp, cb) {
   });
 
   resp.on('end', function() {
+    var err;
     if (resp.statusCode !== 200) {
-      var err = new Error('Error on HTTP request');
+      err = new Error('Error on HTTP request');
       err.statusCode = resp.statusCode;
       err.message = respData;
       cb(err);
     } else {
       if (cb) {
+        // todo: this can be removed when Apigee Edge can process scopes passed up to it
         var parsed = querystring.parse(respData);
+        if (!Array.isArray(requiredScopes)) {
+          requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
+        }
+        var grantedScopes = parsed.scope ? parsed.scope.split(' ') : [];
+        if (_.difference(requiredScopes, grantedScopes).length > 0) {
+          err = new Error('invalid_scope');
+          err.errorCode = 'invalid_scope';
+          return cb(err);
+        }
         if (parsed.attributes) { parsed.attributes = JSON.parse(parsed.attributes); }
         cb(undefined, parsed);
       }
