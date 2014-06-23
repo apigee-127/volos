@@ -63,6 +63,12 @@ module.exports = OAuth;
 OAuth.prototype.useCache = function(cache) {
   var OAuthCache = require('./oauth-cache');
   this.spi = OAuthCache.create(cache, this.spi);
+  this.isCached = true;
+};
+
+OAuth.prototype.removeCache = function() {
+  this.spi = this.spi.target;
+  this.isCached = false;
 };
 
 OAuth.prototype.argoMiddleware = function(options) {

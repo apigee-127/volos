@@ -87,7 +87,7 @@ exports.verifyOauth = function(config) {
             should.not.exist(err);
             should.exist(reply.attributes);
             reply.attributes.foo.should.equal(options.attributes.foo);
-            done(err);
+            done();
           });
         });
       });
@@ -108,7 +108,7 @@ exports.verifyOauth = function(config) {
             should.not.exist(err);
             should.exist(reply.attributes);
             reply.attributes.foo.should.equal(options.attributes.foo);
-            done(err);
+            done();
           });
         });
       });
@@ -144,76 +144,100 @@ exports.verifyOauth = function(config) {
               should.not.exist(err);
               should.exist(reply.attributes);
               reply.attributes.foo.should.equal(options.attributes.foo);
-              done(err);
+              done();
             });
           });
         });
       });
+    });
 
-      describe('beforeCreateToken()', function() {
+    describe('beforeCreateToken()', function() {
 
-        var oldBeforeCreateToken;
-        before(function(done) {
-          oldBeforeCreateToken = oauth.beforeCreateToken;
-          done();
-        });
-
-        afterEach(function(done) {
-          oauth.beforeCreateToken = oldBeforeCreateToken;
-          done();
-        });
-
-        it('hook is called', function(done) {
-          var body = {
-            grant_type: 'client_credentials',
-            client_id: client_id,
-            client_secret: client_secret
-          };
-
-          oauth.beforeCreateToken = function(parsedBody, options, next) {
-            should.exist(parsedBody);
-            should.exist(options);
-            next();
-          };
-
-          oauth.generateToken(body, options, done);
-        });
+      var oldBeforeCreateToken;
+      before(function(done) {
+        oldBeforeCreateToken = oauth.beforeCreateToken;
+        done();
       });
 
-      it('verify varying scopes', function(done) {
+      afterEach(function(done) {
+        oauth.beforeCreateToken = oldBeforeCreateToken;
+        done();
+      });
+
+      it('hook is called', function(done) {
         var body = {
           grant_type: 'client_credentials',
           client_id: client_id,
-          client_secret: client_secret,
-          scope: 'scope1 scope2 scope3'
+          client_secret: client_secret
         };
-        oauth.generateToken(body, options, function(err, token) {
+
+        oauth.beforeCreateToken = function(parsedBody, options, next) {
+          should.exist(parsedBody);
+          should.exist(options);
+          next();
+        };
+
+        oauth.generateToken(body, options, done);
+      });
+    });
+
+    it('verify should fail for bad scope', function(done) {
+      var body = {
+        grant_type: 'client_credentials',
+        client_id: client_id,
+        client_secret: client_secret,
+        scope: 'scope1'
+      };
+      oauth.generateToken(body, options, function(err, token) {
+        should.not.exist(err);
+        token.scope.should.not.include('scope2');
+
+        var header = 'Bearer ' + token.access_token;
+        oauth.verifyToken(header, 'scope2', function(err) {
+          should.exist(err);
+          done();
+        });
+      });
+    });
+
+    it('verify varying scopes', function(done) {
+      var body = {
+        grant_type: 'client_credentials',
+        client_id: client_id,
+        client_secret: client_secret,
+        scope: 'scope1 scope2 scope3'
+      };
+      oauth.generateToken(body, options, function(err, token) {
+        should.not.exist(err);
+        should.exist(token);
+
+        var header = 'Bearer ' + token.access_token;
+        oauth.verifyToken(header, function(err) {
           should.not.exist(err);
           should.exist(token);
 
-          var header = 'Bearer ' + token.access_token;
-          oauth.verifyToken(header, function(err) {
-            should.not.exist(err);
-            should.exist(token);
-
-            // now, add a cache
+          // now, add a cache
+          if (!config.oauth.isCached) {
+            var addedCache = true;
             var Cache = require('volos-cache-memory');
             var cache = Cache.create('OAuth cache');
             config.oauth.useCache(cache);
+          }
 
-            oauth.verifyToken(header, 'scope1', function(err) {
+          oauth.verifyToken(header, 'scope1', function(err) {
+            should.not.exist(err);
+
+            oauth.verifyToken(header, 'scope2', function(err) {
               should.not.exist(err);
 
-              oauth.verifyToken(header, 'scope2', function(err) {
-                should.not.exist(err);
+              if (addedCache) { config.oauth.removeCache(); }
 
-                done(err);
-              });
+              done();
             });
           });
         });
       });
-
     });
+
   });
 };
