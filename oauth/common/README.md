@@ -233,15 +233,3 @@ may choose to use them to check if the client is authorized to invoke a specific
                         function(err, result) {
                           // Check both as described before
                         });
-
-### OAuth.verifyApiKey(apiKey, verb, path, callback)
-
-Verify an API key, which could be passed as a query parameter, header, or some other value -- since there
-is no standard for this, the client must specify the key.
-
-    oauth.verifyApiKey('mF_9.B5f-4.1JqM', 'GET', '/foo', function(err, result) {
-                        function(err, result) {
-                          // Check both as described before
-                        });
-
-
