@@ -27,6 +27,7 @@ var should = require('should');
 var _ = require('underscore');
 var querystring = require('querystring');
 var Url = require('url');
+var MemCache = require('volos-cache-memory');
 
 var REDIRECT_URL = 'http://example.org';
 
@@ -181,6 +182,16 @@ exports.verifyOauth = function(config) {
       });
     });
 
+
+    it('attempting to use a cache with encoding should fail', function(done) {
+      var cache = MemCache.create('OAuth cache', { encoding: 'utf8' });
+      (function() {
+        config.oauth.useCache(cache);
+      }
+      ).should.throw();
+      done();
+    });
+
     it('verify should fail for bad scope', function(done) {
       var body = {
         grant_type: 'client_credentials',
@@ -219,8 +230,7 @@ exports.verifyOauth = function(config) {
           // now, add a cache
           if (!config.oauth.isCached) {
             var addedCache = true;
-            var Cache = require('volos-cache-memory');
-            var cache = Cache.create('OAuth cache');
+            var cache = MemCache.create('OAuth cache');
             config.oauth.useCache(cache);
           }
 

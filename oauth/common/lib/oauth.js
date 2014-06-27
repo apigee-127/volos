@@ -60,6 +60,7 @@ function OAuth(spi, options) {
 }
 module.exports = OAuth;
 
+// Note: Cache passed to Oauth must not specify an encoding option.
 OAuth.prototype.useCache = function(cache) {
   var OAuthCache = require('./oauth-cache');
   this.spi = OAuthCache.create(cache, this.spi);

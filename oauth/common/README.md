@@ -103,7 +103,8 @@ operation succeeds.
 
 ## Cache
 
-The OAuth module can also accept a Volos Cache to reduce contention and delay in validating tokens.
+The OAuth module can also accept a Volos Cache to reduce contention and delay in validating tokens. 
+Note: Cache passed to Oauth must not specify an encoding option.
 
 ### Example
 

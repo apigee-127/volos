@@ -14,6 +14,9 @@ var create = function(cache, target) {
 module.exports.create = create;
 
 var OAuthCache = function(cache, target) {
+  if (cache.options.encoding) {
+    throw new Error('Cache must not specify an encoding option.');
+  }
   this.cache = cache;
   this.target = target;
 };
