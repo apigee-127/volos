@@ -29,7 +29,7 @@ exports.createToken = createToken;
 function createApp(cb) {
 
   var volos = require('./volos');
-  var management = volos.Management.create();
+  var management = volos.Management.create({ encryptionKey: 'abc123' });
 
   var devRequest = {
     firstName: 'Scott',

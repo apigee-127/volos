@@ -40,6 +40,7 @@ function initOauth(app) {
   var OAuth = volos.OAuth;
 
   var oauthConfig = {
+    encryptionKey: 'abc123',
     validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
     passwordCheck: oauthCheckPassword
   };
