@@ -62,7 +62,7 @@ exports.verifyOauth = function(config, server) {
         .set('Authorization', 'Bearer ' + access_token)
         .end(function(err, res) {
           if (err) { return done ? done(err) : err; }
-          res.status.should.eql(400);
+          res.status.should.eql(401);
           if (done) { done(); }
         });
     }, exp);
@@ -94,7 +94,7 @@ exports.verifyOauth = function(config, server) {
         .get('/dogs')
         .end(function(err, res) {
           if (err) { return done ? done(err) : err; }
-          res.status.should.eql(400);
+          res.status.should.eql(401);
           if (done) { done(); }
         });
     });
@@ -885,7 +885,7 @@ exports.verifyOauth = function(config, server) {
               .set('Authorization', 'Bearer ' + accessToken)
               .end(function(err, res) {
                 if (err) { return done ? done(err) : err; }
-                res.status.should.eql(400);
+                res.status.should.eql(401);
                 done();
               });
           });

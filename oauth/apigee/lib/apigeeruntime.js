@@ -496,7 +496,21 @@ function verifyRequestComplete(resp, requiredScopes, cb) {
 
   resp.on('end', function() {
     var err;
-    if (resp.statusCode !== 200) {
+    if (resp.statusCode === 401) {
+      try {
+        var json = JSON.parse(respData);
+        err = new Error('invalid_token');
+        err.errorCode = 'invalid_token';
+        err.statusCode = resp.statusCode;
+        err.message = json.fault.faultstring;
+        cb(err);
+      } catch (e) {
+        err = new Error('Error on HTTP request');
+        err.statusCode = resp.statusCode;
+        err.message = respData;
+        cb(err);
+      }
+    } else if (resp.statusCode !== 200) {
       err = new Error('Error on HTTP request');
       err.statusCode = resp.statusCode;
       err.message = respData;

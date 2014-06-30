@@ -279,7 +279,8 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   debug('verifyToken: ' + token);
   var self = this;
   self.client.get(_key(hashToken(self, token)), function(err, reply) {
-    if (err || !reply) { return cb(invalidRequestError()); }
+    if (err) { return cb(err); }
+    if (!reply) { return cb(errorWithCode('invalid_token')); }
 
     var token_details = JSON.parse(reply);
     if (!Array.isArray(requiredScopes)) {

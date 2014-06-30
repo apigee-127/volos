@@ -448,16 +448,18 @@ OAuth.prototype.verifyToken = function(authorizationHeader, requiredScopes, cb) 
   }
 
   var hdr = /Bearer (.+)/.exec(authorizationHeader);
-  if (!hdr || (hdr.length < 2)) {
-    cb(makeError('invalid_request', 'Invalid Authorization header'));
-    return;
+  if (!hdr) {
+    return cb(makeError('missing_authorization', 'Missing Authorization header'));
+  }
+  if (hdr.length < 2) {
+    return cb(makeError('invalid_request', 'Invalid Authorization header'));
   }
 
   debug('verifyToken : ' + hdr[1]);
   this.spi.verifyToken(hdr[1], requiredScopes,
     function(err, result) {
       if (err) {
-        cb(makeError('invalid_grant', err.message));
+        cb(makeError(err));
       } else {
         cb(undefined, result);
       }
@@ -489,6 +491,10 @@ function makeError(code, message, errProps) {
       break;
     case "access_denied":
       err.statusCode = 403;
+      break;
+    case "invalid_token":
+    case "missing_authorization":
+      err.statusCode = 401;
       break;
     default:
       err.statusCode = 500;
