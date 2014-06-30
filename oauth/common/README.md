@@ -25,43 +25,47 @@ This module supports the following features:
 
 ### Prerequisite: Create a Developer and Organization
 
-    var management = require('volos-management-redis'),
+    var ManagementProvider = require('volos-management-redis');
+    var config = {
+      encryptionKey : "abcdefgh12345",
+    };
+    var management = ManagementProvider.create(config);
     
     function createDev(cb) {
-        var devRequest =  {
-          firstName: 'Scott',
-          lastName: 'Ganyo',
-          email: 'sganyo@apigee.com',
-          userName: 'sganyo'
-        };
-
-        management.createDeveloper(devRequest, function(err, developer) {
-        cb(developer);
-    };
-
-    function createApp(developer, cb) {
-        var appRequest = {
-          developerId = developer.id,
-          name: 'MyApplication',
-          scopes: 'scope1 scope2'
-        };
-        management.createApp(appRequest, cb);        
-    };
+      var devRequest =  {
+        firstName: 'Scott',
+        lastName: 'Ganyo',
+        email: 'sganyo@apigee.com',
+        userName: 'sganyo'
+      };
     
-    createDev(function(developer) {
-        createApp(developer, function() {
-          ...
-        );
-    );
+      management.createDeveloper(devRequest, cb);
+    }
+    
+    function createApp(developer, cb) {
+      var appRequest = {
+        developerId : developer.id,
+        name: 'MyApplication',
+        scopes: 'scope1 scope2'
+      };
+      management.createApp(appRequest, cb);
+    }
+    
+    createDev(function(e, developer) {
+      console.log(JSON.stringify(developer));
+      createApp(developer, function(e, result) {
+        console.log(JSON.stringify(result));
+      });
+    });
 
 ### Initialize your oauth
 
-    var oauthProvider = require('volos-oauth-redis');
+    var OauthProvider = require('volos-oauth-redis');
     var oauthConfig = {
         validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ];
         passwordCheck: function (user, pw, cb) { return true; }
     };
-    var oauth = oauthProvider.create(oauthConfig);
+    var oauth = OauthProvider.create(oauthConfig);
 
 ### Set up Express using Middleware
 
