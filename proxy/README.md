@@ -92,4 +92,4 @@ If you haven't already, run "npm" in the Volos root directory in order to instal
 
 6. Give it a try!
 -----------------
-Check out the [samples](../samples/README.md) directory.
+Check out the [samples](../samples) directory.
