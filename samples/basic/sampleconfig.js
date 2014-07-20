@@ -25,7 +25,7 @@
 
 var config = {
   organization: 'ORGANIZATION',
-  uri: 'https://ORGANIZATION-test.apigee.net/adapterproxy',
+  uri: 'https://ORGANIZATION-test.apigee.net/volos-proxy',
   key: 'CONSUMER KEY',
   secret: 'CONSUMER SECRET',
 

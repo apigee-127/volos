@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<APIProxy revision="1" name="adapterproxy">
+<APIProxy revision="1" name="volos-proxy">
     <ConfigurationVersion minorVersion="0" majorVersion="4"/>
-    <CreatedAt>1380326262468</CreatedAt>
-    <CreatedBy>greg@brail.org</CreatedBy>
-    <Description></Description>
-    <DisplayName>AdapterProxy</DisplayName>
-    <LastModifiedAt>1380326262648</LastModifiedAt>
-    <LastModifiedBy>greg@brail.org</LastModifiedBy>
+    <Description>Proxy for remote Volos operations</Description>
+    <DisplayName>Volos Proxy</DisplayName>
     <Policies>
         <Policy>ExtractInvalidateParams</Policy>
         <Policy>GenerateAuthorizationCode</Policy>
@@ -22,9 +18,9 @@
         <Policy>SetEmptyResponse</Policy>
         <Policy>VerifyAPIKey</Policy>
         <Policy>VerifyToken</Policy>
-        <Policy>distributedquota</Policy>
-        <Policy>extractquotaparams</Policy>
-        <Policy>setquotaresponse</Policy>
+        <Policy>DistributedQuota</Policy>
+        <Policy>ExtractQuotaParams</Policy>
+        <Policy>SetQuotaResponse</Policy>
         <Policy>AssignOAuthVariables</Policy>
     </Policies>
     <ProxyEndpoints>

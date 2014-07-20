@@ -29,7 +29,7 @@ The module exports one function, called "create". It takes an argument called "o
 parameters:
 
 * uri: The full URI of the Apigee adapter that you deployed in the last step. For instance, if the organization
-name is "foo" then this might be "https://foo-test.apigee.net/adapterproxy".
+name is "foo" then this might be "https://foo-test.apigee.net/volos-proxy".
 * key: An API consumer key for a valid "application" that is part of the same organization where the adapter
 was installed.
 

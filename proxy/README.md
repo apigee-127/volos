@@ -70,13 +70,13 @@ about API keys and OAuth tokens.
 
 You can now deploy the proxy to your "test" environment like this:
 
-    apigeetool deployproxy -o ORGANIZATION -e test -u USERNAME -p PASSWORD -n adapterproxy -d ../proxy
+    apigeetool deployproxy -o ORGANIZATION -e test -u USERNAME -p PASSWORD -n volos-proxy -d ../proxy
 
 (Replace ORGANIZATION, USERNAME, and PASSWORD with your Apigee account info)
 
 Once the proxy had been deployed, then you can invoke the proxy at the URL:
 
-    https://ORGANIZATION-test.apigee.net/adapterproxy
+    https://ORGANIZATION-test.apigee.net/volos-proxy
     
 (Replace ORGANIZATION with your Apigee organization name)
 

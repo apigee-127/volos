@@ -24,7 +24,7 @@
 "use strict";
 
 var config = {
-  uri: 'http://node-conference-test.apigee.net/adapterproxy',
+  uri: 'http://node-conference-test.apigee.net/volos-proxy',
   key: 'YOURKEYHERE',
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
   passwordCheck: checkPassword,

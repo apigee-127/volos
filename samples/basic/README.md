@@ -23,7 +23,7 @@ provisioning information from your Apigee deployment. For instance, when done, y
 
     module.exports = {
       organization: 'ORGANIZATION',
-      uri: 'https://ORGANIZATION-test.apigee.net/adapterproxy'
+      uri: 'https://ORGANIZATION-test.apigee.net/volos-proxy'
       key: 'CONSUMER KEY',
       secret: 'CONSUMER SECRET'
     };
