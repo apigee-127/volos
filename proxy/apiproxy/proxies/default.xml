@@ -151,16 +151,16 @@
             <Request>
                 <Step>
                     <FaultRules/>
-                    <Name>extractquotaparams</Name>
+                    <Name>ExtractQuotaParams</Name>
                 </Step>
                 <Step>
-                    <Name>distributedquota</Name>
+                    <Name>DistributedQuota</Name>
                 </Step>
             </Request>
             <Response>
                 <Step>
                     <FaultRules/>
-                    <Name>setquotaresponse</Name>
+                    <Name>SetQuotaResponse</Name>
                 </Step>
             </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/quotas/distributed&quot;) and (request.verb = &quot;POST&quot;)</Condition>

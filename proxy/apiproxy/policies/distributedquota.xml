@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Quota async="false" continueOnError="true" enabled="true" name="distributedquota" type="flexi">
+<Quota async="false" continueOnError="true" enabled="true" name="DistributedQuota" type="flexi">
     <DisplayName>DistributedQuota</DisplayName>
     <Identifier ref="quota.identifier"/>
     <Allow countRef="quota.allow"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<AssignMessage async="false" continueOnError="false" enabled="true" name="setquotaresponse">
+<AssignMessage async="false" continueOnError="false" enabled="true" name="SetQuotaResponse">
     <DisplayName>SetQuotaResponse</DisplayName>
     <Remove>
       <FormParams/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ExtractVariables async="false" continueOnError="false" enabled="true" name="extractquotaparams">
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="ExtractQuotaParams">
     <DisplayName>ExtractQuotaParams</DisplayName>
     <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
     <Source clearPayload="false">request</Source>
