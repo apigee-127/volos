@@ -100,3 +100,19 @@ To test Redis providers:
 1. Install and start a [redis](http://redis.io) server.
 2. In the "common" directory, copy "testconfig-redis-sample.js" to "testconfig-redis.js" and edit the values if necessary.
 3. Run `mocha` in each redis/test in order to run the tests for that module.
+
+
+Support
+=======
+
+The support model for Volos is 'community support' for non-paying Apigee customers.  This means that you can use publicly-available resources to solicit assistance from the Volos developer community as well as employees of Apigee that help support Volos.  If you are a paying Apigee cusotmer we can offer support through the stated channels in your support agreement.
+
+Having Problems?
+----------------
+
+If you are having issues with Volos please do one or both of the following:
+
+1. Ask a question on Stackexchange
+2. and/or Open an issue in the GitHub issue tracker: https://github.com/apigee-127/volos/issues
+
+We will do our best to help you resolve the issue as soon as possible.
