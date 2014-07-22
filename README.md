@@ -14,6 +14,12 @@ applications.
 
 ***
 
+Quick start
+===========
+Check out the [training sample](samples/training/README.md).
+
+***
+
 Usage
 =====
 
@@ -77,22 +83,23 @@ Development
 If you're developing on this project, it is easiest to link all the various modules into your node_modules directory
 so they all run locally instead of pulling from npm. To do this, just run:
 
-`npm install`
+        npm install
 
 and then:
 
-`link.sh`
+        link.sh
 
 Testing
 -------
 Test scripts are written using "mocha." Install mocha if you haven't already like this:
 
-`npm install -g mocha`
+        npm install -g mocha
 
 To test Apigee providers:
 
 1. Install the "proxy" module on an Apigee application. See the instructions [here](proxy/README.md).
-2. In the "testconfig" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. You will need to specify the location of your proxy as well as the key and secret for the application.
+2. In the "testconfig" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. 
+   You will need to specify the location of your proxy as well as the key and secret for the application.
 3. Run `mocha` in each apigee/test directory you wish you test.
 
 To test Redis providers:
@@ -105,14 +112,17 @@ To test Redis providers:
 Support
 =======
 
-The support model for Volos is 'community support' for non-paying Apigee customers.  This means that you can use publicly-available resources to solicit assistance from the Volos developer community as well as employees of Apigee that help support Volos.  If you are a paying Apigee cusotmer we can offer support through the stated channels in your support agreement.
+The support model for Volos is 'community support' for non-paying Apigee customers.  This means that you can use 
+publicly-available resources to solicit assistance from the Volos developer community as well as employees of Apigee 
+that help support Volos.  If you are a paying Apigee customer we can offer support through the stated channels in your 
+support agreement.
 
 Having Problems?
 ----------------
 
 If you are having issues with Volos please do one or both of the following:
 
-1. Ask a question on Stackexchange
-2. and/or Open an issue in the GitHub issue tracker: https://github.com/apigee-127/volos/issues
+1. Open an issue in the [GitHub issue tracker](https://github.com/apigee-127/volos/issues)
+2. Ask a question on [Stack Overflow](http://stackoverflow.com)
 
 We will do our best to help you resolve the issue as soon as possible.
