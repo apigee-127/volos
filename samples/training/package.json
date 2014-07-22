@@ -1,0 +1,25 @@
+{
+  "name": "volos-training",
+  "private": true,
+  "scripts": {
+    "cache": "node cache.js",
+    "quota": "node quota.js",
+    "oauth": "node oauth.js",
+    "oauth-endpoints": "node oauth-endpoints.js"
+  },
+  "dependencies":  {
+    "connect": "",
+    "http-proxy": "",
+    "express" : "",
+    "volos-management-redis": "",
+    "volos-management-apigee": "",
+    "volos-oauth-redis": "",
+    "volos-oauth-apigee": "",
+    "volos-cache-memory": "",
+    "volos-cache-redis": "",
+    "volos-cache-apigee": "",
+    "volos-quota-memory": "",
+    "volos-quota-redis": "",
+    "volos-quota-apigee": ""
+  }
+}
