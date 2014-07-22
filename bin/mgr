@@ -150,7 +150,7 @@ function init(done) {
   console.log('Target: %s', config.target);
   if (config.target === 'redis') {
     var redis = require('../management/redis');
-    mgr = redis.create(config.redis);
+    mgr = redis.create(config);
     done(config);
   } else {
     var apigee = require('../management/apigee');

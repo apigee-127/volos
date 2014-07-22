@@ -23,7 +23,7 @@
  ****************************************************************************/
 'use strict';
 
-/** copy this file to mr-config.js and replace the config attributes */
+/** copy this file to mgr-config.js and replace the config attributes */
 
 module.exports = {
   default: 'redis',
@@ -37,6 +37,7 @@ module.exports = {
   redis: {
     host: '127.0.0.1',
     port: 6379,
-    options: { }
+    options: { },
+    encryptionKey: 'abc123'
   }
 };
