@@ -1,9 +1,17 @@
-Running the examples on Redis
-=============================
+Basic setup
+===========
+1. [Install node](http://nodejs.org) (if needed).  
+2. [Install npm](https://github.com/npm/npm) (if needed).
+3. Install project prerequisites. From the samples/training directory execute:
+ 
+        npm install
+
+Running the examples against Redis
+==================================
 
 Setup Redis
 -----------
-1. Install Redis (see: [http://redis.io]())
+1. [Install Redis](http://redis.io)
 2. Start Redis:  
 
         redis-server
@@ -59,8 +67,8 @@ OAuth-secured Proxy
 3. Try replacing TOKEN with a token you created above. The proxy should forward the request now.
 
 
-Running the examples on Apigee
-==============================
+Running the examples against Apigee
+===================================
 
 Setup Apigee
 ------------
@@ -91,3 +99,5 @@ Continuing Education
 1. Try tweaking the examples
 2. Try putting cache, quota, or oauth authentication on a specific endpoint
 3. Try combining cache, quota, and oauth on endpoints
+
+Have fun!
