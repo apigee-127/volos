@@ -68,11 +68,12 @@ By deploying an adapter to Apigee, you can run code locally that communicates wi
 deploy a special API proxy to the cloud, which gives you a dedicated API that your local server can use to communicate 
 about API keys and OAuth tokens.
 
-You can now deploy the proxy to your "test" environment like this:
+You can now deploy the proxy to your "test" environment using apigeetool like this:
 
-    apigeetool deployproxy -o ORGANIZATION -e test -u USERNAME -p PASSWORD -n volos-proxy -d ../proxy
+    apigeetool deployproxy -o ORGANIZATION -e test -u USERNAME -p PASSWORD -n volos-proxy -d PROXY_DIR
 
-(Replace ORGANIZATION, USERNAME, and PASSWORD with your Apigee account info)
+* Replace ORGANIZATION, USERNAME, and PASSWORD with your Apigee account info.
+* Replace PROXY_DIR with the path to your volos/proxy directory.
 
 Once the proxy had been deployed, then you can invoke the proxy at the URL:
 
