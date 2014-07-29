@@ -22,8 +22,8 @@
   },
   "scripts": {
     "install": "bin/link",
-    "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js",
+    "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test",
     "test-apigee": "mocha -u exports -R spec cache/apigee/test/apigeetest.js management/apigee/test oauth/apigee/test quota/apigee/test",
-    "cover": "ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js"
+    "cover": "DEBUG=cache,quota,oauth,swagger ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test"
   }
 }

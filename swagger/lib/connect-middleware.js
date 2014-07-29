@@ -9,8 +9,8 @@ var debug = require('debug')('swagger');
 
 var deploymentConfig;
 var resourcesMap; // name -> volos resource
-var operationsMap = {}; // operationId -> middleware chain
-var authorizationsMap = {}; // operationId -> middleware chain
+var operationsMap; // operationId -> middleware chain
+var authorizationsMap; // operationId -> middleware chain
 
 module.exports = middleware;
 
@@ -19,6 +19,8 @@ function middleware(volosConfig) {
 
   deploymentConfig = volosConfig;
   resourcesMap = createResources();
+  operationsMap = {};
+  authorizationsMap = {};
   var mwChain = chain([ifAuthenticated, applyMiddleware]);
 
   return function(req, res, next) {
@@ -81,8 +83,8 @@ function applyMiddleware(req, res, next) {
   var mwChain = operationsMap[operationId];
 
   if (!mwChain) {
-    var specific = deploymentConfig.operations[operationId];
-    var global = deploymentConfig.global;
+    var specific = deploymentConfig.operations ? deploymentConfig.operations[operationId] : [];
+    var global = deploymentConfig.global || [];
 
     mwChain = createMiddlewareChain(global.concat(specific));
     operationsMap[operationId] = mwChain;

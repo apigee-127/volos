@@ -14,12 +14,15 @@
   "main": "lib/connect-middleware.js",
   "dependencies": {
     "debug": "1.0.x",
-    "underscore": "",
-    "connect": ""
+    "underscore" : "1.6.x"
   },
   "devDependencies":  {
     "mocha": "1.19.x",
-    "should" : "3.1.x"
+    "should": "3.1.x",
+    "express": "3.4.x",
+    "volos-cache-memory": "",
+    "volos-quota-memory": "",
+    "volos-oauth-redis": ""
   },
   "repository": {
     "type": "git",
