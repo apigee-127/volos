@@ -1,0 +1,5 @@
+<TargetEndpoint name="apigeecache">
+  <ScriptTarget>
+    <ResourceURL>node://apigeecache.js</ResourceURL>
+  </ScriptTarget>
+</TargetEndpoint>

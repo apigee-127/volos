@@ -28,16 +28,28 @@
 var VALID_USER_CREDS = { username: 'foo', password: 'bar' };
 
 var config = {
+  // Your Apigee "organization" name
   organization: 'ORG',
+  // Your Apigee user name -- used to create resources via the management API
   user: 'USER',
+  // Your Apigee password
   password: 'PASS',
+  // The URI where the "volos proxy" (in the "proxy") directory is deployed.
+  // Necessary when running remote tests against Apigee.
   uri: 'URI',
+  // The API key that protects access to the "volos proxy"
   key: 'KEY',
+  // When deploying tests from the "serversidetests" directory, the URI where/
+  // they will run.
+  testUriBase: 'TESTURIBASE',
 
+  // These will generally not change when configuring Apigee
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],
   tokenLifetime: 4000, // expiration tests will wait this long
   passwordCheck: checkPassword
 };
+
+// The rest of this file does not need to be changed for a particular installation
 
 function checkPassword(username, password, cb) {
   cb(null, username === VALID_USER_CREDS.username && password === VALID_USER_CREDS.password);
