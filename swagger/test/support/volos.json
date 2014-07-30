@@ -3,7 +3,7 @@
     "cache": {
       "provider": "volos-cache-memory",
       "options": [
-        "name",
+        "memCache",
         {
           "ttl": 1000
         }
