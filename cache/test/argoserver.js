@@ -51,7 +51,7 @@ module.exports = function(cache) {
     })
 
     .get('/countIdFunction',
-      cache.argoMiddleware().cache('/count'),
+      cache.argoMiddleware().cache(idFunc),
       function(handle) {
         handle('request', function(env, next) {
           env.response.body = { count: counter++ };
