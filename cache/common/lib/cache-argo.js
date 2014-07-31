@@ -53,6 +53,9 @@ CacheArgo.prototype.cache = function(id) {
       var key;
       if (_.isFunction(id)) {
         key = id(req);
+        if (key === undefined || key === null) {
+          return next(env);
+        }
       } else {
         key = id ? id : req.url;
       }

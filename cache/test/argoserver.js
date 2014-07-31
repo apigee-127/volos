@@ -92,6 +92,17 @@ module.exports = function(cache) {
             env.response.body = { count: counter++ };
             next(env);
           });
+        });
+    })
+
+    .get('/countIdFunctionNull',
+      function(handle) {
+        handle('request', function(env, next) {
+          cache.argoMiddleware().cache(nullIdFunc)(env, function() {
+            env.response.body = { count: counter++ };
+            next(env);
+          });
+        });
     })
 
     .listen(port);

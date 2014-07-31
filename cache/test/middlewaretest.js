@@ -198,6 +198,17 @@ function verifyCache(server) {
       });
   });
 
+  it('must not cache null key from id function', function(done) {
+    request(server)
+      .get('/countIdFunctionNull')
+      .end(function(err, res) {
+        should.not.exist(err);
+        res.body.count.should.equal(8);
+
+        done();
+      });
+  });
+
 //  it('must be repeatable', function(done) {
 //
 //    var times = 50;

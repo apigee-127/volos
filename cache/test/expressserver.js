@@ -30,9 +30,10 @@ module.exports = function(cache) {
   var app = express();
   var counter = 1;
 
-  app.use(cache.expressMiddleware().cache());
+//  app.use(cache.expressMiddleware().cache());
 
   app.get('/count',
+    cache.expressMiddleware().cache(),
     function(req, resp) {
       resp.json({ count: counter++ });
     });
@@ -50,16 +51,25 @@ module.exports = function(cache) {
     });
 
   app.get('/emit500',
+    cache.expressMiddleware().cache(),
     function(req, resp) {
       resp.json(500, { count: counter++ });
     });
 
   app.get('/emit201',
+    cache.expressMiddleware().cache(),
     function(req, resp) {
       resp.json(201, { count: counter++ });
     });
 
   app.post('/count',
+    cache.expressMiddleware().cache(),
+    function(req, resp) {
+      resp.json({ count: counter++ });
+    });
+
+  app.get('/countIdFunctionNull',
+    cache.expressMiddleware().cache(nullIdFunc),
     function(req, resp) {
       resp.json({ count: counter++ });
     });
@@ -70,4 +80,9 @@ module.exports = function(cache) {
 var idFunc = function(req) {
   assert(req);
   return '/count';
+};
+
+var nullIdFunc = function(req) {
+  assert(req);
+  return null;
 };
