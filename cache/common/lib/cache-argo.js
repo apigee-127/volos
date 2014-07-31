@@ -26,8 +26,6 @@
 var debug = require('debug')('cache');
 var _ = require('underscore');
 var encoder = require('./cache-encoder');
-var eventEmitter = new (require('events').EventEmitter)();
-eventEmitter.setMaxListeners(0);
 
 function CacheArgo(cache, options) {
   if (!(this instanceof CacheArgo)) {
