@@ -47,7 +47,7 @@ CacheArgo.prototype.cache = function(id) {
 
   return function(handle) {
 
-    handle('request', function(env, next) {
+    var handler = function(env, next) {
       var req = env.request;
       var resp = env.response;
       var key;
@@ -87,6 +87,12 @@ CacheArgo.prototype.cache = function(id) {
 
       resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
       self.internalCache.getSet(key, populate, options, getSetCallback);
-    });
+    };
+
+    if (_.isFunction(handle)) {
+      handle('request', handler);
+    } else {
+      handler.apply(this, arguments);
+    }
   };
 };

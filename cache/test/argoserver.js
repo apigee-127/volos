@@ -31,58 +31,67 @@ module.exports = function(cache) {
   var counter = 1;
   var app = argo();
   app
-    .use(cache.argoMiddleware().cache())
+//    .use(cache.argoMiddleware().cache())
 
     .get('/count',
       function(handle) {
         handle('request', function(env, next) {
-          env.response.body = { count: counter++ };
-          next(env);
+          cache.argoMiddleware().cache()(env, function() {
+            env.response.body = { count: counter++ };
+            next(env);
+          });
         });
     })
 
     .get('/countId',
-      cache.argoMiddleware().cache('/count'),
       function(handle) {
         handle('request', function(env, next) {
-          env.response.body = { count: counter++ };
-          next(env);
+          cache.argoMiddleware().cache('/count')(env, function() {
+            env.response.body = { count: counter++ };
+            next(env);
+          });
         });
     })
 
     .get('/countIdFunction',
-      cache.argoMiddleware().cache(idFunc),
       function(handle) {
         handle('request', function(env, next) {
-          env.response.body = { count: counter++ };
-          next(env);
+          cache.argoMiddleware().cache(idFunc)(env, function() {
+            env.response.body = { count: counter++ };
+            next(env);
+          });
         });
     })
 
     .get('/emit500',
       function(handle) {
         handle('request', function(env, next) {
-          env.response.statusCode = 500;
-          env.response.body = { count: counter++ };
-          next(env);
+          cache.argoMiddleware().cache()(env, function() {
+            env.response.statusCode = 500;
+            env.response.body = { count: counter++ };
+            next(env);
+          });
         });
     })
 
     .get('/emit201',
       function(handle) {
         handle('request', function(env, next) {
-          env.response.statusCode = 201;
-          env.response.body = { count: counter++ };
-          next(env);
+          cache.argoMiddleware().cache()(env, function() {
+            env.response.statusCode = 201;
+            env.response.body = { count: counter++ };
+            next(env);
+          });
         });
     })
 
     .post('/count',
       function(handle) {
         handle('request', function(env, next) {
-          env.response.body = { count: counter++ };
-          next(env);
-        });
+          cache.argoMiddleware().cache()(env, function() {
+            env.response.body = { count: counter++ };
+            next(env);
+          });
     })
 
     .listen(port);
@@ -101,4 +110,9 @@ module.exports = function(cache) {
 var idFunc = function(req) {
   assert(req);
   return '/count';
+};
+
+var nullIdFunc = function(req) {
+  assert(req);
+  return null;
 };
