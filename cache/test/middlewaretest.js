@@ -23,14 +23,10 @@
  ****************************************************************************/
 'use strict';
 
-var assert = require('assert');
-var should = require('should');
-var request = require('supertest');
 var memoryCache = require('../memory');
 var expressServer = require('./expressserver');
 var argoServer = require('./argoserver');
-var async = require('async');
-var _ = require('underscore');
+var verifyCache = require('./verifycache');
 
 var ttl = 50;
 
@@ -43,220 +39,12 @@ describe('Middleware', function() {
   describe('Express', function() {
     var cache = memoryCache.create('express', options);
     var server = expressServer(cache);
-    verifyCache(server);
+    verifyCache.verify(server);
   });
 
   describe('Argo', function() {
     var cache = memoryCache.create('argo', options);
     var server = argoServer(cache);
-    verifyCache(server);
+    verifyCache.verify(server);
   });
 });
-
-function verifyCache(server) {
-
-  it('must cache', function(done) {
-    request(server)
-      .get('/count')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.eql(200);
-        should.exist(res.header['cache-control']);
-        res.body.count.should.equal(1);
-        var headers = res.headers;
-
-        request(server)
-          .get('/count')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(1);
-            _.keys(headers).length.should.equal(_.keys(res.headers).length);
-
-            request(server)
-              .get('/count')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(200);
-                res.body.count.should.equal(1);
-                _.keys(headers).length.should.equal(_.keys(res.headers).length);
-
-                done();
-              });
-          });
-      });
-  });
-
-  it('must timeout', function(done) {
-    setTimeout(function() {
-      request(server)
-        .get('/count')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          res.body.count.should.equal(2);
-
-          request(server)
-            .get('/count')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(2);
-
-              done();
-            });
-        });
-    }, ttl + 1);
-  });
-
-  it('must allow string id override', function(done) {
-    request(server)
-      .get('/countId')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.eql(200);
-        res.body.count.should.equal(2);
-
-        done();
-      });
-  });
-
-  it('must allow function id override', function(done) {
-    request(server)
-      .get('/countIdFunction')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.eql(200);
-        res.body.count.should.equal(2);
-
-        done();
-      });
-  });
-
-  it('must cache statusCode', function(done) {
-    request(server)
-      .get('/emit201')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.eql(201);
-        res.body.count.should.equal(3);
-
-        request(server)
-          .get('/emit201')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(201);
-            res.body.count.should.equal(3);
-
-            done();
-          });
-      });
-  });
-
-  it('must not cache 500', function(done) {
-    request(server)
-      .get('/emit500')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.eql(500);
-        res.body.count.should.equal(4);
-
-        request(server)
-          .get('/emit500')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(500);
-            res.body.count.should.equal(5);
-
-            done();
-          });
-      });
-  });
-
-  it('must invalidate cache on change', function(done) {
-    request(server)
-      .get('/count')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.body.count.should.equal(2);
-
-        request(server)
-          .post('/count')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.body.count.should.equal(6);
-
-            request(server)
-              .get('/count')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.body.count.should.equal(7);
-
-                done();
-              });
-          });
-      });
-  });
-
-  it('must not cache null key from id function', function(done) {
-    request(server)
-      .get('/countIdFunctionNull')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.body.count.should.equal(8);
-
-        done();
-      });
-  });
-
-//  it('must be repeatable', function(done) {
-//
-//    var times = 50;
-//    var count = 3;
-//    var func = function(cb) {
-//      setTimeout(function() {
-//        request(server)
-//          .get('/count')
-//          .end(function(err, res) {
-//            should.not.exist(err);
-//            res.status.should.eql(200);
-//            res.body.count.should.equal(count);
-//
-//            request(server)
-//              .get('/count')
-//              .end(function(err, res) {
-//                should.not.exist(err);
-//                res.body.count.should.equal(count++);
-//              });
-//          });
-//        cb();
-//      }, ttl + 10);
-//    };
-//    for (var funcs = []; funcs.length < times;) { funcs.push(func); }
-//
-//    async.series(funcs, done);
-//  });
-
-  it('must be parallel', function(done) {
-
-    var concurrent = 3;
-    var times = 50;
-
-    var task = function(cb) {
-      request(server)
-        .get('/count')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          cb(err);
-        });
-    };
-
-    for (var tasks = []; tasks.length < times;) { tasks.push(task); }
-    var thread = function(cb) {
-      async.series(tasks, cb);
-    };
-    for (var threads = []; threads.length < concurrent;) { threads.push(thread); }
-    async.parallel(threads, done);
-  });
-}

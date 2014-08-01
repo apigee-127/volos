@@ -1,0 +1,5 @@
+<TargetEndpoint name="apigeequota">
+  <ScriptTarget>
+    <ResourceURL>node://apigeequota.js</ResourceURL>
+  </ScriptTarget>
+</TargetEndpoint>
