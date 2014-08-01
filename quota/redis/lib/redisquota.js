@@ -23,6 +23,7 @@
  ****************************************************************************/
 'use strict';
 
+var _ = require('underscore');
 var assert = require('assert');
 var Quota = require('volos-quota-common');
 var redis = require("redis");
@@ -55,7 +56,7 @@ function RedisQuotaSpi(options) {
 
   var host = options.host || '127.0.0.1';
   var port = options.port || 6379;
-  var ropts = options.options || {};
+  var ropts = _.extend({}, options.options) || {};
   this.client = redis.createClient(port, host, ropts);
 }
 

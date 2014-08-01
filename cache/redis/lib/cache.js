@@ -42,6 +42,7 @@
 
 var Common = require('volos-cache-common');
 var redis = require('redis');
+var _ = require('underscore');
 
 var KEY_PREFIX = 'volos:cache';
 
@@ -57,7 +58,7 @@ function Cache(name, options) {
 
   var host = options.host || '127.0.0.1';
   var port = options.port || 6379;
-  var ropts = options.options || {};
+  var ropts = _.extend({}, options.options) || {};
   ropts.return_buffers = true;
   this.client = redis.createClient(port, host, ropts);
 

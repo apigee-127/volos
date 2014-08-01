@@ -24,6 +24,7 @@
 "use strict";
 
 var util = require('util');
+var _ = require('underscore');
 
 function checkNumber(val, name) {
   if (!val) {
@@ -57,7 +58,7 @@ var WEEK = DAY * 7;
 // options.bufferTimeout (Number) optional, flush the buffer every Number ms (default: 300)
 
 function Quota(Spi, o) {
-  var options = o || {};
+  var options = _.extend({}, o) || {};
   options.timeUnit = o.timeUnit || 'minutes';
   options.interval = checkNumber(o.interval, 'interval') || 1;
   options.allow = checkNumber(o.allow, 'allow') || 1;
