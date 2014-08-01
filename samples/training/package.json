@@ -8,6 +8,7 @@
     "oauth-endpoints": "node oauth-endpoints.js"
   },
   "dependencies":  {
+    "underscore": "",
     "connect": "",
     "http-proxy": "",
     "express" : "",
