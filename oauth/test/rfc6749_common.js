@@ -38,6 +38,7 @@ var client_secret;
 var REDIRECT_URL = 'http://example.org';
 var STATE = 'xyz';
 var DOGS_SCOPE = 'scope2';
+var TEST_TIMEOUT = 10000;
 
 exports.verifyOauth = function(config, server) {
 
@@ -69,6 +70,9 @@ exports.verifyOauth = function(config, server) {
   }
 
   describe('OAuth 2.0 rfc6749', function() {
+
+    // Sometimes these are run remotely and take longer
+    this.timeout(TEST_TIMEOUT);
 
     before(function(done) {
       creator.createFixtures(function(err, reply) {
