@@ -39,6 +39,7 @@ var REDIRECT_URL = 'http://example.org';
 var STATE = 'xyz';
 var DOGS_SCOPE = 'scope2';
 var TEST_TIMEOUT = 10000;
+var LONG_TIMEOUT = 60000;
 
 exports.verifyOauth = function(config, server) {
 
@@ -75,6 +76,7 @@ exports.verifyOauth = function(config, server) {
     this.timeout(TEST_TIMEOUT);
 
     before(function(done) {
+      this.timeout(LONG_TIMEOUT);
       creator.createFixtures(function(err, reply) {
         if (err) { return done(err); }
         apps = reply;
@@ -87,6 +89,7 @@ exports.verifyOauth = function(config, server) {
     });
 
     after(function(done) {
+      this.timeout(LONG_TIMEOUT);
       creator.destroyFixtures(function(err) {
         done(err);
       });

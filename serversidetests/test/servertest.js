@@ -60,18 +60,22 @@ describe('Apigee Server Tests', function() {
     var o = {
       username: config.user,
       password: config.password,
-      baseuri: config.managementUri,
       organization: config.organization,
       environment: TEST_ENVIRONMENT,
       api: PROXY_NAME,
-      directory: path.join(__dirname, '../apigee')
+      directory: path.join(__dirname, '../apigee'),
+      verbose: true
     };
+    if (config.managementUri) {
+      o.baseuri = config.managementUri;
+    }
 
     apigeetool.deployProxy(o, function(err, result) {
       if (err) {
         console.error('Error deploying proxy: %j', err);
         done(err);
       } else {
+        console.log('Deployment result: %j', result);
         deployedRevision = result.revision;
         done();
       }
@@ -83,13 +87,15 @@ describe('Apigee Server Tests', function() {
     var o = {
       username: config.user,
       password: config.password,
-      baseuri: config.managementUri,
       organization: config.organization,
       environment: TEST_ENVIRONMENT,
       api: PROXY_NAME,
       directory: path.join(__dirname, '../apigee'),
       revision: deployedRevision
     };
+    if (config.managementUri) {
+      o.baseuri = config.managementUri;
+    }
 
     apigeetool.undeploy(o, function(err) {
       if (err) {
@@ -103,16 +109,16 @@ describe('Apigee Server Tests', function() {
 
   describe('Cache', function() {
     var test = require('../../cache/test/verifycache.js');
-    test.verify(config.testUriBase + '/volostests/apigeecache');
+    test.verify(config.testUriBase + '/volostests-apigeecache');
   });
 
   describe('Quota', function() {
     var test = require('../../quota/test/verifyquota.js');
-    test.verify(config.testUriBase + '/volostests/apigeequota');
+    test.verify(config.testUriBase + '/volostests-apigeequota');
   });
 
   describe('OAuth', function() {
     var test = require('../../oauth/test/rfc6749_common.js');
-    test.verifyOauth(testConfig, config.testUriBase + '/volostests/apigeeoauth');
+    test.verifyOauth(testConfig, config.testUriBase + '/volostests-apigeeoauth');
   });
 });
