@@ -2,11 +2,12 @@
 
 var volos = require('./config/volos').default;
 var proxy = require('./lib/proxy');
+var _ = require('underscore');
 
 // create Volos cache
-var cache = volos.cache.create('cache', {
+var cache = volos.cache.create('cache', _.extend({
   ttl: 1000
-});
+}, volos.config));
 
 var identifier;
 

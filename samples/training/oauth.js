@@ -4,9 +4,7 @@ var volos = require('./config/volos').default;
 var proxy = require('./lib/proxy');
 
 // create Volos oauth
-var oauth = volos.oauth.create({
-  encryptionKey: volos.config.encryptionKey
-});
+var oauth = volos.oauth.create(volos.config);
 
 var scopes;
 

@@ -40,7 +40,7 @@ function createProxy(middlewares) {
 
   server.listen(PORT);
 
-  util.log('proxy: started on port %d', PORT);
+  util.log('proxy: started on port ' + PORT);
 
   console.log('\nAccess via web browser or curl: ' + 'curl http://localhost:8012/test');
 

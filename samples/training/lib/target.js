@@ -13,6 +13,6 @@ http.createServer(function(req, res) {
   res.end(resp);
 }).listen(PORT);
 
-util.log('target: started on port %d', PORT);
+util.log('target: started on port ' + PORT);
 
 module.exports.port = PORT;
