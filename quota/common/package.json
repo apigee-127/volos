@@ -1,6 +1,6 @@
 {
   "name": "volos-quota-common",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "main": "lib/quota.js",
   "license": "MIT",
   "description": "Common library for Quota enforcement in the Volos system.",

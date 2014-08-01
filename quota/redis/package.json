@@ -1,6 +1,6 @@
 {
   "name": "volos-quota-redis",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "main": "lib/redisquota.js",
   "license": "MIT",
   "description": "Redis provider for Quota enforcement in the Volos system.",

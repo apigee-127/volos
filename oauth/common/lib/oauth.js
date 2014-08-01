@@ -50,7 +50,7 @@ var GrantTypeFunctions = {
  */
 
 function OAuth(spi, options) {
-  options = applyModuleDefaults(options);
+  options = _.extend({}, applyModuleDefaults(options));
 
   this.spi = spi;
   this.validGrantTypes = options.validGrantTypes;

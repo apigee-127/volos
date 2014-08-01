@@ -59,9 +59,10 @@
  */
 
 var url = require('url');
+var _ = require('underscore');
 
 function Management(Spi, options) {
-  this.options = options || {};
+  this.options = _.extend({}, options) || {};
   this.management = new Spi(this.options);
 }
 module.exports = Management;
