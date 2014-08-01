@@ -25,9 +25,10 @@
 
 var Spi = require('..');
 var commonTest = require('../../test/cachetest');
+var config = require('../../../testconfig/testconfig-redis').config;
 
 describe('Redis', function() {
 
-    commonTest.testCache({}, Spi);
+  commonTest.testCache(config, Spi);
 
 });

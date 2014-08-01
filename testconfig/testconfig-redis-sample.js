@@ -30,7 +30,9 @@ var VALID_USER_CREDS = { username: 'foo', password: 'bar' };
 var config = {
   host: '127.0.0.1',
   port: 6379,
-  options: {},
+  options: {
+//    auth_pass: 'your password' // set if you need a password for your Redis
+  },
   encryptionKey: 'This is the key to encrypt/decrypt stored credentials',
 
   validGrantTypes: [ 'client_credentials', 'authorization_code', 'implicit_grant', 'password' ],

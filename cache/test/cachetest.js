@@ -40,7 +40,7 @@ exports.testCache = function(config, Spi) {
       var tc;
 
       before(function() {
-        tc = Spi.create(CACHE_NAME);
+        tc = Spi.create(CACHE_NAME, config);
         tc.setEncoding('utf8');
       });
 
@@ -152,7 +152,7 @@ exports.testCache = function(config, Spi) {
       });
 
       it('Set Default Expiration', function(done) {
-        var xc = Spi.create('xxx', { ttl: 1000, encoding: 'utf8'});
+        var xc = Spi.create('xxx', _.extend({ ttl: 1000, encoding: 'utf8'}, config));
         var ts = 'TestString2';
         xc.set('2', ts, { ttl: 1000 }, function(err) {
           should.not.exist(err);
@@ -207,7 +207,7 @@ exports.testCache = function(config, Spi) {
 
     describe('encodings', function() {
       it('Binary', function(done) {
-        var tc = Spi.create(CACHE_NAME);
+        var tc = Spi.create(CACHE_NAME, config);
         var ts = new Buffer('TestString1');
         tc.set('B1', ts, function(err) {
           should.not.exist(err);
@@ -220,7 +220,7 @@ exports.testCache = function(config, Spi) {
       });
 
       it('base64', function(done) {
-        var tc = Spi.create(CACHE_NAME);
+        var tc = Spi.create(CACHE_NAME, config);
         tc.setEncoding('base64');
         var tb = new Buffer('TestInBase64Yay').toString('base64');
         tc.set('b641', tb, { encoding: 'base64' }, function(err) {
@@ -239,9 +239,9 @@ exports.testCache = function(config, Spi) {
       var tc2;
 
       before(function() {
-        tc1 = Spi.create(CACHE_NAME);
+        tc1 = Spi.create(CACHE_NAME, config);
         tc1.setEncoding('utf8');
-        tc2 = Spi.create(CACHE_NAME);
+        tc2 = Spi.create(CACHE_NAME, config);
       });
 
       it('Two Buffers', function(done) {
@@ -271,7 +271,7 @@ exports.testCache = function(config, Spi) {
 
     it('tames the thundering herd', function(done) {
 
-      var tc = Spi.create(CACHE_NAME);
+      var tc = Spi.create(CACHE_NAME, config);
       tc.setEncoding('utf8');
 
       var populateCalled = 0;

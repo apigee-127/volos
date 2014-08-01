@@ -23,13 +23,14 @@
  ****************************************************************************/
 'use strict';
 
+var _ = require('underscore');
 var DEFAULT_TTL = 300;
 var EM = require('events').EventEmitter;
 var eventEmitter = new EM();
 eventEmitter.setMaxListeners(100);
 
 function Cache(Spi, name, options) {
-  this.options = options || {};
+  this.options = _.extend({}, options) || {};
   this.options.ttl = this.options.ttl ? convertNumber(this.options.ttl, 'ttl') : DEFAULT_TTL;
   this.cache = new Spi(name, this.options);
 }
