@@ -1,6 +1,6 @@
 <ProxyEndpoint name="apigeeoauth">
   <HTTPProxyConnection>
-    <BasePath>/volostests/apigeeoauth</BasePath>
+    <BasePath>/volostests-apigeeoauth</BasePath>
   </HTTPProxyConnection>
   <RouteRule name="default">
     <TargetEndpoint>apigeeoauth</TargetEndpoint>

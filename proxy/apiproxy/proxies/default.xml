@@ -165,13 +165,15 @@
             </Response>
             <Condition>(proxy.pathsuffix MatchesPath &quot;/quotas/distributed&quot;) and (request.verb = &quot;POST&quot;)</Condition>
         </Flow>
-        <Flow name="FallThrough">
+        <Flow name="New Tests">
+          <Condition>(proxy.pathsuffix MatchesPath &quot;/v2/**&quot;)</Condition>
+        </Flow>
+        <Flow name="Fallthrough">
             <Request>
                 <Step>
                     <Name>Return404</Name>
                 </Step>
             </Request>
-            <Response/>
         </Flow>
     </Flows>
     <PostFlow name="PostFlow">
@@ -184,5 +186,9 @@
         <VirtualHost>default</VirtualHost>
         <VirtualHost>secure</VirtualHost>
     </HTTPProxyConnection>
-    <RouteRule name="noroute"/>
+    <RouteRule name="newproxy">
+      <Condition>(proxy.pathsuffix MatchesPath &quot;/v2/**&quot;)</Condition>
+      <TargetEndpoint>default</TargetEndpoint>
+    </RouteRule>
+    <RouteRule name="default"/>
 </ProxyEndpoint>

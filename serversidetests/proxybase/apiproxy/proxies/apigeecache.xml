@@ -1,6 +1,6 @@
 <ProxyEndpoint name="apigeecache">
   <HTTPProxyConnection>
-    <BasePath>/volostests/apigeecache</BasePath>
+    <BasePath>/volostests-apigeecache</BasePath>
   </HTTPProxyConnection>
   <RouteRule name="default">
     <TargetEndpoint>apigeecache</TargetEndpoint>
