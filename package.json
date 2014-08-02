@@ -21,6 +21,9 @@
     "debug": "1.0.x",
     "apigeetool": "x.x.x",
     "swagger-tools": ""
+    "apigeetool": "x.x.x",
+    "semver": "3.x.x",
+    "superagent": "0.x.x"
   },
   "scripts": {
     "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test",

@@ -30,13 +30,25 @@
  */
 
 var assert = require('assert');
-var url = require('url');
+var debug = require('debug')('apigee');
 var http = require('http');
 var https = require('https');
-var querystring = require('querystring');
-var util = require('util');
 var Quota = require('volos-quota-common');
-var debug = require('debug')('apigee');
+var querystring = require('querystring');
+var semver = require('semver');
+var superagent = require('superagent');
+var util = require('util');
+var url = require('url');
+
+var apigeeQuota;
+
+try {
+  // Older versions of Apigee won't have this, so be prepared to work around.
+  var apigee = require('apigee-access');
+  apigeeQuota = apigee.getQuota();
+} catch (e) {
+  debug('Operating without access to apigee-access');
+}
 
 var create = function(options) {
   return new Quota(ApigeeQuotaSpi, options);
@@ -44,129 +56,173 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeQuotaSpi = function(options) {
-  if (!options.uri) {
-    throw new Error('uri parameter must be specified');
-  }
-  if (!options.key) {
-    throw new Error('key parameter must be specified');
-  }
-
   assert(options.timeUnit);
   assert(options.interval);
-  if (options.startTime) {
-    throw new Error('Quotas with a fixed starting time are not supported');
-  }
-
-  this.uri = options.uri;
-  this.key = options.key;
   this.options = options;
+
+  if (!apigeeQuota) {
+    if (!options.uri) {
+      throw new Error('uri parameter must be specified');
+    }
+    if (!options.key) {
+      throw new Error('key parameter must be specified');
+    }
+
+    /* TODO
+    if (options.startTime) {
+      throw new Error('Quotas with a fixed starting time are not supported');
+    }
+    */
+
+    this.uri = options.uri;
+    this.key = options.key;
+  }
 };
 
 ApigeeQuotaSpi.prototype.apply = function(options, cb) {
-  var allow = options.allow || this.options.allow;
+  if (this.quotaImpl) {
+    this.quotaImpl.apply(options, cb);
 
-  var r = {
-    identifier: options.identifier,
-    weight: options.weight,
-    interval: this.options.interval,
+  } else {
+    var self = this;
+    selectImplementation(self, function(err) {
+      if (err) {
+        cb(err);
+      } else {
+        self.quotaImpl.apply(options, cb);
+      }
+    });
+  }
+};
+
+// Given the state of apigee-access, or the "version" of the remote proxy,
+// select an implementation. This happens on the first call so that we can
+// "start" the module if the proxy is down -- but this doesn't complete
+// until we can get one successful HTTP call through
+function selectImplementation(self, cb) {
+  var impl;
+  if (self.apigeeQuota) {
+    impl = new ApigeeAccessQuota(self);
+    cb();
+
+  } else {
+    var agent = makeAgent(self.options);
+    agent.get(self.options.uri + '/v2/version').end(function(err, resp) {
+        if (err) {
+          cb(err);
+        } else {
+          if (resp.ok && semver.satisfies(resp.text, '>=1.0.0')) {
+            impl = new ApigeeRemoteQuota(self);
+            cb();
+          } else {
+            if (self.options.startTime) {
+              cb(new Error('Quotas with a fixed starting time are not supported'));
+            } else {
+              impl = new ApigeeOldRemoteQuota(self);
+              cb();
+            }
+          }
+        }
+    });
+  }
+  self.quotaImpl = impl;
+}
+
+function makeNewQuotaRequest(self, opts, allow) {
+  var r ={
+    identifier: opts.identifier,
+    weight: opts.weight,
+    interval: self.options.interval,
     allow: allow,
-    unit: this.options.timeUnit
+    timeUnit: self.options.timeUnit
   };
+  if (opts.startTime) {
+    r.startTime = opts.startTime;
+    r.quotaType = 'calendar';
+  } else {
+    r.quotaType = 'rollingwindow';
+  }
+  return r;
+}
 
-  makeRequest(this, 'POST', '/quotas/distributed', querystring.stringify(r), function(err, resp) {
+function ApigeeAccessQuota(quota) {
+  debug('Using apigee-access for native quota');
+  this.quota = quota;
+}
+
+ApigeeAccessQuota.prototype.apply = function(opts, cb) {
+  var allow = opts.allow || this.quota.options.allow;
+  var r = makeNewQuotaRequest(this.quota, opts, allow);
+
+  // Result is the same as a volos result
+  debug('Local quota request: %j', r);
+  this.quota.apigeeQuota.apply(r, function(err, result) {
     if (err) {
       cb(err);
     } else {
-      var ret = {
-        allowed: Number(resp.allowed),
-        used: Number(resp.used) + Number(resp.exceeded), // note: this is exceeded for this req, not overall
-        isAllowed: !resp.failed,
-        expiryTime: Number(resp.expiry_time),
-        timestamp: Number(resp.ts)
-      };
-      cb(undefined, ret);
+      debug('Quota result: %j', result);
+      cb(undefined, result);
     }
   });
 };
 
-function makeRequest(self, verb, uriPath, body, cb) {
-  var finalUri = self.uri + uriPath;
-  if (debug.enabled) {
-    debug(util.format('API call to %s: %s', finalUri, body));
-  }
-  var r = url.parse(finalUri);
-
-  r.headers = {
-    'x-DNA-Api-Key': self.key
-  };
-  r.method = verb;
-  if (body) {
-    r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-  }
-
-  var req;
-  if (r.protocol === 'http:') {
-    req = http.request(r, function(resp) {
-      requestComplete(resp, cb);
-    });
-  } else if (r.protocol === 'https:') {
-    req = https.request(r, function(resp) {
-      requestComplete(resp, cb);
-    });
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
-  }
-
-  req.on('error', function(err) {
-    cb(err);
-  });
-  if (body) {
-    req.end(body);
-  } else {
-    req.end();
-  }
+function ApigeeRemoteQuota(quota) {
+  debug('Using a remote quota');
+  this.quota = quota;
 }
 
-function readResponse(resp, data) {
-  var d;
-  do {
-    d = resp.read();
-    if (d) {
-      data += d;
-    }
-  } while (d);
-  return data;
-}
+ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
+  var allow = opts.allow || this.quota.options.allow;
+  var r = makeNewQuotaRequest(this.quota, opts, allow);
 
-function requestComplete(resp, cb) {
-  resp.on('error', function(err) {
-    cb(err);
-  });
-
-  var respData = '';
-  resp.on('readable', function() {
-    respData = readResponse(resp, respData);
-  });
-
-  resp.on('end', function() {
-    if (debug.enabled) {
-      debug(util.format('API response %d: %s', resp.statusCode, respData));
-    }
-    if (resp.statusCode !== 200) {
-      var err = new Error('Error on HTTP request');
-      err.statusCode = resp.statusCode;
-      err.message = respData;
-      cb(err);
-    } else {
-      var ret;
-      try {
-        ret = querystring.parse(respData);
-      } catch (e) {
-        // The response might not be a query string -- not everything returns it
-        cb(e);
+  debug('Remote quota request: %j', r);
+  makeAgent(this.quota.options).
+    post(this.quota.options.uri + '/v2/quotas/apply').
+    type('json').
+    send(r).
+    end(function(err, resp) {
+      if (err) {
+        cb(err);
+      } else {
+        debug('Quota result: %j', resp);
+        cb(undefined, resp);
       }
-      cb(undefined, ret);
-    }
-  });
+    });
+};
+
+function ApigeeOldRemoteQuota(quota) {
+  debug('Using a remote quota with the old protocol');
+  this.quota = quota;
+}
+
+ApigeeOldRemoteQuota.prototype.apply = function(opts, cb) {
+  var allow = opts.allow || this.quota.options.allow;
+
+  var r = {
+    identifier: opts.identifier,
+    weight: opts.weight,
+    interval: this.quota.options.interval,
+    allow: allow,
+    unit: this.quota.options.timeUnit
+  };
+
+  debug('Old remote quota request: %j', r);
+  makeAgent(this.quota.options).
+    post(this.quota.options.uri + '/quotas/distributed').
+    type('form').
+    send(r).
+    end(function(err, resp) {
+      if (err) {
+        cb(err);
+      } else {
+        debug('Quota result: %j', resp);
+        cb(undefined, resp);
+      }
+    });
+};
+
+function makeAgent(options) {
+  var agent = superagent.agent()
+    .set('x-DNA-Api-Key', options.key);
+  return agent;
 }
