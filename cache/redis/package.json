@@ -1,6 +1,6 @@
 {
   "name": "volos-cache-redis",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic redis-based caching library for the Volos system.",
