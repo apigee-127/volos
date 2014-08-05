@@ -10,7 +10,7 @@
     "apigee"
   ],
   "dependencies": {
-    "apigee-access": "1.2.x",
+    "apigee-access": ">=1.2.x",
     "debug": "1.0.x",
     "semver": "3.x.x",
     "superagent": "0.x.x",
