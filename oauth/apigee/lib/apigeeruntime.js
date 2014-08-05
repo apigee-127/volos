@@ -40,7 +40,10 @@ var apigee = require('apigee-access');
 var debug = require('debug')('apigee');
 var superagent = require('superagent');
 var _ = require('underscore');
-var oldProtocol = require('./apigeeoldremote');
+var oldImpl = require('./apigeeoldremote');
+var newImpl = require('./apigeeoauthimpl');
+var semver = require('semver');
+var util = require('util');
 
 var apigeeAccess;
 var hasApigeeAccess = false;
@@ -48,9 +51,8 @@ var hasApigeeAccess = false;
 try {
   // Older versions of Apigee won't have this, so be prepared to work around.
   apigeeAccess = require('apigee-access');
-  if (apigeeAccess.getQuota()) {
-    hasApigeeAccess = true;
-  }
+  apigeeAccess.getQuota();
+  hasApigeeAccess = true;
 } catch (e) {
   debug('Operating without access to apigee-access');
 }
@@ -64,7 +66,7 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeRuntimeSpi = function(options) {
-  if (hasApigeeAccess) {
+  if (!hasApigeeAccess) {
     if (!options.uri) {
       throw new Error('uri parameter must be specified');
     }
@@ -89,39 +91,35 @@ function selectImplementation(self, cb) {
     return;
   }
 
-  self.impl = new oldProtocol.OldRemoteOAuth(self);
-  cb(undefined, self.impl);
-/*
   var impl;
-  if (self.apigeeQuota) {
-    self.quotaImpl = new ApigeeAccessQuota(self);
-    cb(undefined, self.quotaImpl);
+  if (hasApigeeAccess) {
+    self.impl = new newImpl.OAuthImpl(self, true);
+    debug('Selected local apigee-access implementation');
+    cb(undefined, self.impl);
 
   } else {
     superagent.agent().
-      get(self.options.uri + '/v2/version').
-      set('x-DNA-Api-Key', self.options.key).
+      get(self.uri + '/v2/version').
+      set('x-DNA-Api-Key', self.key).
       end(function(err, resp) {
         if (err) {
+          debug('Error getting version: %s', err);
           cb(err);
         } else {
           if (resp.notFound || !semver.satisfies(resp.text, '>=1.0.0')) {
-            if (self.options.startTime) {
-              cb(new Error('Quotas with a fixed starting time are not supported'));
-            } else {
-              self.quotaImpl = new ApigeeOldRemoteQuota(self);
-              cb(undefined, self.quotaImpl);
-            }
+            debug('Selected remote implementation with old protocol');
+            self.impl = new oldImpl.OldRemoteOAuth(self);
+            cb(undefined, self.impl);
           } else if (resp.ok) {
-            self.quotaImpl = new ApigeeRemoteQuota(self);
-            cb(undefined, self.quotaImpl);
+            debug('Selected remote implementation with new protocol');
+            self.impl = new newImpl.OAuthImpl(self, false);
+            cb(undefined, self.impl);
           } else {
             cb(new Error(util.format('HTTP error getting proxy version: %d', resp.statusCode)));
           }
         }
     });
   }
-  */
 }
 
 /*
@@ -136,7 +134,11 @@ function selectImplementation(self, cb) {
  */
 ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.createTokenClientCredentials(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.createTokenClientCredentials(options, cb);
+    }
   });
 };
 
@@ -153,7 +155,11 @@ ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) 
  */
 ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.createTokenPasswordCredentials(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.createTokenPasswordCredentials(options, cb);
+    }
   });
 };
 
@@ -169,7 +175,11 @@ ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb
  */
 ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.createTokenAuthorizationCode(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.createTokenAuthorizationCode(options, cb);
+    }
   });
 };
 
@@ -184,7 +194,11 @@ ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) 
  */
 ApigeeRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.generateAuthorizationCode(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.generateAuthorizationCode(options, cb);
+    }
   });
 };
 
@@ -199,7 +213,11 @@ ApigeeRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
  */
 ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.createTokenImplicitGrant(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.createTokenImplicitGrant(options, cb);
+    }
   });
 };
 
@@ -212,7 +230,11 @@ ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  */
 ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.refreshToken(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.refreshToken(options, cb);
+    }
   });
 };
 
@@ -225,7 +247,11 @@ ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
  */
 ApigeeRuntimeSpi.prototype.invalidateToken = function(options, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.invalidateToken(options, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.invalidateToken(options, cb);
+    }
   });
 };
 
@@ -234,6 +260,10 @@ ApigeeRuntimeSpi.prototype.invalidateToken = function(options, cb) {
  */
 ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   selectImplementation(this, function(err, impl) {
-    impl.verifyToken(token, requiredScopes, cb);
+    if (err) {
+      cb(err);
+    } else {
+      impl.verifyToken(token, requiredScopes, cb);
+    }
   });
 };

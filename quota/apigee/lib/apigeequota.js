@@ -41,14 +41,13 @@ var util = require('util');
 var url = require('url');
 
 var apigeeAccess;
-var hasApigeeAccess = false;
+var hasApigeeAccess;
 
 try {
   // Older versions of Apigee won't have this, so be prepared to work around.
   apigeeAccess = require('apigee-access');
-  if (apigeeAccess.getQuota()) {
-    hasApigeeAccess = true;
-  }
+  apigeeAccess.getQuota();
+  hasApigeeAccess = true;
 } catch (e) {
   debug('Operating without access to apigee-access');
 }

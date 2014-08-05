@@ -52,6 +52,7 @@ OAuthConnect.prototype.handleAuthorize = function() {
         makeError(err, resp);
       } else {
         resp.statusCode = 302;
+        debug('Setting location header to %s', result);
         resp.setHeader('Location', result);
         resp.end();
       }

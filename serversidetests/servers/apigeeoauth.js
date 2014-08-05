@@ -3,13 +3,17 @@
  * the Apigee SPI.
  */
 
- var apigeeOauth = require('volos-oauth-apigee');
- var config = require('./volos/testconfig/testconfig-apigee');
- var server = require('./volos/oauth/test/fixtures/expressserver');
+var apigeeOauth = require('volos-oauth-apigee');
+var config = require('./volos/testconfig/testconfig-apigee');
+var server = require('./volos/oauth/test/fixtures/expressserver');
 
- var quota = apigeeOauth.create(config.config);
+// Make doubly sure that we are using apigee-access only
+delete config.config.uri;
+delete config.config.key;
 
- // Build an Express server using the code from the cache module
- var app = server(quota);
+var quota = apigeeOauth.create(config.config);
 
- app.listen(process.env.PORT || 9003);
+// Build an Express server using the code from the cache module
+var app = server(quota);
+
+app.listen(process.env.PORT || 9003);
