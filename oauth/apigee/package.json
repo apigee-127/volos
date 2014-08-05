@@ -12,7 +12,10 @@
   "dependencies": {
     "volos-oauth-common": "0.9.x",
     "debug": "1.0.x",
-    "apigee-access": "1.0.x"
+    "apigee-access": ">=1.2.x",
+    "semver": "3.x.x",
+    "superagent": "0.x.x",
+    "underscore": "1.6.x"
   },
   "devDependencies": {
     "supertest": "0.8.x"

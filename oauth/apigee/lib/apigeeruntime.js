@@ -38,7 +38,23 @@ var querystring = require('querystring');
 var OAuthCommon = require('volos-oauth-common');
 var apigee = require('apigee-access');
 var debug = require('debug')('apigee');
+var superagent = require('superagent');
 var _ = require('underscore');
+var oldProtocol = require('./apigeeoldremote');
+
+var apigeeAccess;
+var hasApigeeAccess = false;
+
+try {
+  // Older versions of Apigee won't have this, so be prepared to work around.
+  apigeeAccess = require('apigee-access');
+  if (apigeeAccess.getQuota()) {
+    hasApigeeAccess = true;
+  }
+} catch (e) {
+  debug('Operating without access to apigee-access');
+}
+
 
 var create = function(options) {
   var spi = new ApigeeRuntimeSpi(options);
@@ -48,18 +64,65 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeRuntimeSpi = function(options) {
-  if (!options.uri) {
-    throw new Error('uri parameter must be specified');
-  }
-  if (!options.key) {
-    throw new Error('key parameter must be specified');
-  }
+  if (hasApigeeAccess) {
+    if (!options.uri) {
+      throw new Error('uri parameter must be specified');
+    }
+    if (!options.key) {
+      throw new Error('key parameter must be specified');
+    }
 
-  this.uri = options.uri;
-  this.key = options.key;
+    this.uri = options.uri;
+    this.key = options.key;
+  }
 
   this.oauth = new OAuthCommon(ApigeeRuntimeSpi, options);
 };
+
+// Given the state of apigee-access, or the "version" of the remote proxy,
+// select an implementation. This happens on the first call so that we can
+// "start" the module if the proxy is down -- but this doesn't complete
+// until we can get one successful HTTP call through
+function selectImplementation(self, cb) {
+  if (self.impl) {
+    cb(undefined, self.impl);
+    return;
+  }
+
+  self.impl = new oldProtocol.OldRemoteOAuth(self);
+  cb(undefined, self.impl);
+/*
+  var impl;
+  if (self.apigeeQuota) {
+    self.quotaImpl = new ApigeeAccessQuota(self);
+    cb(undefined, self.quotaImpl);
+
+  } else {
+    superagent.agent().
+      get(self.options.uri + '/v2/version').
+      set('x-DNA-Api-Key', self.options.key).
+      end(function(err, resp) {
+        if (err) {
+          cb(err);
+        } else {
+          if (resp.notFound || !semver.satisfies(resp.text, '>=1.0.0')) {
+            if (self.options.startTime) {
+              cb(new Error('Quotas with a fixed starting time are not supported'));
+            } else {
+              self.quotaImpl = new ApigeeOldRemoteQuota(self);
+              cb(undefined, self.quotaImpl);
+            }
+          } else if (resp.ok) {
+            self.quotaImpl = new ApigeeRemoteQuota(self);
+            cb(undefined, self.quotaImpl);
+          } else {
+            cb(new Error(util.format('HTTP error getting proxy version: %d', resp.statusCode)));
+          }
+        }
+    });
+  }
+  */
+}
 
 /*
  * Generate an access token using client_credentials. Options:
@@ -72,37 +135,10 @@ var ApigeeRuntimeSpi = function(options) {
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
 ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
-  var qs = {
-    grant_type: 'client_credentials'
-  };
-  if (options.attributes) {
-    qs.attributes = options.attributes;
-  }
-  if (options.scope) {
-    qs.scope = options.scope;
-  }
-  var body = querystring.stringify(qs);
-  options.grantType = 'client_credentials';
-  makeRequest(this, 'POST', '/tokentypes/client/tokens',
-    body, options, function(err, result) {
-      cb(err, result);
-    });
+  selectImplementation(this, function(err, impl) {
+    impl.createTokenClientCredentials(options, cb);
+  });
 };
-
-function setFlowVariables(req, resp) {
-  if (!req) { return; }
-  var keys = Object.keys(resp.headers);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    if (key.indexOf('x-v.') === 0) {
-      var varName = key.substring(4);
-      if (resp.headers[key].length) {
-        apigee.setVariable(req, varName, resp.headers[key]);
-        if (debug.enabled) { debug('VAR: ' + varName + ' = ' + resp.headers[key]); }
-      }
-    }
-  }
-}
 
 /*
  * Generate an access token using password credentials. Options:
@@ -116,23 +152,9 @@ function setFlowVariables(req, resp) {
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
 ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
-  var qs = {
-    grant_type: 'password',
-    username: options.username,
-    password: options.password
-  };
-  if (options.attributes) {
-    qs.attributes = options.attributes;
-  }
-  if (options.scope) {
-    qs.scope = options.scope;
-  }
-  var body = querystring.stringify(qs);
-  options.grantType = 'password';
-  makeRequest(this, 'POST', '/tokentypes/password/tokens',
-    body, options, function(err, result) {
-      cb(err, result);
-    });
+  selectImplementation(this, function(err, impl) {
+    impl.createTokenPasswordCredentials(options, cb);
+  });
 };
 
 /*
@@ -146,30 +168,9 @@ ApigeeRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb
  * Returns an object with all the fields in the standard OAuth 2.0 response.
  */
 ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) {
-  var qs = {
-    grant_type: 'authorization_code',
-    code: options.code
-  };
-  if (options.redirectUri) {
-    qs.redirect_uri = options.redirectUri;
-  }
-  if (options.clientId) {
-    qs.client_id = options.clientId;
-  }
-  var body = querystring.stringify(qs);
-  options.grantType = 'authorization_code';
-  makeRequest(this, 'POST', '/tokentypes/authcode/tokens',
-    body, options, function(err, result) {
-      // todo: fix at source (spec p. 45)
-      if (err) {
-        if (err.message === 'Invalid Authorization Code' || err.message === 'Required param : redirect_uri') {
-          err.code = 'invalid_grant';
-        } else if (/^Invalid redirect_uri :/.test(err.message)) {
-          err.code = 'invalid_grant';
-        }
-      }
-      cb(err, result);
-    });
+  selectImplementation(this, function(err, impl) {
+    impl.createTokenAuthorizationCode(options, cb);
+  });
 };
 
 /*
@@ -182,23 +183,8 @@ ApigeeRuntimeSpi.prototype.createTokenAuthorizationCode = function(options, cb) 
  * Returns the redirect URI as a string.
  */
 ApigeeRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
-  var qs = {
-    response_type: 'code',
-    client_id: options.clientId
-  };
-  if (options.redirectUri) {
-    qs.redirect_uri = options.redirectUri;
-  }
-  if (options.scope) {
-    qs.scope = options.scope;
-  }
-  if (options.state) {
-    qs.state = options.state;
-  }
-
-  makeGetRequest(this, '/tokentypes/authcode/authcodes', querystring.stringify(qs),
-                 options, function(err, result) {
-    cb(err, result);
+  selectImplementation(this, function(err, impl) {
+    impl.generateAuthorizationCode(options, cb);
   });
 };
 
@@ -212,26 +198,8 @@ ApigeeRuntimeSpi.prototype.generateAuthorizationCode = function(options, cb) {
  * Returns the redirect URI as a string.
  */
 ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
-  var qs = {
-    response_type: 'token',
-    client_id: options.clientId
-  };
-  if (options.attributes) {
-    qs.attributes = options.attributes;
-  }
-  if (options.redirectUri) {
-    qs.redirect_uri = options.redirectUri;
-  }
-  if (options.scope) {
-    qs.scope = options.scope;
-  }
-  if (options.state) {
-    qs.state = options.state;
-  }
-
-  makeGetRequest(this, '/tokentypes/implicit/tokens', querystring.stringify(qs),
-                 options, function(err, result) {
-    cb(err, result);
+  selectImplementation(this, function(err, impl) {
+    impl.createTokenImplicitGrant(options, cb);
   });
 };
 
@@ -243,23 +211,9 @@ ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  *   scope: optional
  */
 ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
-  var qs = {
-    grant_type: 'refresh_token',
-    refresh_token: options.refreshToken
-  };
-  if (options.scope) {
-    qs.scope = options.scope;
-  }
-  var body = querystring.stringify(qs);
-  options.grantType = 'refresh_token';
-  makeRequest(this, 'POST', '/tokentypes/all/refresh',
-    body, options, function(err, result) {
-      // todo: fix at source (spec p. 45)
-      if (err && err.message === 'Invalid Scope') {
-        err.code = 'invalid_scope';
-      }
-      cb(err, result);
-    });
+  selectImplementation(this, function(err, impl) {
+    impl.refreshToken(options, cb);
+  });
 };
 
 /*
@@ -270,267 +224,16 @@ ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {
  *   accessToken: same
  */
 ApigeeRuntimeSpi.prototype.invalidateToken = function(options, cb) {
-  var qs = {
-    token: options.token
-  };
-  if (options.tokenTypeHint) {
-    qs.tokenTypeHint = options.tokenTypeHint;
-  }
-  var body = querystring.stringify(qs);
-
-  makeRequest(this, 'POST', '/tokentypes/all/invalidate',
-    body, options, function(err, result) {
-      cb(err, result);
-    });
+  selectImplementation(this, function(err, impl) {
+    impl.invalidateToken(options, cb);
+  });
 };
 
 /*
  * Validate an access token.
  */
 ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
-  var urlString = this.uri + '/tokentypes/all/verify';
-  if (requiredScopes) {
-    urlString = urlString + '?' + querystring.stringify({ scope: requiredScopes });
-  }
-  var r = url.parse(urlString);
-  r.headers = {
-    Authorization: 'Bearer ' + token
-  };
-  r.headers['x-DNA-Api-Key'] = this.key;
-  r.method = 'GET';
-
-  var requestor;
-  if (r.protocol === 'http:') {
-    requestor = http;
-  } else if (r.protocol === 'https:') {
-    requestor = https;
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
-  }
-
-  var req = requestor.request(r, function(resp) {
-    verifyRequestComplete(resp, requiredScopes, cb);
+  selectImplementation(this, function(err, impl) {
+    impl.verifyToken(token, requiredScopes, cb);
   });
-
-  req.on('error', function(err) {
-    cb(err);
-  });
-  req.end();
 };
-
-function makeRequest(self, verb, uriPath, body, options, cb) {
-  if (typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
-
-  var finalUri = self.uri + uriPath;
-
-  var r = url.parse(finalUri);
-  r.headers = {
-    Authorization: 'Basic ' + new Buffer(options.clientId + ':' + options.clientSecret).toString('base64')
-  };
-  r.headers['x-DNA-Api-Key'] = self.key;
-  if (options.tokenLifetime) {
-    r.headers['x-DNA-Token-Lifetime'] = options.tokenLifetime;
-  }
-  if (options.attributes) {
-    r.headers['x-DNA-Token-Attributes'] = JSON.stringify(options.attributes);
-  }
-  r.method = verb;
-  if (body) {
-    r.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-  }
-
-  var requestor;
-  if (r.protocol === 'http:') {
-    requestor = http;
-  } else if (r.protocol === 'https:') {
-    requestor = https;
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
-  }
-
-  var req = requestor.request(r, function(resp) {
-    requestComplete(resp, options, function() {
-      setFlowVariables(options.request, resp);
-      cb.apply(this, arguments);
-    });
-  });
-
-  req.on('error', function(err) {
-    cb(err);
-  });
-  if (body) {
-    req.end(body);
-  } else {
-    req.end();
-  }
-}
-
-function makeGetRequest(self, uriPath, qs, options, cb) {
-  var finalUri = self.uri + uriPath + '?' + qs;
-
-  var r = url.parse(finalUri);
-  r.headers = {};
-  r.headers['x-DNA-Api-Key'] = self.key;
-  r.method = 'GET';
-
-  if (debug.enabled) {
-    debug('GET ' + finalUri);
-  }
-
-  var requestor;
-  if (r.protocol === 'http:') {
-    requestor = http;
-  } else if (r.protocol === 'https:') {
-    requestor = https;
-  } else {
-    cb(new Error('Unsupported protocol ' + r.protocol));
-    return;
-  }
-
-  var req = requestor.request(r, function(resp) {
-    getRequestComplete(resp, options, function() {
-      setFlowVariables(options.request, resp);
-      cb.apply(this, arguments);
-    });
-  });
-
-  req.on('error', function(err) {
-    cb(err);
-  });
-  req.end();
-}
-
-function readResponse(resp, data) {
-  var d;
-  do {
-    d = resp.read();
-    if (d) {
-      data += d;
-    }
-  } while (d);
-  return data;
-}
-
-function requestComplete(resp, options, cb) {
-  resp.on('error', function(err) {
-    cb(err);
-  });
-
-  var respData = '';
-  resp.on('readable', function() {
-    respData = readResponse(resp, respData);
-  });
-
-  resp.on('end', function() {
-    if (resp.statusCode >= 300) {
-      var err = new Error('Error on HTTP request');
-      err.statusCode = resp.statusCode;
-      if (resp.statusCode === 400 || resp.statusCode === 401) { // oauth return
-        var ret = JSON.parse(respData);
-        if (ret.ErrorCode !== null) {
-          err.code = ret.ErrorCode;
-          err.message = ret.Error;
-        }
-      } else {
-        err.message = respData;
-      }
-      cb(err);
-    } else {
-      var json;
-      try {
-        json = JSON.parse(respData);
-        if (json.expires_in) {
-          json.expires_in = parseInt(json.expires_in, 10);
-        }
-        if (options.grantType) {
-          json.token_type = options.grantType;
-        }
-        if (json.attributes) {
-          json.attributes = JSON.parse(json.attributes);
-        }
-      } catch (e) {
-        // The response might not be JSON -- not everything returns it
-        return cb();
-      }
-      cb(undefined, json);
-    }
-  });
-}
-
-function getRequestComplete(resp, options, cb) {
-  resp.on('error', function(err) {
-    cb(err);
-  });
-
-  var respData = '';
-  resp.on('readable', function() {
-    respData = readResponse(resp, respData);
-  });
-
-  resp.on('end', function() {
-    if (resp.statusCode !== 302) {
-      var err = new Error('Error on HTTP request');
-      err.statusCode = resp.statusCode;
-      err.message = respData;
-      cb(err);
-    } else {
-      cb(undefined, resp.headers.location);
-    }
-  });
-}
-
-function verifyRequestComplete(resp, requiredScopes, cb) {
-  resp.on('error', function(err) {
-    cb(err);
-  });
-
-  var respData = '';
-  resp.on('readable', function() {
-    respData = readResponse(resp, respData);
-  });
-
-  resp.on('end', function() {
-    var err;
-    if (resp.statusCode === 401) {
-      try {
-        var json = JSON.parse(respData);
-        err = new Error('invalid_token');
-        err.errorCode = 'invalid_token';
-        err.statusCode = resp.statusCode;
-        err.message = json.fault.faultstring;
-        cb(err);
-      } catch (e) {
-        err = new Error('Error on HTTP request');
-        err.statusCode = resp.statusCode;
-        err.message = respData;
-        cb(err);
-      }
-    } else if (resp.statusCode !== 200) {
-      err = new Error('Error on HTTP request');
-      err.statusCode = resp.statusCode;
-      err.message = respData;
-      cb(err);
-    } else {
-      if (cb) {
-        // todo: this can be removed when Apigee Edge can process scopes passed up to it
-        var parsed = querystring.parse(respData);
-        if (!Array.isArray(requiredScopes)) {
-          requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
-        }
-        var grantedScopes = parsed.scope ? parsed.scope.split(' ') : [];
-        if (_.difference(requiredScopes, grantedScopes).length > 0) {
-          err = new Error('invalid_scope');
-          err.errorCode = 'invalid_scope';
-          return cb(err);
-        }
-        if (parsed.attributes) { parsed.attributes = JSON.parse(parsed.attributes); }
-        cb(undefined, parsed);
-      }
-    }
-  });
-}
