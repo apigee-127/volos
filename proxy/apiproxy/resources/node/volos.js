@@ -106,6 +106,7 @@ function verifyAccessToken(req, resp) {
     return;
   }
   verifyJsonRequest(req, resp, function(request) {
+    // TODO if resource path is included, set flow.resource.name to it.
     oauth.verifyAccessToken(req, request, function(err, result) {
       if (err) {
         sendError(500, resp, err.message);
@@ -174,7 +175,7 @@ function revokeToken(req, resp) {
       if (err) {
         sendError(500, resp, err.message);
       } else {
-        sendJson(200, resp, result);
+        sendJson(200, resp, {});
       }
     });
   });

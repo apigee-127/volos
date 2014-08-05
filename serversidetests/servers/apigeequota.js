@@ -7,6 +7,10 @@
  var config = require('./volos/testconfig/testconfig-apigee');
  var server = require('./volos/quota/test/expressserver');
 
+ // Make doubly sure that we are using apigee-access only
+ delete config.config.uri;
+ delete config.config.key;
+
  var quota = apigeeQuota.create(config.config);
 
  // Build an Express server using the code from the cache module

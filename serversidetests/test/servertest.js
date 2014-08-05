@@ -107,22 +107,18 @@ describe('Apigee Server Tests', function() {
     });
   });
 
-/*
   describe('Cache', function() {
     var test = require('../../cache/test/verifycache.js');
     test.verify(config.testUriBase + '/volostests-apigeecache');
   });
-  */
 
   describe('Quota', function() {
     var test = require('../../quota/test/verifyquota.js');
     test.verify(config.testUriBase + '/volostests-apigeequota');
   });
 
-/*
   describe('OAuth', function() {
     var test = require('../../oauth/test/rfc6749_common.js');
     test.verifyOauth(testConfig, config.testUriBase + '/volostests-apigeeoauth');
   });
-  */
 });
