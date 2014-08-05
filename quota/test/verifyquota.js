@@ -25,29 +25,39 @@
 
 var should = require('should');
 var request = require('supertest');
+var debug = require('debug')('quotatest');
 
 module.exports.verify = function(server) {
 
+  if (typeof server === 'string') {
+    debug('verify target: %s', server);
+  }
   describe('count', function() {
     it('must count correctly', function(done) {
+      debug('GET /count');
       request(server)
         .get('/count')
         .end(function(err, res) {
           should.not.exist(err);
+          debug('result %s %j', res.text, res.headers);
           res.status.should.eql(200);
           checkHeaders(res, 2, 1, 60);
 
+          debug('GET /count');
           request(server)
             .get('/count')
             .end(function(err, res) {
               should.not.exist(err);
+              debug('result %s %j', res.text, res.headers);
               res.status.should.eql(200);
               checkHeaders(res, 2, 0, 60);
 
+              debug('GET /count');
               request(server)
                 .get('/count')
                 .end(function(err, res) {
                   should.not.exist(err);
+                  debug('result %s %j', res.text, res.headers);
                   res.status.should.eql(403);
                   checkHeaders(res, 2, -1, 60);
 

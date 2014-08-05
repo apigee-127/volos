@@ -27,33 +27,44 @@ var assert = require('assert');
 var should = require('should');
 var request = require('supertest');
 var async = require('async');
+var debug = require('debug')('cachetest');
 var _ = require('underscore');
 
 var ttl = 50;
 
 module.exports.verify = function(server) {
+  if (typeof server === 'string') {
+    debug('verify target: %s', server);
+  }
+
   it('must cache', function(done) {
+    debug('GET /count');
     request(server)
       .get('/count')
       .end(function(err, res) {
         should.not.exist(err);
+        debug('Result: %s %j', res.text, res.headers);
         res.status.should.eql(200);
         should.exist(res.header['cache-control']);
         res.body.count.should.equal(1);
         var headers = res.headers;
 
+        debug('GET /count');
         request(server)
           .get('/count')
           .end(function(err, res) {
             should.not.exist(err);
+            debug('Result: %s %j', res.text, res.headers);
             res.status.should.eql(200);
             res.body.count.should.equal(1);
             _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
+            debug('GET /count');
             request(server)
               .get('/count')
               .end(function(err, res) {
                 should.not.exist(err);
+                debug('Result: %s %j', res.text, res.headers);
                 res.status.should.eql(200);
                 res.body.count.should.equal(1);
                 _.keys(headers).length.should.equal(_.keys(res.headers).length);
