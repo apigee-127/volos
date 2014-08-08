@@ -32,7 +32,7 @@
  * }
  */
 
-var LRU = require('lru-cache');
+var LRU = require('lru-cache-plus');
 
 var Common = require('volos-cache-common');
 var caches = {};
