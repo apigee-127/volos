@@ -1,6 +1,6 @@
 {
   "name": "volos-swagger",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "description": "Middleware for bridging swagger (via swagger-tools) and volos",
   "homepage": "https://github.com/apigee/volos",
@@ -10,13 +10,12 @@
     "swagger"
   ],
   "author": "Scott Ganyo <sganyo@apigee.com>",
-  "license": "MIT",
   "main": "lib/connect-middleware.js",
   "dependencies": {
     "debug": "1.0.x",
-    "underscore" : "1.6.x"
+    "underscore": "1.6.x"
   },
-  "devDependencies":  {
+  "devDependencies": {
     "mocha": "1.19.x",
     "should": "3.1.x",
     "express": "3.4.x",
