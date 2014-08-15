@@ -19,7 +19,8 @@
     "inquirer": "0.5.x",
     "apigee-access": "1.0.x",
     "debug": "1.0.x",
-    "apigeetool": "x.x.x"
+    "apigeetool": "x.x.x",
+    "swagger-tools": ""
   },
   "scripts": {
     "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test",

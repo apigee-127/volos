@@ -30,16 +30,17 @@ var expressServer = require('./support/expressserver');
 var async = require('async');
 var _ = require('underscore');
 
-var ConnectMiddleware = require('../lib/connect-middleware');
 var redisConfig = require('../../testconfig/testconfig-redis');
 var oauth = redisConfig.oauth;
 
-var volosConfig = require('./support/volos.json');
+var swagger = require('./support/swagger.json');
 
 describe('Swagger Middleware', function() {
 
   var client_id, client_secret, defaultScope, scopes;
   var creator = redisConfig.fixtureCreator;
+  var server = expressServer();
+  var count = 0;
 
   before(function(done) {
     creator.createFixtures(function(err, apps) {
@@ -58,17 +59,6 @@ describe('Swagger Middleware', function() {
 
   describe('Operations', function() {
 
-    var count = 0;
-    var server;
-
-    before(function(done) {
-      var config = _.extend({}, volosConfig);
-      delete(config.global); // just test operation-level stuff, not global stuff
-
-      var middleware = new ConnectMiddleware(config);
-      server = expressServer(middleware);
-      done();
-    });
 
     it('must access clean', function(done) {
       request(server)
@@ -158,34 +148,25 @@ describe('Swagger Middleware', function() {
     });
   });
 
-  describe('Global', function() {
+  describe('Path', function() {
 
-    var count = 0;
-    var server;
-
-    before(function(done) {
-      var config = _.extend({}, volosConfig);
-      delete(config.operations); // just test global stuff, not operations
-
-      var middleware = new ConnectMiddleware(config);
-      server = expressServer(middleware);
-      done();
-    });
-
-    it('should cache everything', function(done) {
+    it('must hit cache', function(done) {
       request(server)
-        .get('/clean')
+        .get('/cachedPath')
         .end(function(err, res) {
           should.not.exist(err);
           res.status.should.eql(200);
+          should.exist(res.header['cache-control']);
           res.body.count.should.equal(++count);
+          var headers = res.headers;
 
           request(server)
-            .get('/clean')
+            .get('/cachedPath')
             .end(function(err, res) {
               should.not.exist(err);
               res.status.should.eql(200);
               res.body.count.should.equal(count);
+              _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
               done();
             });
@@ -194,12 +175,53 @@ describe('Swagger Middleware', function() {
 
     it('must hit quota', function(done) {
       request(server)
-        .get('/quota')
+        .get('/quotaPath')
         .end(function(err, res) {
           should.not.exist(err);
-          res.status.should.eql(403);
+          res.status.should.eql(200);
+          res.body.count.should.equal(++count);
 
-          done();
+          request(server)
+            .get('/quotaPath')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              request(server)
+                .get('/quotaPath')
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(403);
+
+                  done();
+                });
+            });
+        });
+    });
+
+    it('must handle auth', function(done) {
+      request(server)
+        .get('/securedPath')
+        .end(function(err, res) {
+          should.not.exist(err);
+          res.status.should.eql(401);
+
+          getToken(function(err, token) {
+            if (err) { return done(err); }
+
+            request(server)
+              .get('/securedPath')
+              .set('Authorization', 'Bearer ' + token)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(++count);
+
+                done();
+              });
+
+          });
         });
     });
 

@@ -1,31 +1,40 @@
 'use strict';
 
-// Swagger OAuth: http://developers-blog.helloreverb.com/enabling-oauth-with-swagger/
-// todo: hook up the swagger oauth routes
-// todo: currently must *not* have same cache at global & operation levels
-
 var _ = require('underscore');
 var debug = require('debug')('swagger');
 
-var deploymentConfig;
+var swagger;
 var resourcesMap; // name -> volos resource
 var operationsMap; // operationId -> middleware chain
 var authorizationsMap; // operationId -> middleware chain
 
+var RESOURCES = 'x-volos-resources';
+var APPLY = 'x-volos-apply';
+var AUTH = 'x-volos-authorizations';
+
 module.exports = middleware;
 
 // the middleware
-function middleware(volosConfig) {
+function middleware(swaggerObject) {
 
-  deploymentConfig = volosConfig;
-  resourcesMap = createResources();
+  if (swaggerObject) {
+    swagger = swaggerObject;
+    resourcesMap = createResources();
+  }
+
   operationsMap = {};
   authorizationsMap = {};
   var mwChain = chain([ifAuthenticated, applyMiddleware]);
 
   return function(req, res, next) {
     if (debug.enabled) { debug('handle req: ' + req.path); }
-    if (!getOperationId(req)) { return next(); }
+    if (!(req.swagger && req.swagger.operation)) { return next(); }
+
+    if (!swagger) {
+      swagger = req.swagger.swaggerObject;
+      resourcesMap = createResources();
+    }
+
     mwChain(req, res, next);
   };
 }
@@ -33,17 +42,13 @@ function middleware(volosConfig) {
 // check Swagger OAuth2
 function ifAuthenticated(req, res, next) {
 
-  var operationId = getOperationId(req);
-  if (!operationId) { return next(); }
-
-  var authChain = authorizationsMap[operationId];
+  var operation = req.swagger.operation;
+  var authChain = operation.volos ? operation.volos.authChain : undefined; // cache
 
   if (!authChain) {
-    // use the operation.authorizations if present, otherwise api.authorizations
-    var authorizations = req.swagger.operation ? req.swagger.operation.authorizations : undefined;
-    if (!authorizations) {
-      authorizations = req.swagger.api ? req.swagger.api.authorizations : undefined;
-    }
+    if (debug.enabled) { debug('creating auth chain for: ' + operation.operationId); }
+
+    var authorizations = operation[AUTH] || req.swagger.path[AUTH];
 
     var middlewares = [];
     if (authorizations) {
@@ -60,34 +65,28 @@ function ifAuthenticated(req, res, next) {
     }
 
     authChain = chain(middlewares);
-    authorizationsMap[operationId] = authChain;
+
+    if (!operation.volos) { operation.volos = {}; }
+    operation.volos.authChain = authChain;
   }
 
   authChain(req, res, next);
 }
 
-function getOperationId(req) {
-  if (req.swagger && req.swagger.operation) {
-    return req.swagger.operation.nickname;
-  } else {
-    debug('no operation defined for ' + req.path);
-    return undefined;
-  }
-}
-
 function applyMiddleware(req, res, next) {
 
-  var operationId = getOperationId(req);
-  if (!operationId) { return next(); }
-
-  var mwChain = operationsMap[operationId];
+  var operation = req.swagger.operation;
+  var mwChain = operation.volos ? operation.volos.mwChain : undefined; // cache
 
   if (!mwChain) {
-    var specific = deploymentConfig.operations ? deploymentConfig.operations[operationId] : [];
-    var global = deploymentConfig.global || [];
+    if (debug.enabled) { debug('creating volos chain for: ' + operation.operationId); }
+    var opMw = createMiddlewareChain(operation[APPLY] || []);
+    var pathMw = createMiddlewareChain(req.swagger.path[APPLY] || []);
 
-    mwChain = createMiddlewareChain(global.concat(specific));
-    operationsMap[operationId] = mwChain;
+    mwChain = chain([opMw, pathMw]);
+
+    if (!req.swagger.volos) { req.swagger.volos = {}; }
+    operation.volos.mwChain = mwChain;
   }
 
   mwChain(req, res, next);
@@ -95,14 +94,17 @@ function applyMiddleware(req, res, next) {
 
 function createMiddlewareChain(applications) {
   var middlewares = [];
-  _.each(applications, function (application) {
-    _.each(application, function(applicationOptions, resourceName) {
-      var resource = resourcesMap[resourceName];
-      var mwDef = resource.connectMiddleware();
-      var mwFactory = mwDef.cache ? mwDef.cache : mwDef.apply;  // quota is apply(), cache is cache() todo: standardize
+  _.each(applications, function(applicationOptions, resourceName) {
+    if (debug.enabled) { debug('chaining: ' + resourceName); }
+    var resource = resourcesMap[resourceName];
+    var mwDef = resource.connectMiddleware();
+    var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
+    if (mwFactory) {
       var mw = mwFactory.apply(mwDef, applicationOptions || []);
       middlewares.push(mw);
-    });
+    } else {
+      if (debug.enabled) { debug('unknown middleware: ' + mwDef); }
+    }
   });
 
   return chain(middlewares);
@@ -132,7 +134,7 @@ function createResources() {
 
   var resources = {};
 
-  _.each(deploymentConfig.resources, function(def, name) {
+  _.each(swagger[RESOURCES], function(def, name) {
     var module = require(def.provider);
     var options = _.isArray(def.options) ? def.options : [def.options];
 

@@ -25,52 +25,19 @@
 
 var express = require('express');
 var assert = require('assert');
+var swagger = require('swagger-tools').middleware.v2_0;
+var volos = require('../../');
+var path = require('path');
 
 module.exports = function(middleware) {
   var app = express();
-  var counter = 1;
 
-  app.use(fakeSwagger);
-  app.use(middleware);
+  var swaggerObject = require('./swagger.json');
+  app.use(swagger.swaggerMetadata(swaggerObject));
+  app.use(volos());
 
-  app.get('/clean',
-    function(req, resp) {
-      resp.json({ count: counter++ });
-    });
+  app.use(swagger.swaggerRouter({ controllers: path.join(__dirname, 'controllers') }));
 
-  app.get('/cached',
-    function(req, resp) {
-      resp.json({ count: counter++ });
-    });
-
-  app.get('/quota',
-    function(req, resp) {
-      resp.json({ count: counter++ });
-    });
-
-  app.get('/secured',
-    function(req, resp) {
-      resp.json({ count: counter++ });
-    });
 
   return app;
-};
-
-function fakeSwagger(req, res, next) {
-  var nickname = req.path.substring(1);
-  req.swagger = {};
-  req.swagger.operation = { nickname: nickname };
-  if (nickname === 'secured') {
-    req.swagger.operation.authorizations = securedAuth;
-  }
-  next();
-}
-
-var securedAuth = {
-  "oauth2": [
-    {
-      "scope": "scope1",
-      "description": "whatevs"
-    }
-  ]
 };
