@@ -10,33 +10,29 @@ Once you have set up your swagger-tools middleware as documented [here](https://
 (note: only the swagger-metadata middleware is necessary), just set up your configuration (see below) and simply add 
 the Volos Swagger Middleware into your connect middleware chain after swagger-metadata.  
     
-    var VolosSwagger = require('volos-swagger');
-    var swaggerMiddleware = SwaggerMetadata(configuration); 
-    app.use(swaggerMiddleware);
+    var app = require('express')();
+    var swaggerObject = {};
+    var swagger = require('swagger-tools').middleware.v2;
+    app.use(swagger.swaggerMetadata(swaggerObject));
 
 ## Configuration
 
-The Volos Swagger Configuration is a Javascript Object with 3 keys:
+The Volos Swagger Configuration is done directly in the Swagger 2.x document:
  
- * resources
- * global
- * operations
- 
-The following sections discuss the format using this [example](test/support/volos.json) json file.  
+The following sections discuss examples from [this](test/support/swagger.json) swagger file.  
 
-Important: Be sure to include any referenced Volos modules in your package.json!   
+Important: Be sure to include any referenced Volos modules in your package.json and run `npm install`.   
 
 ### Resources
 
-The resources section defines how the modules that will be referenced in the other sections of this file (and the 
-Swagger definition) will be instantiated and configured. The basic idea is that you simply define the array of 
+The "x-volos-resources" vendors extension section defines how the modules that will be referenced in the other sections 
+of this file will be instantiated and configured. The basic idea is that you simply define the array of 
 parameters that would have been passed in to create the Volos module had you done it programmatically.
  
 For example, [volos-cache-memory](../cache/memory/README.md) requires a name and a hash of options. If we want to create
 and use a cache named "memCache" that has a time-to-live (ttl) of 1000ms, we'd do so like this: 
 
-    {
-      "resources": {
+    "x-volos-resources": {
         "cache": {
           "provider": "volos-cache-memory",
           "options": [
@@ -72,62 +68,40 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
           ]
         }
       },
-
-Note: Unlike Cache and Quota, we will not reference the OAuth definition later in this file. Swagger 1.2 has direct 
-support for declaring OAuth 2.0 authorizations, so we can rely on those annotations directly. On the other hand,
-Swagger 1.2 doesn't support Cache or Quota, so we will have to map these to Swagger operations as described in the
-Operations section below.
       
-### Globals
+### Paths & Operations
 
-The global section is where you would specify any of the Volos middleware you wish to apply across all your paths. For
-example, if we wish to apply a quota and cache globally (as unlikely as that seems), we would list them in this section 
-like so: 
+#### Cache & Quota middleware
+
+Volos modules are applied in a Swagger path or operation with the "x-volos-apply" extension. In the example below, we 
+have examples of applying a cache ("cache") and a quota ("quota"). In each case, we're applying with the Volos defaults.
       
-      "global": [
-        {
-          "quota": [
-            {
-              "identifier": "*",
-              "weight": 1
+      "paths": {
+        "/cached": {
+          "get": {
+            "x-volos-apply": {
+              "cache": []
             }
-          ]
+          }
         },
-        {
-          "cache": null
-        }
-      ],
-
-Note that the Quota is being applied using a static identifier: "*". Thus, this would allow only 2 calls per minute
-across all endpoints. (Probably not very useful.) Had we not specified an identifier, it would have used the request URI 
-as the key for the quota.
-
-'"cache": null' just means that we aren't passing any parameters in (and are thus using defaults) - so in this case,
- the cache will use the request URI as the cache key.
-
-### Operations
-
-The operations section is where you would specify any of the Volos middleware you wish to apply on a per-operation
-basis. This section (as opposed to global) is where you would generally define your middleware insertion points. For
-these definitions, you must reference the Swagger operation "nickname" you have in your Swagger definition as your
-keys. 
-
-In the example below, we have two Swagger operations, one with a nickname of "cached" and another nicknamed
-"quota". You can see that the "cached" operation will apply the "cache" resource we created in the resources section
-above, while the "quota" operation will likewise be subject to the resource named "quota". In both of these cases,
-we've allowed the request URI to be the key by default.
-
-      
-      "operations": {
-        "cached": [
-          {
-            "cache": null
+        "/quota": {
+          "get": {
+            "x-volos-apply": {
+              "quota": []
+            }
           }
-        ],
-        "quota": [
-          {
-            "quota": null
+        },
+
+#### OAuth authorization
+
+Volos authorization is applied in a Swagger path or operation with the "x-volos-authorizations" extension. In the 
+example below, we are requiring that the request is using an OAuth Token validated by the "oauth2" resource requiring 
+the "scope1" scope. (Note: Additional scopes could also be required by space-delimiting them or using an array.)
+
+        "/secured": {
+          "get": {
+            "x-volos-authorizations": {
+              "oauth2": [{ "scope": "scope1" }]
+            }
           }
-        ]
-      }
-    }
+        },
