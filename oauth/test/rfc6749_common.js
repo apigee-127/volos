@@ -1056,7 +1056,12 @@ exports.verifyOauth = function(config, server) {
     }
 
     function verifyQueryRedirectSuccessResponse(err, res, reqHash, done) {
-      if (err) { return done(err); }
+      if (err) {
+        if (done) {
+          return done(err);
+        }
+        throw err;
+      }
 
       res.headers.should.have.property('location');
       var location = Url.parse(res.headers.location, true);
