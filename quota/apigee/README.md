@@ -31,7 +31,7 @@ quota set to reset in "one day" will reset 24 hours after the first message is r
 is set to the top of the hour on some day, then the quota will always reset at the top of the hour.
 * allow: The maximum number of requests to allow. This may be overridden on each "apply" call if desired.
 * uri: The full URI of the Apigee adapter that you deployed in the last step. For instance, if the organization
-name is "foo" then this might be "https://foo-test.apigee.net/volos-proxy".
+name is "foo" then this might be "https://foo-test.apigee.net/apigee-remote-proxy".
 * key: An API consumer key for a valid "application" that is part of the same organization where the adapter
 was installed.
 * bufferSize: (Number) optional, create a local memory buffer to hold up to bufferSize for quota elements

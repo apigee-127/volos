@@ -181,7 +181,7 @@
         <Response/>
     </PostFlow>
     <HTTPProxyConnection>
-        <BasePath>/volos-proxy</BasePath>
+        <BasePath>/apigee-remote-proxy</BasePath>
         <Properties/>
         <VirtualHost>default</VirtualHost>
         <VirtualHost>secure</VirtualHost>

@@ -3,7 +3,7 @@
 
 module.exports = {
   organization: 'ORGANIZATION',
-  uri: 'https://ORGANIZATION-test.apigee.net/volos-proxy',
+  uri: 'https://ORGANIZATION-test.apigee.net/apigee-remote-proxy',
   key: 'KEY',
   secret: 'SECRET',
   user: 'USER',
