@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<APIProxy revision="1" name="volos-proxy">
+<APIProxy revision="1" name="apigee-remote-proxy">
     <ConfigurationVersion minorVersion="0" majorVersion="4"/>
-    <Description>Proxy for remote Volos operations</Description>
-    <DisplayName>Volos Proxy</DisplayName>
+    <Description>Proxy for Apigee Remote operations</Description>
+    <DisplayName>Apigee Remote Proxy</DisplayName>
     <Policies>
         <Policy>ExtractInvalidateParams</Policy>
         <Policy>GenerateAuthorizationCode</Policy>
