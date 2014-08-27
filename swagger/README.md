@@ -32,13 +32,13 @@ For example, [volos-cache-memory](../cache/memory/README.md) requires a name and
 and use a cache named "memCache" that has a time-to-live (ttl) of 1000ms, we'd do so like this: 
 
 ```yaml
-    x-volos-resources:
-      cache:
-        provider: "volos-cache-memory"
-        options:
-          - "memCache"
-          -
-            ttl: 10000
+x-volos-resources:
+  cache:
+    provider: "volos-cache-memory"
+    options:
+      - "memCache"
+      -
+        ttl: 10000
 ```
 
 Note: The key (name) for this resource is "cache". This is the name that will be used later to refer to this cache, not
@@ -47,6 +47,7 @@ Note: The key (name) for this resource is "cache". This is the name that will be
 Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota") and 
 [volos-oauth-redis](../oauth/redis/README.md) ("oauth2") reference in this example: 
 
+```yaml
     quota:
       provider: "volos-quota-memory"
       options:
@@ -59,7 +60,8 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
       options:
         -
             encryptionKey: "This is the key to encrypt/decrypt stored credentials"
-      
+```
+
 ### Paths & Operations
 
 #### Cache & Quota middleware
@@ -67,13 +69,15 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
 Volos modules are applied in a Swagger path or operation with the "x-volos-apply" extension. In the example below, we 
 have examples of applying a cache ("cache") and a quota ("quota"). In each case, we're applying with the Volos defaults.
 
-    paths:
-      /cached:
-        x-volos-apply:
-          cache: []
-      /quota:
-        x-volos-apply: 
-          quota: []
+```yaml
+paths:
+ /cached:
+   x-volos-apply:
+     cache: []
+ /quota:
+   x-volos-apply: 
+     quota: []
+```
 
 #### OAuth authorization
 
@@ -81,8 +85,10 @@ Volos authorization is applied in a Swagger path or operation with the "x-volos-
 example below, we are requiring that the request is using an OAuth Token validated by the "oauth2" resource requiring 
 the "scope1" scope. (Note: Additional scopes could also be required by space-delimiting them or using an array.)
 
+```yaml
     /secured:
       x-volos-authorizations: 
         oauth2: 
           - 
             scope: "scope1"
+```
