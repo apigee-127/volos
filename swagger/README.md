@@ -58,6 +58,16 @@ quota:
       timeUnit: "minute"
       interval: 1
       allow: 2
+quota-qparam:
+  provider: "volos-quota-memory"
+  options:
+   function:
+    source: qparam
+    key: client_id
+    -
+      timeUnit: "minute"
+      interval: 1
+      allow: 2
 oauth2:
   provider: "volos-oauth-apigee"
   options:
