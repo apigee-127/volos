@@ -48,18 +48,18 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
 [volos-oauth-redis](../oauth/redis/README.md) ("oauth2") reference in this example: 
 
 ```yaml
-    quota:
-      provider: "volos-quota-memory"
-      options:
-        -
-          timeUnit: "minute"
-          interval: 1
-          allow: 2
-    oauth2:
-      provider: "volos-oauth-apigee"
-      options:
-        -
-            encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+quota:
+  provider: "volos-quota-memory"
+  options:
+    -
+      timeUnit: "minute"
+      interval: 1
+      allow: 2
+oauth2:
+  provider: "volos-oauth-apigee"
+  options:
+    -
+      encryptionKey: "This is the key to encrypt/decrypt stored credentials"
 ```
 
 ### Paths & Operations
@@ -71,13 +71,13 @@ have examples of applying a cache ("cache") and a quota ("quota"). In each case,
 
 ```yaml
 paths:
- /cached:
-   x-volos-apply:
-     cache: []
- /quota:
-   x-volos-apply: 
-     quota: []
-```
+  /cached:
+    x-volos-apply:
+      cache: []
+  /quota:
+    x-volos-apply: 
+      quota: []
+```          
 
 #### OAuth authorization
 
@@ -86,9 +86,9 @@ example below, we are requiring that the request is using an OAuth Token validat
 the "scope1" scope. (Note: Additional scopes could also be required by space-delimiting them or using an array.)
 
 ```yaml
-    /secured:
-      x-volos-authorizations: 
-        oauth2: 
-          - 
-            scope: "scope1"
+/secured:
+  x-volos-authorizations: 
+    oauth2: 
+      - 
+        scope: "scope1"
 ```
