@@ -86,9 +86,10 @@ function applyQuota(self, options, resp, next) {
       if (!reply.isAllowed) {
         if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
         resp.statusCode = 403;
-        return resp.end(JSON.stringify({ error: 'exceeded quota' }));
+        err = new Error('exceeded quota');
+        err.status = 403;
       }
-      next();
+      next(err);
     }
   );
 }

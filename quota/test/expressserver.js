@@ -90,6 +90,12 @@ module.exports = function(quota) {
       resp.json({ count: counter++ });
     });
 
+  app.use(function(err, req, res, next) {
+    if (err.status !== 403) { return next(err);}
+    res.status(403);
+    res.send(err.message);
+  });
+
   return app;
 };
 
