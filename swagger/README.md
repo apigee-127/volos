@@ -54,18 +54,16 @@ quota:
    function:
     helper: test
     operation: extractQueryParam
-    params:
-    - "ApiKey"
+    options:
+      header: "ApiKey"
 quota-qparam:
   provider: "volos-quota-memory"
   options:
    function:
-    source: qparam
-    key: client_id
-    -
-      timeUnit: "minute"
-      interval: 1
-      allow: 2
+    helper: test
+    operation: extractQueryParam
+    options:
+      param: "client_id"
 oauth2:
   provider: "volos-oauth-apigee"
   options:
