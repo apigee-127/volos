@@ -52,12 +52,10 @@ quota:
   provider: "volos-quota-memory"
   options:
    function:
-    source: header
-    key: ApiKey
-    -
-      timeUnit: "minute"
-      interval: 1
-      allow: 2
+    helper: test
+    operation: extractQueryParam
+    params:
+    - "ApiKey"
 quota-qparam:
   provider: "volos-quota-memory"
   options:
