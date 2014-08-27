@@ -51,6 +51,9 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
 quota:
   provider: "volos-quota-memory"
   options:
+   function:
+    source: header
+    key: ApiKey
     -
       timeUnit: "minute"
       interval: 1
@@ -94,8 +97,8 @@ paths:
       quota:
         options:
           -
-            timeUnit: "minute"
-            interval: 1
+            source: header
+            key: ApiKey
             allow: 10
 ```          
 #### OAuth authorization
