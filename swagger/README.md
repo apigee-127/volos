@@ -38,7 +38,7 @@ x-volos-resources:
     options:
       - "memCache"
       -
-        ttl: 10000
+        ttl: 1000
 ```
 
 Note: The key (name) for this resource is "cache". This is the name that will be used later to refer to this cache, not
@@ -66,7 +66,7 @@ oauth2:
 
 #### Cache & Quota middleware
 
-Volos modules are applied in a Swagger path or operation with the "x-volos-apply" extension. In the example below, we 
+Volos modules are applied in a Swagger path or operation with the `x-volos-apply` extension. In the example below, we 
 have examples of applying a cache ("cache") and a quota ("quota"). In each case, we're applying with the Volos defaults.
 
 ```yaml
@@ -78,7 +78,26 @@ paths:
     x-volos-apply: 
       quota: []
 ```          
+If we wanted to override the top-level configuration of 1000ms for the cache to say, 60s, and the quota to 10 per minute, we could do so like this:
 
+```yaml
+paths:
+  /cached:
+    x-volos-apply:
+      cache: 
+       options:
+         - "memCache60s"
+         -
+           ttl: 60000
+  /quota:
+    x-volos-apply: 
+      quota:
+        options:
+          -
+            timeUnit: "minute"
+            interval: 1
+            allow: 10
+```          
 #### OAuth authorization
 
 Volos authorization is applied in a Swagger path or operation with the "x-volos-authorizations" extension. In the 
@@ -92,3 +111,4 @@ the "scope1" scope. (Note: Additional scopes could also be required by space-del
       - 
         scope: "scope1"
 ```
+
