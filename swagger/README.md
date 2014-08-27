@@ -7,10 +7,10 @@ All Volos modules including Cache, Quota, and OAuth may be configured and tied t
  configuration similar to the code that you would use to programmatically drive the Volos middleware. 
 
 This can be included in an Apigee-127 project as simply as this:
-    
+```javascript
     var a127 = require('a127-magic');
     app.use(a127.middleware());
-
+```
 
 ## Configuration
 
