@@ -106,7 +106,7 @@ function selectImplementation(self, cb) {
           debug('Error getting version: %s', err);
           cb(err);
         } else {
-          if (resp.notFound || !semver.satisfies(resp.text, '>=1.0.0')) {
+          if (resp.notFound || !semver.satisfies(resp.text, '>=1.1.0')) {
             debug('Selected remote implementation with old protocol');
             self.impl = new oldImpl.OldRemoteOAuth(self);
             cb(undefined, self.impl);

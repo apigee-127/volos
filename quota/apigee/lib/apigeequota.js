@@ -129,7 +129,7 @@ function selectImplementation(self, cb) {
         if (err) {
           cb(err);
         } else {
-          if (resp.notFound || !semver.satisfies(resp.text, '>=1.0.0')) {
+          if (resp.notFound || !semver.satisfies(resp.text, '>=1.1.0')) {
             if (self.options.startTime) {
               cb(new Error('Quotas with a fixed starting time are not supported'));
             } else {
