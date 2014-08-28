@@ -11,15 +11,18 @@ This can be included in an Apigee-127 project as simply as this:
     var a127 = require('a127-magic');
     app.use(a127.middleware());
 
+
 ## Configuration
 
-The Volos Swagger Configuration is done directly in the Swagger 2.x document:
- 
-The following sections discuss examples from [this](test/support/swagger.json) swagger json file.  
+The model for Vendor Extensions in Swagger 2.0 includes a top-level configuration of the Vendor Resources which can be referenced later in the Swagger document.  
+
+Volos resources are defined and configured at the top level of the YAML structure.  When they are referenced later in the documentation you may choose to override some of the default parameters.  For example, you may have a top-level setting for a Cache TTL of 1000ms but for a particular path or operation you may wish to override the default and specify 60000ms.
+
+The Volos Swagger Configuration is done directly in the Swagger 2.x document.  Please see [this](test/support/swagger.yaml) example for reference.  The following sections of this README reference snippets of this file. 
 
 Important: Be sure to include any referenced Volos modules in your package.json and run `npm install`.   
 
-### Resources
+### Resources (Top-level Definition & Configuration)
 
 The "x-volos-resources" vendors extension section defines how the modules that will be referenced in the other sections 
 of this file will be instantiated and configured. The basic idea is that you simply define the array of 
@@ -28,13 +31,15 @@ parameters that would have been passed in to create the Volos module had you don
 For example, [volos-cache-memory](../cache/memory/README.md) requires a name and a hash of options. If we want to create
 and use a cache named "memCache" that has a time-to-live (ttl) of 1000ms, we'd do so like this: 
 
-    x-volos-resources:
-      cache:
-        provider: "volos-cache-memory"
-        options:
-          - "memCache"
-          -
-            ttl: 10000
+```yaml
+x-volos-resources:
+	cache:
+	provider: "volos-cache-memory"
+		options:
+		- "memCache"
+		-
+		ttl: 10000
+```
 
 Note: The key (name) for this resource is "cache". This is the name that will be used later to refer to this cache, not
 "memCache" - which the provider's name for the cache.
