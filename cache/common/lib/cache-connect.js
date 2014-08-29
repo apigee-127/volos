@@ -38,13 +38,24 @@ function CacheConnect(cache, options) {
 module.exports = CacheConnect;
 
 // only caches "GET" requests
-// id (optional) may be a string or a function that takes the request and generates a string id
-//   if not specified, id will be set to the request originalUrl
-CacheConnect.prototype.cache = function(id) {
+// options is a hash
+// options.key: (optional) may be a string or a function that takes the request and generates a string key
+//              if not specified, key will be set to the request originalUrl
+//              if function and the function returns null or undefined, request will not be cached
+// options.ttl: (optional) overrides the default cache ttl for this item
+CacheConnect.prototype.cache = function(options) {
   var self = this;
-  var options = {
-    ttl: this.internalCache.options.ttl
-  };
+  var id;
+  if (!options) { options = {}; }
+  if (_.isString(options) || _.isFunction(options)) {
+    id = options;
+    options = {}
+  }
+  if (options.key) {
+    id = options.key;
+    delete(options.key);
+  }
+
   return function(req, resp, next) {
 
     var key;

@@ -38,7 +38,8 @@ module.exports = QuotaConnect;
 
 // applies quota and returns (403) error on exceeded
 // options contains:
-// identifier (optional) may be a string or a function that takes the request and generates a string id
+// key (optional) may be a string or a function that takes the request and generates a string id
+//  note: for backward compatibility, 'identifier' may also be used
 //   if not specified, id will default to the request originalUrl
 // weight (optional) may be a number or a function that takes the request and generates a number
 QuotaConnect.prototype.apply = function(options) {
@@ -51,8 +52,9 @@ QuotaConnect.prototype.apply = function(options) {
 
 // applies quota on a per-caller address basis and returns (403) error on exceeded
 // options contains:
-// identifier (required, may be null) may be a string or a function that takes the request and generates a string id
-//   if not specified, id will be set to the request originalUrl
+// key (required, may be null) may be a string or a function that takes the request and generates a string id
+//  note: for backward compatibility, 'identifier' may also be used
+//   if not specified, key will be set to the request originalUrl
 // weight (optional) may be a number or a function that takes the request and generates a number
 //   if weight is specified, id is required (may be null)
 QuotaConnect.prototype.applyPerAddress = function(options) {

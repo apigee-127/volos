@@ -33,8 +33,6 @@ var _ = require('underscore');
 var redisConfig = require('../../testconfig/testconfig-redis');
 var oauth = redisConfig.oauth;
 
-var swagger = require('./support/swagger.json');
-
 describe('Swagger Middleware', function() {
 
   var client_id, client_secret, defaultScope, scopes;
@@ -72,69 +70,83 @@ describe('Swagger Middleware', function() {
         });
     });
 
-    it('must hit cache', function(done) {
-      request(server)
-        .get('/cached')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          should.exist(res.header['cache-control']);
-          res.body.count.should.equal(++count);
-          var headers = res.headers;
+    describe('Cache', function() {
 
-          request(server)
-            .get('/cached')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(count);
-              _.keys(headers).length.should.equal(_.keys(res.headers).length);
+      var headers;
+      before(function(done) {
+        request(server)
+          .get('/cached')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            should.exist(res.header['cache-control']);
+            res.body.count.should.equal(++count);
+            headers = res.headers;
+            done();
+          });
+      });
 
-              done();
-            });
-        });
-    });
+      it('must hit with default', function(done) {
+        request(server)
+          .get('/cached')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(count);
+            _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
-    it('must hit quota', function(done) {
-      request(server)
-        .get('/quota')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          res.body.count.should.equal(++count);
+            done();
+          });
+      });
 
-          request(server)
-            .get('/quota')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(++count);
+      it('must accept key', function(done) {
+        request(server)
+          .get('/cachedWithKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(count);
 
+            done();
+          });
+      });
+
+      it('must accept ttl', function(done) {
+        request(server)
+          .get('/cachedWithLowTtl')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(count);
+
+            setTimeout(function() {
               request(server)
-                .get('/quota')
+                .get('/cachedWithLowTtl')
                 .end(function(err, res) {
                   should.not.exist(err);
-                  res.status.should.eql(403);
+                  res.status.should.eql(200);
+                  should.exist(res.header['cache-control']);
+                  res.body.count.should.equal(++count);
 
                   done();
                 });
-            });
-        });
+            }, 500);
+          });
+      });
     });
 
-    it('must handle auth', function(done) {
-      request(server)
-        .get('/secured')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
+    describe('Quota', function() {
 
-          getToken(function(err, token) {
-            if (err) { return done(err); }
+      before(function(done) {
+        request(server)
+          .get('/quota')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
 
             request(server)
-              .get('/secured')
-              .set('Authorization', 'Bearer ' + token)
+              .get('/quota')
               .end(function(err, res) {
                 should.not.exist(err);
                 res.status.should.eql(200);
@@ -142,15 +154,121 @@ describe('Swagger Middleware', function() {
 
                 done();
               });
-
           });
+      });
+
+      it('must hit with default', function(done) {
+
+        request(server)
+          .get('/quota')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(403);
+
+            done();
+          });
+      });
+
+      it('must hit with key', function(done) {
+
+        request(server)
+          .get('/quotaWithKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(403);
+
+            done();
+          });
+      });
+
+      it('must hit with weight', function(done) {
+
+        request(server)
+          .get('/quotaWithWeight')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+
+            request(server)
+              .get('/quotaWithWeight')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(403);
+
+                done();
+              });
+          });
+      });
+
+    });
+
+    describe('Oauth', function() {
+
+      it('must handle auth', function(done) {
+
+        request(server)
+          .get('/secured')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
+
+            getToken(null, function(err, token) {
+              if (err) { return done(err); }
+
+              request(server)
+                .get('/secured')
+                .set('Authorization', 'Bearer ' + token)
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(200);
+                  res.body.count.should.equal(++count);
+
+                  done();
+                });
+
+            });
+          });
+      });
+
+      it('must handle scopes', function(done) {
+
+        getToken(null, function(err, token) {
+          if (err) { return done(err); }
+
+          request(server)
+            .get('/securedScope2')
+            .set('Authorization', 'Bearer ' + token)
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(400);
+
+              getToken('scope2', function(err, token) {
+                if (err) { return done(err); }
+
+                request(server)
+                  .get('/securedScope2')
+                  .set('Authorization', 'Bearer ' + token)
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    res.body.count.should.equal(++count);
+
+                    done();
+                  });
+
+              });
+            });
         });
+      });
+
     });
   });
 
   describe('Path', function() {
 
     it('must hit cache', function(done) {
+
       request(server)
         .get('/cachedPath')
         .end(function(err, res) {
@@ -174,6 +292,7 @@ describe('Swagger Middleware', function() {
     });
 
     it('must hit quota', function(done) {
+
       request(server)
         .get('/quotaPath')
         .end(function(err, res) {
@@ -201,13 +320,14 @@ describe('Swagger Middleware', function() {
     });
 
     it('must handle auth', function(done) {
+
       request(server)
         .get('/securedPath')
         .end(function(err, res) {
           should.not.exist(err);
           res.status.should.eql(401);
 
-          getToken(function(err, token) {
+          getToken(null, function(err, token) {
             if (err) { return done(err); }
 
             request(server)
@@ -227,12 +347,14 @@ describe('Swagger Middleware', function() {
 
   });
 
-  function getToken(cb) {
+  function getToken(scope, cb) {
 
     var tokenRequest = {
       clientId: client_id,
       clientSecret: client_secret
     };
+
+    if (scope) { tokenRequest.scope = scope; }
 
     oauth.spi.createTokenClientCredentials(tokenRequest, function(err, result) {
       if (err) { cb(err); }

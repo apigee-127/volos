@@ -106,7 +106,7 @@ function Quota(Spi, o) {
 }
 module.exports = Quota;
 
-// options.identifier (Non-object) required
+// options.key (Non-object) required (for backward compatibility, options.identifier is also allowed)
 // options.weight (Number) default = 1
 // options.allow (Number) default = whatever was set in policy setup, and this allows override
 // cb is invoked with first parameter error, second with stats on the quota
@@ -123,6 +123,8 @@ Quota.prototype.apply = function(o, cb) {
   } catch (err) {
     return cb(err);
   }
+
+  if (options.key) { options.identifier = options.key; delete(options.key); }
 
   if (!options.identifier) {
     return cb(new Error('identifier must be set'));

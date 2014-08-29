@@ -24,7 +24,7 @@ Once a quota has been created, you "apply" the quota, which involves setting som
 assign different weights to different API calls.
 * allow: How many requests to allow. By specifying this here, rather than when the quota is created,
 we can have different quotas for different apps.
-* identifier: Identifies the quota bucket. This is a string that may be set to any value. Each identifier locates
+* key: Identifies the quota bucket. This is a string that may be set to any value. Each key locates
 a single quota bucket, which has a separate counter value from other counters.
 
 ## Modules
@@ -41,7 +41,7 @@ place. Currently the options are:
     var qm = require('volos-quota-apigee');
     var quota = qm.createQuota({ timeUnit: 'day', interval: 1 });
     // Allow 100 requests per day for each application, based on API key
-    quota.apply({ identifier: apiKey, allow: 100 });
+    quota.apply({ key: apiKey, allow: 100 });
 
 ## Reference
 
@@ -51,7 +51,7 @@ place. Currently the options are:
 
 Apply the quota and invoke "callback" with a result. Options can have the following parameters:
 
-* identifier (required): A string that identifies the quota bucket. Quotas with different identifiers
+* key (required): A string that identifies the quota bucket. Quotas with different keys
 are treated as separate quotas.
 * weight (optional): A number that indicates how much to increment the quota counter by. Default is 1.
 * allow (optional): How much to allow this quota before it is used up. If this is not specified here,
@@ -82,7 +82,7 @@ Automatically sets the following headers on the response:
 
 Options (optional) may contain:
 
-* identifier (optional) may be a string or a function that takes the request and generates a string id.
+* key (optional) may be a string or a function that takes the request and generates a string id.
     if not specified, id will default to the request originalUrl
 * weight (optional) may be a number or a function that takes the request and generates a number
 
@@ -92,7 +92,7 @@ Applies quota on a per-caller address basis and returns (403) error on exceeded.
 
 Options (optional) may contain:
 
-* identifier (optional) may be a string or a function that takes the request and generates a string id.
+* key (optional) may be a string or a function that takes the request and generates a string id.
     if not specified, id will default to the request originalUrl
 * weight (optional) may be a number or a function that takes the request and generates a number
 

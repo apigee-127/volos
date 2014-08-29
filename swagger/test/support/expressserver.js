@@ -28,16 +28,22 @@ var assert = require('assert');
 var swagger = require('swagger-tools').middleware.v2_0;
 var volos = require('../../');
 var path = require('path');
+var yaml = require('yamljs');
 
 module.exports = function(middleware) {
   var app = express();
 
-  var swaggerObject = require('./swagger.json');
+  var swaggerObject = require('./swagger.yaml');
   app.use(swagger.swaggerMetadata(swaggerObject));
   app.use(volos());
 
   app.use(swagger.swaggerRouter({ controllers: path.join(__dirname, 'controllers') }));
 
+  app.use(function(err, req, res, next) {
+    if (err.status !== 403) { return next(err);}
+    res.status(403);
+    res.send(err.message);
+  });
 
   return app;
 };

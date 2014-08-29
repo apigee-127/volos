@@ -15,7 +15,7 @@ This can be included in an Apigee-127 project as simply as this:
 
 The Volos Swagger Configuration is done directly in the Swagger 2.x document:
  
-The following sections discuss examples from [this](test/support/swagger.json) swagger json file.  
+The following sections discuss examples from [this](test/support/swagger.yaml) swagger yaml file.  
 
 Important: Be sure to include any referenced Volos modules in your package.json and run `npm install`.   
 
@@ -32,9 +32,8 @@ and use a cache named "memCache" that has a time-to-live (ttl) of 1000ms, we'd d
       cache:
         provider: "volos-cache-memory"
         options:
-          - "memCache"
-          -
-            ttl: 10000
+          name: "memCache"
+          ttl: 10000
 
 Note: The key (name) for this resource is "cache". This is the name that will be used later to refer to this cache, not
 "memCache" - which the provider's name for the cache.
@@ -45,15 +44,13 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
     quota:
       provider: "volos-quota-memory"
       options:
-        -
-          timeUnit: "minute"
-          interval: 1
-          allow: 2
+        timeUnit: "minute"
+        interval: 1
+        allow: 2
     oauth2:
       provider: "volos-oauth-apigee"
       options:
-        -
-            encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+        encryptionKey: "This is the key to encrypt/decrypt stored credentials"
       
 ### Paths & Operations
 
@@ -65,10 +62,10 @@ have examples of applying a cache ("cache") and a quota ("quota"). In each case,
     paths:
       /cached:
         x-volos-apply:
-          cache: []
+          cache: {}
       /quota:
         x-volos-apply: 
-          quota: []
+          quota: {}
 
 #### OAuth authorization
 
@@ -79,5 +76,4 @@ the "scope1" scope. (Note: Additional scopes could also be required by space-del
     /secured:
       x-volos-authorizations: 
         oauth2: 
-          - 
-            scope: "scope1"
+          scope: "scope1"

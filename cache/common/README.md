@@ -72,8 +72,12 @@ Caches "GET" requests and their headers.
 
 Parameters:
 
-* id (optional) may be a string or a function that takes the request and generates a string id.
-  If not specified, id will be set to the request url.
+* options is a hash
+    * options.key: (optional) may be a string or a function that takes the request and generates a string key.
+        If not specified, key will be set to the request originalUrl.
+        If a function and the function returns null or undefined, request will not be cached.
+    * options.id (optional) may be a string or a function that takes the request and generates a string id.
+        If not specified, id will be set to the request url.
 
 
 #### Middleware usage examples: 

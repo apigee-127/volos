@@ -55,12 +55,8 @@ function ifAuthenticated(req, res, next) {
       _.each(authorizations, function(authorization, name) {
         var oauth = resourcesMap[name];
         var scopes = [];
-        _.each(authorization, function(scopeDecl) {
-          if (scopeDecl.scope) { scopes.push(scopeDecl.scope); }
-        });
-        if (debug.enabled) { debug('authenticate scopes: ' + scopes); }
-        if (_.isEmpty(scopes)) { scopes = null; }
-        middlewares.push(oauth.connectMiddleware().authenticate(scopes));
+        if (debug.enabled) { debug('authenticate scope: ' + authorization.scope); }
+        middlewares.push(oauth.connectMiddleware().authenticate(authorization.scope));
       });
     }
 
@@ -80,8 +76,8 @@ function applyMiddleware(req, res, next) {
 
   if (!mwChain) {
     if (debug.enabled) { debug('creating volos chain for: ' + operation.operationId); }
-    var opMw = createMiddlewareChain(operation[APPLY] || []);
-    var pathMw = createMiddlewareChain(req.swagger.path[APPLY] || []);
+    var opMw = createMiddlewareChain(operation[APPLY] || {});
+    var pathMw = createMiddlewareChain(req.swagger.path[APPLY] || {});
 
     mwChain = chain([opMw, pathMw]);
 
@@ -94,13 +90,13 @@ function applyMiddleware(req, res, next) {
 
 function createMiddlewareChain(applications) {
   var middlewares = [];
-  _.each(applications, function(applicationOptions, resourceName) {
+  _.each(applications, function(options, resourceName) {
     if (debug.enabled) { debug('chaining: ' + resourceName); }
     var resource = resourcesMap[resourceName];
     var mwDef = resource.connectMiddleware();
     var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
     if (mwFactory) {
-      var mw = mwFactory.apply(mwDef, applicationOptions || []);
+      var mw = mwFactory.apply(mwDef, [options || {}]);
       middlewares.push(mw);
     } else {
       if (debug.enabled) { debug('unknown middleware: ' + mwDef); }
@@ -136,15 +132,14 @@ function createResources() {
 
   _.each(swagger[RESOURCES], function(def, name) {
     var module = require(def.provider);
-    var options = _.isArray(def.options) ? def.options : [def.options];
 
     if (debug.enabled) {
       debug('creating resource: ' + name);
       debug('module: ' + def.provider);
-      debug('options: ' + JSON.stringify(options));
+      debug('options: ' + JSON.stringify(def.options));
     }
 
-    var resource = module.create.apply(this, options);
+    var resource = module.create.apply(this, [def.options]);
     resources[name] = resource;
   });
 
