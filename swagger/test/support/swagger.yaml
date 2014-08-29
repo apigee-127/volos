@@ -69,7 +69,6 @@ paths:
     get:
       x-volos-apply:
         cache:
-          key: '/cached'
           ttl: 10
       operationId: "run"
   /quota:

@@ -111,13 +111,14 @@ describe('Swagger Middleware', function() {
           });
       });
 
-      it('must accept ttl', function(done) {
+      it('must accept ttl override', function(done) {
         request(server)
           .get('/cachedWithLowTtl')
           .end(function(err, res) {
             should.not.exist(err);
             res.status.should.eql(200);
-            res.body.count.should.equal(count);
+            should.exist(res.header['cache-control']);
+            res.body.count.should.equal(++count);
 
             setTimeout(function() {
               request(server)
@@ -130,7 +131,7 @@ describe('Swagger Middleware', function() {
 
                   done();
                 });
-            }, 500);
+            }, 10);
           });
       });
     });
