@@ -20,10 +20,10 @@
     "apigee-access": ">=1.3.0",
     "debug": "1.0.x",
     "apigeetool": "x.x.x",
+    "yamljs": "0.1.x",
     "swagger-tools": "",
     "semver": "3.x.x",
     "superagent": "0.x.x"
-    "yamljs": "0.1.x"
   },
   "devDependencies": {
      "mocha": "x.x.x"
