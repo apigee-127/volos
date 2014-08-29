@@ -37,7 +37,7 @@ exports.cache = function(statusCode, headers, content, cb) {
   var buffer;
   if (statusCode && statusCode !== 500 && (headers || content)) {
 
-    var size = 2;
+    var size = 4;
     var pair;
     var pairs = _.pairs(headers);
     for (var i = 0; i < pairs.length; i++) {
@@ -45,20 +45,20 @@ exports.cache = function(statusCode, headers, content, cb) {
       size += Buffer.byteLength(pair[0]);
       if (typeof pair[1] !== 'string') { pair[1] = pair[1].toString(); }
       size += Buffer.byteLength(pair[1]);
-      size += 2;
+      size += 4;
     }
     if (content) { size += Buffer.isBuffer(content) ? content.length : Buffer.byteLength(content); }
 
     buffer = new Buffer(size);
     var pos = 0;
-    buffer.writeUInt8(statusCode, pos++);
-    buffer.writeUInt8(pairs.length.valueOf(), pos++); // # pairs
+    buffer.writeUInt16LE(statusCode, pos); pos+=2;
+    buffer.writeUInt16LE(pairs.length.valueOf(), pos); pos+=2; // # pairs
     for (i = 0; i < pairs.length; i++) {
       pair = pairs[i];
-      buffer.writeUInt8(pair[0].length.valueOf(), pos++); // key
+      buffer.writeUInt16LE(pair[0].length.valueOf(), pos); pos+=2; // key
       buffer.write(pair[0], pos);
       pos += Buffer._charsWritten;
-      buffer.writeUInt8(pair[1].length.valueOf(), pos++); // value
+      buffer.writeUInt16LE(pair[1].length.valueOf(), pos); pos+=2; // value
       buffer.write(pair[1], pos);
       pos += Buffer._charsWritten;
     }
@@ -75,13 +75,13 @@ exports.cache = function(statusCode, headers, content, cb) {
 
 exports.setFromCache = function(buffer, resp) {
   var pos = 0;
-  var statusCode = buffer.readUInt8(pos++);
+  var statusCode = buffer.readUInt16LE(pos); pos+=2;
   resp.statusCode = statusCode;
-  var numHeaders = buffer.readUInt8(pos++);
+  var numHeaders = buffer.readUInt16LE(pos); pos+=2;
   for (var i = 0; i < numHeaders; i++) {
-    var keyLen = buffer.readUInt8(pos++);
+    var keyLen = buffer.readUInt16LE(pos); pos+=2;
     var key = buffer.toString('utf8', pos, pos + keyLen); pos += keyLen;
-    var valLen = buffer.readUInt8(pos++);
+    var valLen = buffer.readUInt16LE(pos); pos+=2;
     var value = buffer.toString('utf8', pos, pos + valLen); pos += valLen;
     if (!resp.getHeader(key)) {
       resp.setHeader(key, value);
