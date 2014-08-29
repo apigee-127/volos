@@ -30,6 +30,12 @@ var eventEmitter = new EM();
 eventEmitter.setMaxListeners(100);
 
 function Cache(Spi, name, options) {
+  if (!options && _.isObject(name)) { // allow name to be passed as part of options
+    options = name;
+    name = options.name;
+    delete(options.name);
+  }
+  this.name = name;
   this.options = _.extend({}, options) || {};
   this.options.ttl = this.options.ttl ? convertNumber(this.options.ttl, 'ttl') : DEFAULT_TTL;
   this.cache = new Spi(name, this.options);
