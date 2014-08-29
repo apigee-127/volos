@@ -59,7 +59,7 @@ var WEEK = DAY * 7;
 
 function Quota(Spi, o) {
   var options = _.extend({}, o) || {};
-  options.timeUnit = o.timeUnit || 'minutes';
+  options.timeUnit = o.timeUnit || 'minute';
   options.interval = checkNumber(o.interval, 'interval') || 1;
   options.allow = checkNumber(o.allow, 'allow') || 1;
   options.rollingWindow = o.rollingWindow || false;

@@ -35,7 +35,8 @@ var urlModule = require('url');
 // We will change the major number for incompatible changes,
 // and the minor number for new API calls,
 // and the last bit when we change the implementation.
-var VERSION = '1.0.0';
+var LATEST_VERSION = '1.1.0';
+var NO_AX_VERSION = '1.0.0';
 var OLD_VERSION = '0.0.0';
 var isJson = /^application\/json(;.+)?$/;
 
@@ -44,13 +45,22 @@ var isJson = /^application\/json(;.+)?$/;
 var apigee;
 var quota;
 var oauth;
+var analytics;
 var supportedVersion;
 
+// Discover which features are available by checking the local
+// implementation of apigee-access. Because people download it from NPM,
+// we have to actually try each feature, not just check for the function.
 try {
   apigee = require('apigee-access');
   quota = apigee.getQuota();
   oauth = apigee.getOAuth();
-  supportedVersion = VERSION;
+  try {
+    analytics = apigee.getAnalytics();
+    supportedVersion = LATEST_VERSION;
+  } catch (e) {
+    supportedVersion = NO_AX_VERSION;
+  }
 } catch (e) {
   // The module or one of its features was missing, so continue and
   // the API below will respond as appropriate.
@@ -77,6 +87,8 @@ function handleRequest(req, resp) {
     generateAuthorizationCode(req, resp);
   } else if (uri.pathname === '/v2/oauth/revokeToken') {
     revokeToken(req, resp);
+  } else if (uri.pathname === '/v2/analytics/accept') {
+    acceptAnalytics(req, resp);
   } else if (uri.pathname === '/v2/version') {
     getVersion(req, resp);
   } else {
@@ -106,6 +118,7 @@ function verifyAccessToken(req, resp) {
     return;
   }
   verifyJsonRequest(req, resp, function(request) {
+    // TODO if resource path is included, set flow.resource.name to it.
     oauth.verifyAccessToken(req, request, function(err, result) {
       if (err) {
         sendError(500, resp, err.message);
@@ -171,6 +184,22 @@ function revokeToken(req, resp) {
   }
   verifyJsonRequest(req, resp, function(request) {
     oauth.revokeToken(request, function(err, result) {
+      if (err) {
+        sendError(500, resp, err.message);
+      } else {
+        sendJson(200, resp, {});
+      }
+    });
+  });
+}
+
+function acceptAnalytics(req, resp) {
+  if (!analytics) {
+    sendError(400, resp, 'Analytics support not available');
+    return;
+  }
+  verifyJsonRequest(req, resp, function(request) {
+    analytics.push(request, function(err, result) {
       if (err) {
         sendError(500, resp, err.message);
       } else {

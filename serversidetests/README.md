@@ -33,6 +33,23 @@ the "default" virtual host in the "test" environment where we deployed
 
 ## Running
 
+Trying to do this all in one test wasn't reliable enough.
+So, there are three:
+
+Generate the proxy that you will deploy, which contains all
+of Volos:
+
+    ./pkgapigee.sh
+
+This creates a directory called "./apigee" which contains the proxy
+to deploy that contains all of Volos and test suites.
+
+Deploy it:
+
+    node deployservertests.js
+
+Run the tests. These will remotely contact the server using
+"testBaseUri":
+
     mocha -R spec
 
-Just run Mocha in this directory and you will see the tests run.

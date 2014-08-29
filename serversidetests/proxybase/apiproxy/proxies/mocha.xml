@@ -1,0 +1,8 @@
+<ProxyEndpoint name="mocha">
+  <HTTPProxyConnection>
+    <BasePath>/volostests-mocha</BasePath>
+  </HTTPProxyConnection>
+  <RouteRule name="default">
+    <TargetEndpoint>mocha</TargetEndpoint>
+  </RouteRule>
+</ProxyEndpoint>

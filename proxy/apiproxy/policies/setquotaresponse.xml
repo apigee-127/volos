@@ -6,11 +6,11 @@
     </Remove>
     <Set>
       <FormParams>
-        <FormParam name="allowed">{ratelimit.distributedquota.allowed.count}</FormParam>
-        <FormParam name="used">{ratelimit.distributedquota.used.count}</FormParam>
-        <FormParam name="exceeded">{ratelimit.distributedquota.exceed.count}</FormParam>
-        <FormParam name="available">{ratelimit.distributedquota.available.count}</FormParam>
-        <FormParam name="expiry_time">{ratelimit.distributedquota.expiry.time}</FormParam>
+        <FormParam name="allowed">{ratelimit.DistributedQuota.allowed.count}</FormParam>
+        <FormParam name="used">{ratelimit.DistributedQuota.used.count}</FormParam>
+        <FormParam name="exceeded">{ratelimit.DistributedQuota.exceed.count}</FormParam>
+        <FormParam name="available">{ratelimit.DistributedQuota.available.count}</FormParam>
+        <FormParam name="expiry_time">{ratelimit.DistributedQuota.expiry.time}</FormParam>
         <FormParam name="failed">{ratelimit.failed}</FormParam>
         <FormParam name="ts">{system.timestamp}</FormParam>
       </FormParams>
