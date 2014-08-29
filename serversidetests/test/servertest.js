@@ -34,7 +34,7 @@ var config = testConfig.config;
 
 var TEST_ENVIRONMENT = 'test';
 var PROXY_NAME = 'volostests';
-var LONG_TIMEOUT = 60000;
+var LONG_TIMEOUT = 120000;
 
 describe('Apigee Server Tests', function() {
   var deployedRevision;
@@ -43,69 +43,6 @@ describe('Apigee Server Tests', function() {
     if (!config.testUriBase) {
       throw new Error('Configuration is missing the "testUriBase" parameter');
     }
-  });
-
-  before(function(done) {
-    this.timeout(LONG_TIMEOUT);
-    childProcess.exec(path.join(__dirname, '../pkgapigee.sh'),
-      function(err) {
-        if (err) {
-          console.error('Error packaging test directory: %j', err);
-        }
-        done(err);
-      });
-  });
-
-  before(function(done) {
-    this.timeout(LONG_TIMEOUT);
-    var o = {
-      username: config.user,
-      password: config.password,
-      organization: config.organization,
-      environment: TEST_ENVIRONMENT,
-      api: PROXY_NAME,
-      directory: path.join(__dirname, '../apigee'),
-      verbose: true
-    };
-    if (config.managementUri) {
-      o.baseuri = config.managementUri;
-    }
-
-    apigeetool.deployProxy(o, function(err, result) {
-      if (err) {
-        console.error('Error deploying proxy: %j', err);
-        done(err);
-      } else {
-        console.log('Deployment result: %j', result);
-        deployedRevision = result.revision;
-        done();
-      }
-    });
-  });
-
-  after(function(done) {
-    this.timeout(LONG_TIMEOUT);
-    var o = {
-      username: config.user,
-      password: config.password,
-      organization: config.organization,
-      environment: TEST_ENVIRONMENT,
-      api: PROXY_NAME,
-      directory: path.join(__dirname, '../apigee'),
-      revision: deployedRevision
-    };
-    if (config.managementUri) {
-      o.baseuri = config.managementUri;
-    }
-
-    apigeetool.undeploy(o, function(err) {
-      if (err) {
-        console.error('Error undeploying proxy: %j', err);
-      } else {
-        console.log('Undeployed revision %d', deployedRevision);
-      }
-      done(err);
-    });
   });
 
 /* Doesn't seem to work at all
@@ -138,8 +75,8 @@ describe('Apigee Server Tests', function() {
     var test = require('../../oauth/test/rfc6749_common.js');
     test.verifyOauth(testConfig, config.testUriBase + '/volostests-apigeeoauth');
   });
-});
 
+});
 function remoteMochaTest(uri, done) {
   agent.post(uri).end(function(err, resp) {
     if (err) {

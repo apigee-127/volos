@@ -31,7 +31,9 @@ quota set to reset in "one day" will reset 24 hours after the first message is r
 is set to the top of the hour on some day, then the quota will always reset at the top of the hour.
 * allow: The maximum number of requests to allow. This may be overridden on each "apply" call if desired.
 * uri: The full URI of the Apigee adapter that you deployed in the last step. For instance, if the organization
-name is "foo" then this might be "https://foo-test.apigee.net/apigee-remote-proxy".
+name is "foo" then this might be "https://foo-test.apigee.net/apigee-remote-proxy". This parameter is
+not used when the app is always deployed to Apigee Edge, or when "apigeeMode" is set to "local".
+See below for more.
 * key: An API consumer key for a valid "application" that is part of the same organization where the adapter
 was installed.
 * bufferSize: (Number) optional, create a local memory buffer to hold up to bufferSize for quota elements
@@ -39,6 +41,24 @@ was installed.
 
 Once the quota has been initialized, the module that is returned has the programming interface defined
 by the "volos-quota-common" module.
+
+The following parameters are optional:
+
+* apigeeMode (optional): By default, this module will use the OAuth service built in to Apigee Edge when it
+is deployed there, and use an HTTP-based API to the "uri" specified above when it is not. This parameter
+overrides that default.
+
+"apigeeMode" supports two values:
+
+* remote: When set to "remote," this module will use the "uri" specified in the options to communicate
+with Apigee Edge, even if it is deployed to Apigee Edge. This allows you to use the OAuth services of
+another organization, for instance.
+* local: When set to "local," this module wil use the "apigee-access" module to access Apigee Edge
+functionality that is built in to the runtime. If this is set and the module is running outside
+Apigee Edge, then all calls will fail.
+
+By default, the module will use Apigee Edge functionality when available, and fall back to API
+calls when it is not.
 
 ## Example
 

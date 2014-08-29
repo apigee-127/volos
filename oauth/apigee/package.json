@@ -1,6 +1,6 @@
 {
   "name": "volos-oauth-apigee",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "main": "lib/apigeeruntime.js",
   "description": "Apigee-backed OAuth library in the Volos system.",
   "homepage": "https://github.com/apigee/volos",

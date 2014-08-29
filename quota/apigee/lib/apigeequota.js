@@ -58,11 +58,22 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeQuotaSpi = function(options) {
+  // Allow users to override use of apigee-access
+  if (options.apigeeMode === 'local') {
+    debug('Using apigee-access no matter what');
+    this.useApigeeAccess = true;
+  } else if (options.apigeeMode === 'remote') {
+    debug('Using remote apigee proxy no matter what');
+    this.useApigeeAccess = false;
+  } else {
+    this.useApigeeAccess = hasApigeeAccess;
+  }
+
   assert(options.timeUnit);
   assert(options.interval);
   this.options = options;
 
-  if (hasApigeeAccess) {
+  if (this.useApigeeAccess) {
     this.apigeeQuota = apigeeAccess.getQuota();
   } else {
     if (!options.uri) {

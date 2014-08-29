@@ -57,7 +57,6 @@ try {
   debug('Operating without access to apigee-access');
 }
 
-
 var create = function(options) {
   var spi = new ApigeeRuntimeSpi(options);
   var oauth = new OAuthCommon(spi, options);
@@ -66,7 +65,19 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeRuntimeSpi = function(options) {
-  if (!hasApigeeAccess) {
+  // Allow users to override use of apigee-access
+  if (options.apigeeMode === 'local') {
+    debug('Using apigee-access no matter what');
+    this.useApigeeAccess = true;
+  } else if (options.apigeeMode === 'remote') {
+    debug('Using remote apigee proxy no matter what');
+    this.useApigeeAccess = false;
+  } else {
+    this.useApigeeAccess = hasApigeeAccess;
+  }
+
+  if (!this.useApigeeAccess) {
+    // Check parameters only required for remote usage
     if (!options.uri) {
       throw new Error('uri parameter must be specified');
     }
@@ -92,7 +103,7 @@ function selectImplementation(self, cb) {
   }
 
   var impl;
-  if (hasApigeeAccess) {
+  if (self.useApigeeAccess) {
     self.impl = new newImpl.OAuthImpl(self, true);
     debug('Selected local apigee-access implementation');
     cb(undefined, self.impl);
