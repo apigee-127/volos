@@ -22,8 +22,7 @@
     "apigeetool": "x.x.x",
     "swagger-tools": "",
     "semver": "3.x.x",
-    "superagent": "0.x.x",
-    "swagger-tools": "",
+    "superagent": "0.x.x"
     "yamljs": "0.1.x"
   },
   "devDependencies": {
