@@ -26,7 +26,7 @@ function middleware(swaggerObject) {
   authorizationsMap = {};
   var mwChain = chain([ifAuthenticated, applyMiddleware]);
 
-  return function(req, res, next) {
+  var mwFunction = function(req, res, next) {
     if (debug.enabled) { debug('handle req: ' + req.path); }
     if (!(req.swagger && req.swagger.operation)) { return next(); }
 
@@ -37,6 +37,10 @@ function middleware(swaggerObject) {
 
     mwChain(req, res, next);
   };
+
+  mwFunction.resources = resourcesMap; // backward compatible and exposes the resourceMap to clients
+
+  return mwFunction;
 }
 
 // check Swagger OAuth2
