@@ -2,10 +2,8 @@ var express    = require('express');
 var app        = express();
 var bodyParser = require('body-parser');
 var onResponse = require('on-response');
-var onFinished = require('on-finished');
 var http       = require('http');
 var apigeeAnalytics = require('./apigeeAnalytics');
-// var Analytics  = require('./apigeeanalytics');
 
 var port = process.env.PORT || 8080;
 var router = express.Router();
@@ -53,7 +51,7 @@ router.get('/', function(req, res) {
     // setTimeout(function(){
     // 	res.send(201,{ message: 'hooray! welcome to our api!' });
     // },1000);
-    res.send(201,{ message: 'hooray! welcome to our api!' });
+    res.send(200,{ message: 'hooray! welcome to our api!' });
 });
 
 router.post('/', function(req, res){
@@ -61,7 +59,21 @@ router.post('/', function(req, res){
 });
 
 // app.use(analyticsMiddleware);
-var analytics = apigeeAnalytics.create();
+app.use(function(req, res, next) {
+    var start = Date.now();
+    res.on('header', function() {
+        var duration = Date.now() - start;
+        console.log(duration)
+    });
+    next();
+});
+var analytics = apigeeAnalytics.create({
+    key: "GyfnnKRHzHw6QUVtILCH1KadFAHXzo0b",
+    uri: "http://mobileshop-test.apigee.net/apigee-remote-proxy/",
+    interval: 5,
+    recordLimit: 100,
+
+});
 var middleware = analytics.expressMiddleWare().useAnalytics();
     
 app.use(middleware);
