@@ -46,7 +46,8 @@ describe('Quota', function() {
 
     it('Minute rolling', function() {
       var options = extend(config, {
-        timeInterval: 60000,
+        timeUnit: 'minute',
+        interval: 1,
         allow: 5
       });
       var q = Spi.create(options).quota;
@@ -66,7 +67,8 @@ describe('Quota', function() {
 
     it('Minute calendar', function() {
       var options = extend(config, {
-        timeInterval: 60000,
+        timeUnit: 'minute',
+        interval: 1,
         allow: 5,
         startTime: new Date('March 7, 2013 12:00:00').getTime()
       });
@@ -100,7 +102,8 @@ describe('Quota', function() {
 
     it('Hour rolling', function() {
       var options = extend(config, {
-        timeInterval: 60000 * 60,
+        timeUnit: 'hour',
+        interval: 1,
         allow: 5
       });
       var q = Spi.create(options).quota;
@@ -120,7 +123,8 @@ describe('Quota', function() {
 
     it('Hour calendar', function() {
       var options = extend(config, {
-        timeInterval: 60000 * 60,
+        timeUnit: 'hour',
+        interval: 1,
         allow: 5,
         startTime: new Date('March 7, 2013 12:00:00').getTime()
       });
@@ -153,7 +157,8 @@ describe('Quota', function() {
 
     it('Day calendar', function() {
       var options = extend(config, {
-        timeInterval: 60000 * 60 * 24,
+        timeUnit: 'day',
+        interval: 1,
         allow: 5,
         startTime: new Date('March 7, 2013 12:00:00').getTime()
       });
