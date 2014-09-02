@@ -12,12 +12,23 @@ function Analytics(Spi, options) {
 }
 module.exports = Analytics;
 
-Analytics.prototype.useAnalytics = function(record, cb) {
+Analytics.prototype.useAnalytics = function(req, resp) {	
+	var self = this;
+	this.Spi.makeRecord(req, resp, function (err, record) {
+		if(err) { //throw error
+		};
+		self.push(record);
+	});
+};
+
+Analytics.prototype.push = function (record) {
+	
 	if(this.recordsQueue.length < this.recordLimit) {
 		console.log("Pushing data");
 		this.recordsQueue.push(record);
 		console.log("Queue length: " + this.recordsQueue.length);
 	}
+
 	if(this.recordsQueue.length % this.interval == 0) {
 		this.flush();
 	}
@@ -26,10 +37,10 @@ Analytics.prototype.useAnalytics = function(record, cb) {
 Analytics.prototype.flush = function() {
 	var self = this;
 	this.Spi.useAnalytics(this.recordsQueue, function(err, result) {
-			if(err) { console.log(err) };
-			self.recordsQueue.splice(0,result.accepted);
-			console.log(result.accepted + " elements uploaded");
-		});
+		if(err) { console.log(err) };
+		self.recordsQueue.splice(0,result.accepted);
+		console.log(result.accepted + " elements uploaded");
+	});
 };
 
 Analytics.prototype.expressMiddleWare = function() {
