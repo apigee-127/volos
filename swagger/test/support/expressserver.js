@@ -35,7 +35,8 @@ module.exports = function(middleware) {
 
   var swaggerObject = require('./swagger.yaml');
   app.use(swagger.swaggerMetadata(swaggerObject));
-  app.use(volos());
+
+  app.use(volos(swaggerObject, { helpers: path.join(__dirname, 'helpers') }));
 
   app.use(swagger.swaggerRouter({ controllers: path.join(__dirname, 'controllers') }));
 

@@ -71,6 +71,15 @@ paths:
         cache:
           ttl: 10
       operationId: "run"
+  /cachedWithfunctionKey:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        cache:
+          key:
+            helper: "helper"
+            function: "cacheId"
+      operationId: "run"
   /quota:
     x-swagger-router-controller: "controller"
     get:
@@ -90,6 +99,15 @@ paths:
       x-volos-apply:
         quota:
           weight: 2
+      operationId: "run"
+  /quotaWithFunctionKey:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        quota:
+          key:
+            helper: "helper"
+            function: "quotaId"
       operationId: "run"
   /secured:
     x-swagger-router-controller: "controller"

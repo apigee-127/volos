@@ -111,6 +111,18 @@ describe('Swagger Middleware', function() {
           });
       });
 
+      it('must accept function key', function(done) {
+        request(server)
+          .get('/cachedWithFunctionKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(count);
+
+            done();
+          });
+      });
+
       it('must accept ttl override', function(done) {
         request(server)
           .get('/cachedWithLowTtl')
@@ -199,6 +211,18 @@ describe('Swagger Middleware', function() {
 
                 done();
               });
+          });
+      });
+
+      it('must hit with function key', function(done) {
+
+        request(server)
+          .get('/quotaWithFunctionKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(403);
+
+            done();
           });
       });
 

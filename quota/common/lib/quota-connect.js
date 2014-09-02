@@ -70,6 +70,7 @@ QuotaConnect.prototype.applyPerAddress = function(options) {
 
 function calcOptions(req, opts) {
   var options = _.extend({}, opts); // clone
+  if (_.isFunction(options.key)) { options.key = options.key(req); }
   if (_.isFunction(options.identifier)) { options.identifier = options.identifier(req); }
   if (_.isFunction(options.weight)) { options.weight = options.weight(req); }
   if (!options.identifier) { options.identifier = req.originalUrl; }

@@ -1,12 +1,14 @@
 'use strict';
 
 var _ = require('underscore');
+var path = require('path');
 var debug = require('debug')('swagger');
 
 var swagger;
 var resourcesMap; // name -> volos resource
 var operationsMap; // operationId -> middleware chain
 var authorizationsMap; // operationId -> middleware chain
+var helpersDir = 'api/helpers';
 
 var RESOURCES = 'x-volos-resources';
 var APPLY = 'x-volos-apply';
@@ -14,12 +16,17 @@ var AUTH = 'x-volos-authorizations';
 
 module.exports = middleware;
 
-// the middleware
-function middleware(swaggerObject) {
+// config is a hash
+// config.helpers is a directory path pointing to helper modules. defaults to 'api/helpers'.
+function middleware(swaggerObject, config) {
 
   if (swaggerObject) {
     swagger = swaggerObject;
     resourcesMap = createResources();
+  }
+
+  if (config && config.helpers) {
+    helpersDir = config.helpers;
   }
 
   operationsMap = {};
@@ -100,10 +107,23 @@ function createMiddlewareChain(applications) {
     var mwDef = resource.connectMiddleware();
     var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
     if (mwFactory) {
+      if (_.isObject(options.key)) {
+        if (options.key.helper && options.key.function) {
+          var helperPath = path.join(helpersDir, options.key.helper);
+          var helper = require(helperPath);
+          var func = helper[options.key.function];
+          if (!func) {
+            throw new Error('unknown function: \'' + options.key.function + '\' on helper: ' + helperPath);
+          }
+          options.key = func;
+        } else {
+          throw new Error('illegal options for: ' + resourceName);
+        }
+      }
       var mw = mwFactory.apply(mwDef, [options || {}]);
       middlewares.push(mw);
     } else {
-      if (debug.enabled) { debug('unknown middleware: ' + mwDef); }
+      throw new Error('unknown middleware: ' + resourceName);
     }
   });
 
