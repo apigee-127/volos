@@ -20,13 +20,13 @@ module.exports = middleware;
 // config.helpers is a directory path pointing to helper modules. defaults to 'api/helpers'.
 function middleware(swaggerObject, config) {
 
+  if (config && config.helpers) {
+    helpersDir = config.helpers;
+  }
+
   if (swaggerObject) {
     swagger = swaggerObject;
     resourcesMap = createResources();
-  }
-
-  if (config && config.helpers) {
-    helpersDir = config.helpers;
   }
 
   operationsMap = {};
@@ -108,17 +108,7 @@ function createMiddlewareChain(applications) {
     var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
     if (mwFactory) {
       if (_.isObject(options.key)) {
-        if (options.key.helper && options.key.function) {
-          var helperPath = path.join(helpersDir, options.key.helper);
-          var helper = require(helperPath);
-          var func = helper[options.key.function];
-          if (!func) {
-            throw new Error('unknown function: \'' + options.key.function + '\' on helper: ' + helperPath);
-          }
-          options.key = func;
-        } else {
-          throw new Error('illegal options for: ' + resourceName);
-        }
+        options.key = getHelperFunction(resourceName + '.key', options.key);
       }
       var mw = mwFactory.apply(mwDef, [options || {}]);
       middlewares.push(mw);
@@ -163,9 +153,27 @@ function createResources() {
       debug('options: ' + JSON.stringify(def.options));
     }
 
+    if (def.options.passwordCheck) {
+      def.options.passwordCheck = getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
+    }
+
     var resource = module.create.apply(this, [def.options]);
     resources[name] = resource;
   });
 
   return resources;
+}
+
+function getHelperFunction(resourceName, options) {
+  if (options.helper && options.function) {
+    var helperPath = path.join(helpersDir, options.helper);
+    var helper = require(helperPath);
+    var func = helper[options.function];
+    if (!func) {
+      throw new Error('unknown function: \'' + options.function + '\' on helper: ' + helperPath);
+    }
+    return func;
+  } else {
+    throw new Error('illegal options for: ' + resourceName);
+  }
 }

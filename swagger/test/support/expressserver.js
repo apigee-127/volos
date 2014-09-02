@@ -36,7 +36,15 @@ module.exports = function(middleware) {
   var swaggerObject = require('./swagger.yaml');
   app.use(swagger.swaggerMetadata(swaggerObject));
 
-  app.use(volos(swaggerObject, { helpers: path.join(__dirname, 'helpers') }));
+  var volosSwagger = volos(swaggerObject, { helpers: path.join(__dirname, 'helpers') });
+  app.use(volosSwagger);
+
+  // todo: move these into swagger
+  var oauth = volosSwagger.resources['oauth2'];
+  app.get('/authorize', oauth.expressMiddleware().handleAuthorize());
+  app.post('/accesstoken', oauth.expressMiddleware().handleAccessToken());
+  app.post('/invalidate', oauth.expressMiddleware().invalidateToken());
+  app.post('/refresh', oauth.expressMiddleware().refreshToken());
 
   app.use(swagger.swaggerRouter({ controllers: path.join(__dirname, 'controllers') }));
 

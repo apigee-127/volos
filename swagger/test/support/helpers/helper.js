@@ -2,7 +2,8 @@
 
 module.exports = {
   quotaId: quotaId,
-  cacheId: cacheId
+  cacheId: cacheId,
+  passwordCheck: passwordCheck
 };
 
 function quotaId(req) {
@@ -11,4 +12,8 @@ function quotaId(req) {
 
 function cacheId(req) {
   return '/cached';
+}
+
+function passwordCheck(username, password, cb) {
+  cb(null, username === password);
 }

@@ -29,6 +29,7 @@ var request = require('supertest');
 var expressServer = require('./support/expressserver');
 var async = require('async');
 var _ = require('underscore');
+var querystring = require('querystring');
 
 var redisConfig = require('../../testconfig/testconfig-redis');
 var oauth = redisConfig.oauth;
@@ -287,6 +288,38 @@ describe('Swagger Middleware', function() {
         });
       });
 
+      it('must allow passwordCheck', function(done) {
+        var q = {
+          grant_type: 'password',
+          username: 'jimmy',
+          password: 'jimmy'
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(client_id, client_secret)
+          .send(qs)
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            should.exist(res.body.access_token);
+
+            q.password = 'somethingelse';
+            var qs = querystring.stringify(q);
+            request(server)
+              .post('/accesstoken')
+              .auth(client_id, client_secret)
+              .send(qs)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(401);
+                should.not.exist(res.body.access_token);
+
+                done();
+              });
+          });
+
+      });
     });
   });
 

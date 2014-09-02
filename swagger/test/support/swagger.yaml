@@ -35,17 +35,19 @@ x-volos-resources:
     provider: "volos-oauth-redis"
     options:
       encryptionKey: "This is the key to encrypt/decrypt stored credentials"
-    validGrantTypes:
-      - "client_credentials"
-      - "authorization_code"
-      - "implicit_grant"
-      - "password"
-    passwordCheck: "Authentication#passwordCheck"
-    tokenPaths:
-      authorize: "/authorize"
-      token: "/accessToken"
-      invalidate: "/invalidate"
-      refresh: "/refresh"
+      validGrantTypes:
+        - "client_credentials"
+        - "authorization_code"
+        - "implicit_grant"
+        - "password"
+      passwordCheck:
+        helper: helper
+        function: passwordCheck
+      tokenPaths:
+        authorize: "/authorize"
+        token: "/accessToken"
+        invalidate: "/invalidate"
+        refresh: "/refresh"
 paths:
   /clean:
     x-swagger-router-controller: "controller"
@@ -106,8 +108,8 @@ paths:
       x-volos-apply:
         quota:
           key:
-            helper: "helper"
-            function: "quotaId"
+            helper: helper
+            function: quotaId
       operationId: "run"
   /secured:
     x-swagger-router-controller: "controller"
