@@ -68,10 +68,11 @@ app.use(function(req, res, next) {
     next();
 });
 var analytics = apigeeAnalytics.create({
-    key: "GyfnnKRHzHw6QUVtILCH1KadFAHXzo0b",
-    uri: "http://mobileshop-test.apigee.net/apigee-remote-proxy/",
-    interval: 5,
-    recordLimit: 100,
+    key: "UNBm8meT8LxNNTkcukY5JMxVBRz01l7e",  //Mobileshop: "GyfnnKRHzHw6QUVtILCH1KadFAHXzo0b",
+    uri: "http://dmukherjee_volos-test.apigee.net/apigee-remote-proxy/", //"http://mobileshop-test.apigee.net/apigee-remote-proxy/",
+    flushInterval: 50,
+    recordLimit: 1000,
+    proxy: "analyticsproxy"
 
 });
 var middleware = analytics.expressMiddleWare().useAnalytics();

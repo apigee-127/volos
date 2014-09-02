@@ -11,7 +11,6 @@ module.exports = AnalyticsExpress;
 
 AnalyticsExpress.prototype.useAnalytics = function() {
 	var self = this;
-
 	return function(req, resp, next) {
 		self.analytics.useAnalytics(req, resp);
 		next();

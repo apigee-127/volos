@@ -6,17 +6,17 @@ var _ = require('underscore');
 function Analytics(Spi, options) {
 	this.Spi = Spi;
 	this.recordsQueue = [];
-	this.recordLimit = options.recordLimit;
-	this.flushLimit = options.flushLimit;
-	this.interval = options.interval;
+	this.recordLimit = options.recordLimit || 10000;
+	this.flushInterval = options.flushInterval || 200;
+	this.uploadLength = options.uploadLength || 100;
 }
 module.exports = Analytics;
 
 Analytics.prototype.useAnalytics = function(req, resp) {	
 	var self = this;
 	this.Spi.makeRecord(req, resp, function (err, record) {
-		if(err) { //throw error
-		};
+		if(err) { //TODO
+		}
 		self.push(record);
 	});
 };
@@ -24,23 +24,24 @@ Analytics.prototype.useAnalytics = function(req, resp) {
 Analytics.prototype.push = function (record) {
 	
 	if(this.recordsQueue.length < this.recordLimit) {
-		console.log("Pushing data");
 		this.recordsQueue.push(record);
-		console.log("Queue length: " + this.recordsQueue.length);
 	}
-
-	if(this.recordsQueue.length % this.interval == 0) {
+	if(this.recordsQueue.length % this.flushInterval == 0) {
 		this.flush();
 	}
+	// console.log("Queue Size: " + this.recordsQueue.length);
 };
 
 Analytics.prototype.flush = function() {
 	var self = this;
-	this.Spi.useAnalytics(this.recordsQueue, function(err, result) {
-		if(err) { console.log(err) };
-		self.recordsQueue.splice(0,result.accepted);
-		console.log(result.accepted + " elements uploaded");
+	var recordsToBeUploaded = self.recordsQueue.splice(0, self.uploadLength);
+	self.Spi.upload(recordsToBeUploaded, function (err, result) {
+		//If some records failed to be pushed, add them back into the queue
+		if (result.rejected > 0) {
+			self.recordsQueue.concat(recordsToBeUploaded.splice(result.rejected, recordsToBeUploaded.length));
+		}
 	});
+
 };
 
 Analytics.prototype.expressMiddleWare = function() {
