@@ -1,6 +1,7 @@
 'use strict';
 
 var Analytics = require('./analytics.js');
+var onResponse = require('on-response');
 var superagent = require('superagent');
 
 var create = function(options) {
@@ -43,3 +44,22 @@ ApigeeAnalyticsSpi.prototype.useAnalytics = function(recordsQueue, cb) {
     }
   });
 };
+
+ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
+  var record = {};
+  record['client_received_start_timestamp'] = Date.now();
+  record['recordType']   = 'APIAnalytics';
+  record['apiproxy']     = 'analyticsproxy';
+  record['request_uri']  = req.protocol + '://' + req.headers.host + req.url;
+  record['request_path'] = req.url.split('?')[0];
+  record['request_verb'] = req.method;
+  record['client_ip']    = req.connection.remoteAddress;
+  record['useragent']    = req.headers['user-agent'];
+  
+  onResponse(req, resp, function (err, summary) {
+    record['response_status_code'] = resp.statusCode;
+    record['client_sent_end_timestamp'] = Date.now();
+    // self.analytics.useAnalytics(record);
+    cb(undefined, record);
+  });
+}
