@@ -17,12 +17,18 @@ var ApigeeAnalyticsSpi = function(options) {
   if (!options.key) {
     throw new Error('key parameter must be specified');
   }
+  if (!options.proxy) {
+    throw new Error('Proxy parameter must be specified');
+  }
+  
   this.uri = options.uri;
   this.key = options.key;
-  //See if analytics is allowed or not
+  this.proxy = options.proxy;
+  
+  //TODO: Ping /v2/accept to see if analytics is allowed;
 };
 
-ApigeeAnalyticsSpi.prototype.useAnalytics = function(recordsQueue, cb) {
+ApigeeAnalyticsSpi.prototype.upload = function(recordsQueue, cb) {
   var recordsToBeUploaded = {};
   recordsToBeUploaded.records = recordsQueue;
   
@@ -33,11 +39,10 @@ ApigeeAnalyticsSpi.prototype.useAnalytics = function(recordsQueue, cb) {
   send(JSON.stringify(recordsToBeUploaded)).
   end(function(err, resp) {
     if(err) {
-      cb(err)
+      cb(err);
     } else {
       if(resp.statusCode != 200) {
-        var errString = resp.statusCode + ": " + resp.body;
-        cb(errString);
+        cb(resp.body);
       } else {
         cb(undefined, resp.body);
       }
@@ -49,7 +54,7 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   var record = {};
   record['client_received_start_timestamp'] = Date.now();
   record['recordType']   = 'APIAnalytics';
-  record['apiproxy']     = 'analyticsproxy';
+  record['apiproxy']     = this.proxy;
   record['request_uri']  = req.protocol + '://' + req.headers.host + req.url;
   record['request_path'] = req.url.split('?')[0];
   record['request_verb'] = req.method;
@@ -59,7 +64,6 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   onResponse(req, resp, function (err, summary) {
     record['response_status_code'] = resp.statusCode;
     record['client_sent_end_timestamp'] = Date.now();
-    // self.analytics.useAnalytics(record);
     cb(undefined, record);
   });
 }
