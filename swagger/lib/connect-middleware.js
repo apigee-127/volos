@@ -165,6 +165,7 @@ function createResources() {
 }
 
 function getHelperFunction(resourceName, options) {
+  if (_.isFunction(options)) { return options; }
   if (options.helper && options.function) {
     var helperPath = path.join(helpersDir, options.helper);
     var helper = require(helperPath);
