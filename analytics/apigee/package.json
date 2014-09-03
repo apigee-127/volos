@@ -1,0 +1,25 @@
+{
+  "name": "volos-analytics-apigee",
+  "version": "0.10.0",
+  "main": "lib/apigeeanalytics.js",
+  "license": "MIT",
+  "description": "Apigee provider for Analytics in the Volos system.",
+  "homepage": "https://github.com/apigee/volos",
+  "keywords": [
+    "analytics",
+    "apigee"
+  ],
+  "dependencies": {
+    "on-response": "~1.0.1",
+    "superagent": "0.18.2",
+    "debug": "1.0.x",
+    "semver": "3.x.x",
+    "superagent": "0.x.x",
+    "volos-analytics-common": "0.x.x"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
+  }
+}
