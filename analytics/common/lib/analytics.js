@@ -52,11 +52,11 @@ Analytics.prototype.push = function (record) {
 
 Analytics.prototype.flush = function() {
 	var self = this;
-	var recordsToBeUploaded = self.recordsQueue.splice(0, self.uploadLength);
-	self.Spi.upload(recordsToBeUploaded, function (err, result) {
+	var recordsToFlush = self.recordsQueue.splice(0, self.uploadLength);
+	self.Spi.flush(recordsToFlush, function (err, result) {
 		// If some records failed to be pushed, add them back into the queue
 		if (result.rejected > 0) {
-			self.recordsQueue.concat(recordsToBeUploaded.splice(result.rejected, recordsToBeUploaded.length));
+			self.recordsQueue.concat(recordsToFlush.splice(result.rejected, recordsToFlush.length));
 		}
 	});
 };

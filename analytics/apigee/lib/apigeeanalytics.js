@@ -51,7 +51,7 @@ var ApigeeAnalyticsSpi = function(options) {
   //TODO: Ping /v2/accept to see if analytics is allowed;
 };
 
-ApigeeAnalyticsSpi.prototype.upload = function(recordsQueue, cb) {
+ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
   var recordsToBeUploaded = {};
   recordsToBeUploaded.records = recordsQueue;
   
