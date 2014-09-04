@@ -33,7 +33,7 @@ ApigeeAnalyticsSpi.prototype.upload = function(recordsQueue, cb) {
   recordsToBeUploaded.records = recordsQueue;
   
   superagent.agent().
-  post(this.uri + 'v2/analytics/accept').
+  post(this.uri + '/v2/analytics/accept').
   set('x-DNA-Api-Key', this.key).
   set('Content-Type', 'application/json').
   send(JSON.stringify(recordsToBeUploaded)).

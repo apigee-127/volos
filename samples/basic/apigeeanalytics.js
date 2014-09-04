@@ -14,8 +14,8 @@ router.post('/', function(req, res){
 });
 
 var analytics = apigeeAnalytics.create({
-    key: process.env.APIGEE_URI,
-    uri: process.env.APIGEE_KEY,
+    key: process.env.APIGEE_KEY,
+    uri: process.env.APIGEE_URI,
     flushInterval: 50,
     recordLimit: 1000,
     proxy: "analyticsproxy"

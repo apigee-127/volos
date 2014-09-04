@@ -15,7 +15,6 @@
     "debug": "1.0.x",
     "semver": "3.x.x",
     "superagent": "0.x.x",
-    "volos-analytics-common": "0.x.x"
   },
   "devDependencies": {},
   "repository": {
