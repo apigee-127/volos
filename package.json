@@ -23,7 +23,8 @@
     "yamljs": "0.1.x",
     "swagger-tools": "",
     "semver": "3.x.x",
-    "superagent": "0.x.x"
+    "superagent": "0.x.x",
+    "on-response": "~1.0.1"
   },
   "devDependencies": {
      "mocha": "x.x.x"

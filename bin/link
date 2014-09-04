@@ -28,4 +28,7 @@ ln -s ../cache/memory volos-cache-memory
 ln -s ../cache/redis volos-cache-redis
 ln -s ../cache/apigee volos-cache-apigee
 
+ln -s ../analytics/apigee volos-analytics-apigee
+ln -s ../analytics/common volos-analytics-common
+
 popd
