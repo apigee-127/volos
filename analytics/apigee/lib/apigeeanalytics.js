@@ -55,17 +55,17 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
   var recordsToBeUploaded = {};
   recordsToBeUploaded.records = recordsQueue;
   
-  superagent.agent().
-    post(this.uri + '/v2/analytics/accept').
-    set('x-DNA-Api-Key', this.key).
-    set('Content-Type', 'application/json').
-    send(JSON.stringify(recordsToBeUploaded)).
-    end(function(err, resp) {
-      if(err) {
+  superagent.agent()
+    .post(this.uri + '/v2/analytics/accept')
+    .set('x-DNA-Api-Key', this.key)
+    .set('Content-Type', 'application/json')
+    .send(JSON.stringify(recordsToBeUploaded))
+    .end(function(err, resp) {
+      if (err) {
         cb(err);
       } else {
-        if(resp.statusCode != 200) {
-          cb(resp.body);
+        if (resp.statusCode != 200) {
+          cb(null);
         } else {
           cb(undefined, resp.body);
         }

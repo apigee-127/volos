@@ -12,7 +12,8 @@
   "dependencies": {
     "on-response": "~1.0.1",
     "debug": "1.0.x",
-    "superagent": "0.x.x"
+    "superagent": "0.x.x",
+    "volos-analytics-common": "^0.2.0"
   },
   "devDependencies": {},
   "repository": {

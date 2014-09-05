@@ -34,9 +34,9 @@ x-volos-resources:
   analytics:
     provider: "volos-analytics-memory"
     options:
-      bufferSize: 10,
-      flushInterval: 2,
-      batchSize: 100
+      bufferSize: 100,
+      flushInterval: 5,
+      batchSize: 2
   oauth2:
     provider: "volos-oauth-redis"
     options:

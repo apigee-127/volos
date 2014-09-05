@@ -23,18 +23,38 @@
  ****************************************************************************/
 'use strict';
 
-// todo: this will leak and strand records if flushInterval > batchSize
-// todo: probably need a timer to drain records occasionally in addition to hitting batchSize
-// todo: once we hit bufferSize, all operations will stop
-// todo: on hitting bufferSize, we ought to flush or consolidate records or something
-// todo: use a more efficient buffer
+// todo: use a more efficient buffer structure
+
+var debug = require('debug')('analytics');
+var util = require('util');
+
+var DEFAULT_BUFFERSIZE = 10000;
+var DEFAULT_FLUSHINTERVAL = 5000; // in ms
+var DEFAULT_BATCHSIZE = 500;
 
 function Analytics(spi, options) {
 	this.spi = spi;
-	this.recordsQueue = [];
-	this.bufferSize = options.bufferSize || 10000;
-	this.flushInterval = options.flushInterval || 200;
-	this.batchSize = options.batchSize || 100;
+	this.buffer = [];
+  this.bufferSize = options.bufferSize ? convertNumber(options.bufferSize, 'bufferSize') : DEFAULT_BUFFERSIZE;
+  this.flushInterval = options.flushInterval ? convertNumber(options.flushInterval, 'flushInterval') : DEFAULT_FLUSHINTERVAL;
+  this.batchSize = options.batchSize ? convertNumber(options.batchSize, 'batchSize') : DEFAULT_BATCHSIZE;
+  if (this.bufferSize <= 0) {
+    throw new Error('bufferSize must be > 0');
+  }
+  if (this.flushInterval <= 0) {
+    throw new Error('flushInterval must be > 0');
+  }
+  if (this.batchSize <= 0) {
+    throw new Error('batchSize must be > 0');
+  }
+  if (this.batchSize > this.bufferSize) {
+    throw new Error('batchSize must be <= bufferSize');
+  }
+
+  var self = this;
+  this.intervalObject = setInterval(function() {
+    self.flush();
+  }, this.flushInterval);
 }
 module.exports = Analytics;
 
@@ -46,26 +66,41 @@ Analytics.prototype.apply = function(req, resp) {
 	});
 };
 
-Analytics.prototype.push = function (record) {
-	
-	if (this.recordsQueue.length < this.bufferSize) {
-		this.recordsQueue.push(record);
-	}
-	if (this.recordsQueue.length % this.flushInterval == 0) {
-		this.flush();
-	}
+Analytics.prototype.push = function(record) {
+
+	if (this.buffer.length < this.bufferSize) {
+		this.buffer.push(record);
+	} else {
+    // todo: we ought to think about flushing or consolidating records if possible
+    debug('buffer overflow, dropped pushed record')
+  }
 };
 
 Analytics.prototype.flush = function() {
 	var self = this;
-	var recordsToFlush = self.recordsQueue.splice(0, self.batchSize);
-	self.spi.flush(recordsToFlush, function(err, result) {
-    // todo: what about err?
-		// If some records failed to be pushed, add them back into the queue
-		if (result && result.rejected > 0) {
-			self.recordsQueue.concat(recordsToFlush.splice(result.rejected, recordsToFlush.length));
-		}
-	});
+	var recordsToFlush = self.buffer.splice(0, self.batchSize);
+  if (recordsToFlush.length > 0) {
+    if (debug.enabled) {
+      debug(util.format('flushing %n records. %n records remaining.', recordsToFlush.length, self.buffer.length));
+    }
+    self.spi.flush(recordsToFlush, function(err, retryRecords) {
+      if (err && debug.enabled) {
+        debug('error flushing: ' + err.message);
+        if (retryRecords && retryRecords.length > 0) {
+          debug('attempting to return ' + retryRecords.length + ' records to buffer');
+        }
+      }
+      // If some records failed to be pushed, add them back into the queue (up to bufferSize)
+      if (retryRecords && retryRecords.length > 0) {
+        var slotsInBuffer = this.bufferSize - this.buffer.length;
+        if (slotsInBuffer < retryRecords.length) {
+          retryRecords = retryRecords.slice(0, slotsInBuffer - 1);
+        }
+        self.buffer.concat(retryRecords);
+        if (debug.enabled) { debug('returned ' + retryRecords.length + ' records to buffer'); }
+      }
+    });
+  }
 };
 
 Analytics.prototype.connectMiddleware = function() {
@@ -74,3 +109,13 @@ Analytics.prototype.connectMiddleware = function() {
 };
 
 Analytics.prototype.expressMiddleWare = Analytics.prototype.connectMiddleware;
+
+function convertNumber(value, name) {
+  if (typeof value === 'string') {
+    return parseInt(value, 10);
+  } else if (typeof value === 'number') {
+    return value;
+  } else {
+    throw new Error(name + ' must be a string or a number');
+  }
+}

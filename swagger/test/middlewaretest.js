@@ -324,24 +324,16 @@ describe('Swagger Middleware', function() {
 
     describe('Analytics', function() {
 
-      it('must apply', function(done) {
+      it('must apply and flush', function(done) {
 
+        var makeRecordCalled = false;
         server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
-          done();
+          makeRecordCalled = true;
         });
 
-        request(server)
-          .get('/analyzedPath')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-          });
-      });
-
-      it('must flush', function(done) {
-
-        server.volos.resources['analytics'].spi.once('flush', function(event) {
+        server.volos.resources['analytics'].spi.once('flush', function(records) {
+          records.length.should.equal(1);
+          makeRecordCalled.should.ok;
           done();
         });
 
