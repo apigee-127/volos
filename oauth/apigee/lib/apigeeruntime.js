@@ -117,7 +117,7 @@ function selectImplementation(self, cb) {
           debug('Error getting version: %s', err);
           cb(err);
         } else {
-          if (resp.notFound || !semver.satisfies(resp.text, '>=1.1.0')) {
+          if (resp.notFound || (resp.ok && !semver.satisfies(resp.text, '>=1.1.0'))) {
             debug('Selected remote implementation with old protocol');
             self.impl = new oldImpl.OldRemoteOAuth(self);
             cb(undefined, self.impl);
@@ -125,8 +125,10 @@ function selectImplementation(self, cb) {
             debug('Selected remote implementation with new protocol');
             self.impl = new newImpl.OAuthImpl(self, false);
             cb(undefined, self.impl);
+          } else if (resp.unauthorized) {
+            cb(new Error('Not authorized to call the remote proxy. Check the "key" parameter.'));
           } else {
-            cb(new Error(util.format('HTTP error getting proxy version: %d', resp.statusCode)));
+            cb(new Error(util.format('HTTP error getting proxy version: %d. Check the "uri" parameter.', resp.statusCode)));
           }
         }
     });

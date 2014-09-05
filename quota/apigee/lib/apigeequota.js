@@ -140,7 +140,7 @@ function selectImplementation(self, cb) {
         if (err) {
           cb(err);
         } else {
-          if (resp.notFound || !semver.satisfies(resp.text, '>=1.1.0')) {
+          if (resp.notFound || (resp.ok && !semver.satisfies(resp.text, '>=1.1.0'))) {
             if (self.options.startTime) {
               cb(new Error('Quotas with a fixed starting time are not supported'));
             } else {
@@ -150,8 +150,10 @@ function selectImplementation(self, cb) {
           } else if (resp.ok) {
             self.quotaImpl = new ApigeeRemoteQuota(self);
             cb(undefined, self.quotaImpl);
+          } else if (resp.unauthorized) {
+            cb(new Error('Not authorized to call the remote proxy. Check the "key" parameter.'));
           } else {
-            cb(new Error(util.format('HTTP error getting proxy version: %d', resp.statusCode)));
+            cb(new Error(util.format('HTTP error getting proxy version: %d. Check the "uri" parameter.', resp.statusCode)));
           }
         }
     });
