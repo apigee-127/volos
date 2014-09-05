@@ -23,16 +23,16 @@
  ****************************************************************************/
 'use strict';
 
-function AnalyticsExpress(analytics, options) {
-	if (!(this instanceof AnalyticsExpress)) {
-		return new AnalyticsExpress(analytics, options);
+function AnalyticsConnect(analytics, options) {
+	if (!(this instanceof AnalyticsConnect)) {
+		return new AnalyticsConnect(analytics, options);
 	}
 	this.analytics = analytics;
 	this.options = options;
 }
-module.exports = AnalyticsExpress;
+module.exports = AnalyticsConnect;
 
-AnalyticsExpress.prototype.apply = function() {
+AnalyticsConnect.prototype.apply = function() {
 	var self = this;
 	return function(req, resp, next) {
 		self.analytics.apply(req, resp);

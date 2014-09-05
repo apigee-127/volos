@@ -69,7 +69,7 @@ Analytics.prototype.flush = function() {
 };
 
 Analytics.prototype.connectMiddleware = function() {
-	var mw = require('./analytics-express.js');
+	var mw = require('./analytics-connect.js');
 	return new mw(this);
 };
 
