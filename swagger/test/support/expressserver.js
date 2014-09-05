@@ -30,7 +30,7 @@ var volos = require('../../');
 var path = require('path');
 var yaml = require('yamljs');
 
-module.exports = function(middleware) {
+module.exports = function() {
   var app = express();
 
   var swaggerObject = require('./swagger.yaml');
@@ -54,5 +54,6 @@ module.exports = function(middleware) {
     res.send(err.message);
   });
 
+  app.volos = volosSwagger; // allow test to access this object
   return app;
 };

@@ -31,6 +31,12 @@ x-volos-resources:
       timeUnit: "minute"
       interval: 1
       allow: 2
+  analytics:
+    provider: "volos-analytics-memory"
+    options:
+      bufferSize: 10,
+      flushInterval: 2,
+      batchSize: 100
   oauth2:
     provider: "volos-oauth-redis"
     options:
@@ -141,5 +147,11 @@ paths:
     x-volos-authorizations:
       oauth2:
         scope: "scope1"
+    get:
+      operationId: "run"
+  /analyzedPath:
+    x-swagger-router-controller: "controller"
+    x-volos-apply:
+      analytics: {}
     get:
       operationId: "run"

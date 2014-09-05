@@ -321,6 +321,40 @@ describe('Swagger Middleware', function() {
 
       });
     });
+
+    describe('Analytics', function() {
+
+      it('must apply', function(done) {
+
+        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
+          done();
+        });
+
+        request(server)
+          .get('/analyzedPath')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+          });
+      });
+
+      it('must flush', function(done) {
+
+        server.volos.resources['analytics'].spi.once('flush', function(event) {
+          done();
+        });
+
+        request(server)
+          .get('/analyzedPath')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+          });
+      });
+    });
+
   });
 
   describe('Path', function() {
