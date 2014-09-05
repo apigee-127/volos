@@ -32,10 +32,10 @@ function AnalyticsExpress(analytics, options) {
 }
 module.exports = AnalyticsExpress;
 
-AnalyticsExpress.prototype.useAnalytics = function() {
+AnalyticsExpress.prototype.apply = function() {
 	var self = this;
 	return function(req, resp, next) {
-		self.analytics.useAnalytics(req, resp);
+		self.analytics.apply(req, resp);
 		next();
 	};
 };

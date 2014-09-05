@@ -17,11 +17,10 @@ var analytics = apigeeAnalytics.create({
     key: process.env.APIGEE_KEY,
     uri: process.env.APIGEE_URI,
     flushInterval: 50,
-    recordLimit: 1000,
+    bufferSize: 1000,
     proxy: "analyticsproxy"
-
 });
-var middleware = analytics.expressMiddleWare().useAnalytics();
+var middleware = analytics.expressMiddleWare().apply();
     
 app.use(middleware);
 app.use('/api', router);
