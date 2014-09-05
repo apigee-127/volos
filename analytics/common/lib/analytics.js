@@ -80,14 +80,12 @@ Analytics.prototype.flush = function() {
 	var self = this;
 	var recordsToFlush = self.buffer.splice(0, self.batchSize);
   if (recordsToFlush.length > 0) {
-    if (debug.enabled) {
-      debug(util.format('flushing %n records. %n records remaining.', recordsToFlush.length, self.buffer.length));
-    }
+    debug('flushing %d records. %d records remaining.', recordsToFlush.length, self.buffer.length);
     self.spi.flush(recordsToFlush, function(err, retryRecords) {
       if (err && debug.enabled) {
         debug('error flushing: ' + err.message);
         if (retryRecords && retryRecords.length > 0) {
-          debug('attempting to return ' + retryRecords.length + ' records to buffer');
+          debug('attempting to return %d records to buffer', retryRecords.length);
         }
       }
       // If some records failed to be pushed, add them back into the queue (up to bufferSize)
@@ -97,7 +95,7 @@ Analytics.prototype.flush = function() {
           retryRecords = retryRecords.slice(0, slotsInBuffer - 1);
         }
         self.buffer.concat(retryRecords);
-        if (debug.enabled) { debug('returned ' + retryRecords.length + ' records to buffer'); }
+        debug('returned %d records to buffer', retryRecords.length);
       }
     });
   }
