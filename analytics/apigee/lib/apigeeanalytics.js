@@ -61,14 +61,10 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
     .set('Content-Type', 'application/json')
     .send(JSON.stringify(recordsToBeUploaded))
     .end(function(err, resp) {
-      if (err) {
-        cb(err);
+      if (err || resp.statusCode != 200) {
+        cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
       } else {
-        if (resp.statusCode != 200) {
-          cb(null);
-        } else {
-          cb(undefined, resp.body);
-        }
+        cb();
       }
     });
 };
