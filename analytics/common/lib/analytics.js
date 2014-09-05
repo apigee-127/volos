@@ -23,18 +23,24 @@
  ****************************************************************************/
 'use strict';
 
-function Analytics(Spi, options) {
-	this.Spi = Spi;
+// todo: this will leak and strand records if flushInterval > batchSize
+// todo: probably need a timer to drain records occasionally in addition to hitting batchSize
+// todo: once we hit bufferSize, all operations will stop
+// todo: on hitting bufferSize, we ought to flush or consolidate records or something
+// todo: use a more efficient buffer
+
+function Analytics(spi, options) {
+	this.spi = spi;
 	this.recordsQueue = [];
-	this.recordLimit = options.recordLimit || 10000;
+	this.bufferSize = options.bufferSize || 10000;
 	this.flushInterval = options.flushInterval || 200;
-	this.uploadLength = options.uploadLength || 100;
+	this.batchSize = options.batchSize || 100;
 }
 module.exports = Analytics;
 
-Analytics.prototype.useAnalytics = function(req, resp) {	
+Analytics.prototype.apply = function(req, resp) {
 	var self = this;
-	this.Spi.makeRecord(req, resp, function (err, record) {
+	this.spi.makeRecord(req, resp, function (err, record) {
 		if (err) { throw err; }
 		self.push(record);
 	});
@@ -42,7 +48,7 @@ Analytics.prototype.useAnalytics = function(req, resp) {
 
 Analytics.prototype.push = function (record) {
 	
-	if (this.recordsQueue.length < this.recordLimit) {
+	if (this.recordsQueue.length < this.bufferSize) {
 		this.recordsQueue.push(record);
 	}
 	if (this.recordsQueue.length % this.flushInterval == 0) {
@@ -52,16 +58,19 @@ Analytics.prototype.push = function (record) {
 
 Analytics.prototype.flush = function() {
 	var self = this;
-	var recordsToFlush = self.recordsQueue.splice(0, self.uploadLength);
-	self.Spi.flush(recordsToFlush, function (err, result) {
+	var recordsToFlush = self.recordsQueue.splice(0, self.batchSize);
+	self.spi.flush(recordsToFlush, function(err, result) {
+    // todo: what about err?
 		// If some records failed to be pushed, add them back into the queue
-		if (result.rejected > 0) {
+		if (result && result.rejected > 0) {
 			self.recordsQueue.concat(recordsToFlush.splice(result.rejected, recordsToFlush.length));
 		}
 	});
 };
 
-Analytics.prototype.expressMiddleWare = function() {
+Analytics.prototype.connectMiddleware = function() {
 	var mw = require('./analytics-express.js');
 	return new mw(this);
 };
+
+Analytics.prototype.expressMiddleWare = Analytics.prototype.connectMiddleware;
