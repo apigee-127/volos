@@ -30,5 +30,6 @@ ln -s ../cache/apigee volos-cache-apigee
 
 ln -s ../analytics/apigee volos-analytics-apigee
 ln -s ../analytics/common volos-analytics-common
+ln -s ../analytics/memory volos-analytics-memory
 
 popd

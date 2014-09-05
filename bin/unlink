@@ -26,5 +26,6 @@ rm -f volos-cache-apigee
 
 rm -f volos-analytics-apigee
 rm -f volos-analytics-common
+rm -f volos-analytics-memory
 
 popd

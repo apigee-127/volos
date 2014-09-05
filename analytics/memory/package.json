@@ -1,0 +1,22 @@
+{
+  "name": "volos-analytics-memory",
+  "version": "0.1.0",
+  "main": "lib/memoryanalytics.js",
+  "license": "MIT",
+  "description": "Memory provider for Analytics in the Volos system.",
+  "homepage": "https://github.com/apigee/volos",
+  "keywords": [
+    "analytics",
+    "apigee"
+  ],
+  "dependencies": {
+    "on-response": "~1.0.1",
+    "debug": "1.0.x",
+    "superagent": "0.x.x"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
+  }
+}
