@@ -16,12 +16,6 @@ exports.testAnalytics = function(config, Spi) {
 
 	var record;
 	before(function(done) {
-		var options = extend(config, {
-			bufferSize: 10,
- 			proxy: 'testAnalytics',
- 			flushInterval: 5,
- 			batchSize : 5
-		});
 		record = {
 			client_received_start_timestamp : Date.now(),
 			recordType   : 'APIAnalytics',
@@ -32,50 +26,10 @@ exports.testAnalytics = function(config, Spi) {
 			response_status_code : 200,
 			client_sent_end_timestamp : Date.now()
 		};
-		var analytics = Spi.create(options);
 		done();
 	});
 
 	describe('Analytics', function() {
-		
-		// it('bufferSize must be a number', function(done) {
-		// 	var options = extend(config, {
-		// 		bufferSize: 'nan',
-		// 		proxy: 'testAnalytics',
-		// 		flushInterval: 100,
-		// 		batchSize : 100
-		// 	});
-		// 	var a = Spi.create(options);
-		// 	console.log(a);
-		// 	assert.throws(function() {
-		// 		Spi.create(options);
-		// 	})
-		// 	done();
-		// });
-
-		// it('flushInterval must be a number', function(done) {
-		// 	var options = extend(config, {
-		// 		bufferSize: 10000,
-		// 		proxy: 'testAnalytics',
-		// 		flushInterval: "Nan",
-		// 		batchSize : 100
-		// 	});
-		// 	var a = Spi.create(options);
-		// 	console.log(a);
-		// 	assert.throws(Spi.create(options));
-		// 	done();
-		// });		
-
-		// it('batchSize must be a number', function(done) {
-		// 		var options = extend(config, {
-		// 			bufferSize: 10000,
-		// 			proxy: 'testAnalytics',
-		// 			flushInterval: 100,
-		// 			batchSize : "Nan"
-		// 		});
-		// 		assert.throws(Spi.create(options));
-		// 		done();
-		// });
 
 		it('bufferSize must be > 0', function(done) {
 			var options = extend(config, {
@@ -128,7 +82,7 @@ exports.testAnalytics = function(config, Spi) {
 			})
 			done();
 		});
-			
+
 		it('must push a record onto the records queue', function(done) {
 			var options = extend(config, {
 					bufferSize: 10,
@@ -175,6 +129,5 @@ exports.testAnalytics = function(config, Spi) {
 				done();
 			}, options.flushInterval);
 		});
-
 	});
 };
