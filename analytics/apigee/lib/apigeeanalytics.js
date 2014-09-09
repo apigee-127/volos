@@ -27,6 +27,7 @@ var Analytics = require('volos-analytics-common');
 var onResponse = require('on-response');
 var superagent = require('superagent');
 
+
 var create = function(options) {
   var spi = new ApigeeAnalyticsSpi(options);
   return new Analytics(spi, options);
@@ -43,7 +44,6 @@ var ApigeeAnalyticsSpi = function(options) {
   if (!options.proxy) {
     throw new Error('Proxy parameter must be specified');
   }
-  
   this.uri = options.uri;
   this.key = options.key;
   this.proxy = options.proxy;
@@ -54,7 +54,6 @@ var ApigeeAnalyticsSpi = function(options) {
 ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
   var recordsToBeUploaded = {};
   recordsToBeUploaded.records = recordsQueue;
-  
   superagent.agent()
     .post(this.uri + '/v2/analytics/accept')
     .set('x-DNA-Api-Key', this.key)
@@ -64,9 +63,10 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
       if (err || resp.statusCode != 200) {
         cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
       } else {
-        cb();
+        resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
       }
     });
+    
 };
 
 ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
