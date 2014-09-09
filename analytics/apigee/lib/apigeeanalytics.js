@@ -34,9 +34,6 @@ var create = function(options) {
 };
 module.exports.create = create;
 
-
-
-
 var ApigeeAnalyticsSpi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
@@ -66,8 +63,7 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
       if (err || resp.statusCode != 200) {
         cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
       } else {
-        resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected))
-                                : cb();
+        resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
       }
     });
     
