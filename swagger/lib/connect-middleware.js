@@ -18,14 +18,6 @@ var yamljs = require('yamljs');
 var oauthSwagger = require('../spec/oauth_operations.yaml');
 var oauthTokenPaths = {};
 
-var DEFAULT_OAUTH_MAPPING = {
-  authorize: '/authorize',
-  token: '/accessToken',
-  invalidate: '/invalidate',
-  refresh: '/refresh'
-};
-
-
 module.exports = middleware;
 
 // config is a hash
@@ -195,12 +187,13 @@ function createResources() {
 
 function importOAuth(oauth, paths) {
 
-  var oauthMapping = _.extend(paths, DEFAULT_OAUTH_MAPPING);
+  if (paths.length === 0) { return; }
+
   var allPaths = swagger.paths || (swagger.paths = {});
   var allDefinitions = swagger.definitions || (swagger.definitions = {});
 
   // err if would overwrite any paths
-  var existingPaths = _.filter(oauthMapping, function(path) { return _.contains(allPaths, path); });
+  var existingPaths = _.filter(paths, function(path) { return _.contains(allPaths, path); });
   if (existingPaths.length > 0) {
     throw new Error('Paths ' + existingPaths + ' already exist. Cannot insert OAuth.');
   }
@@ -214,9 +207,13 @@ function importOAuth(oauth, paths) {
   }
 
   // add the token paths
-  _.each(oauthMapping, function(path, name) {
+  _.each(paths, function(path, name) {
     var keyPath = '/' + name;
     allPaths[path] = oauthSwagger.paths[keyPath];
+    if (!allPaths[path]) {
+      var keys = Object.keys(oauthSwagger.paths).map(function(key) { return key.substring(1); });
+      throw new Error('Invalid tokenPath key: ' + name + '. Must be one of: ' + keys);
+    }
     allPaths[path].oauth = oauth;
   });
 
