@@ -32,21 +32,23 @@ var yaml = require('yamljs');
 
 module.exports = function() {
   var app = express();
+  app.use(express.urlencoded());
 
   var swaggerObject = require('./swagger.yaml');
-  app.use(swagger.swaggerMetadata(swaggerObject));
 
-  var volosSwagger = volos(swaggerObject, { helpers: path.join(__dirname, 'helpers') });
+  var volosSwagger = volos(swaggerObject, {
+    helpers: path.join(__dirname, 'helpers')
+  });
+
+  app.use(swagger.swaggerMetadata(swaggerObject));
   app.use(volosSwagger);
 
-  // todo: move these into swagger
-  var oauth = volosSwagger.resources['oauth2'];
-  app.get('/authorize', oauth.expressMiddleware().handleAuthorize());
-  app.post('/accesstoken', oauth.expressMiddleware().handleAccessToken());
-  app.post('/invalidate', oauth.expressMiddleware().invalidateToken());
-  app.post('/refresh', oauth.expressMiddleware().refreshToken());
-
-  app.use(swagger.swaggerRouter({ controllers: path.join(__dirname, 'controllers') }));
+  app.use(swagger.swaggerRouter({
+    controllers: [
+      path.join(__dirname, 'controllers'),
+      volosSwagger.controllers
+    ]
+  }));
 
   app.use(function(err, req, res, next) {
     if (err.status !== 403) { return next(err);}

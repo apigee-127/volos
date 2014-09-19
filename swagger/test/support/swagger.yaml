@@ -51,7 +51,7 @@ x-volos-resources:
         function: passwordCheck
       tokenPaths:
         authorize: "/authorize"
-        token: "/accessToken"
+        token: "/accesstoken"
         invalidate: "/invalidate"
         refresh: "/refresh"
 paths:
