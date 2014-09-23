@@ -1,7 +1,7 @@
 /****************************************************************************
  The MIT License (MIT)
 
- Copyright (c) 2013 Apigee Corporation
+ Copyright (c) 2014 Apigee Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,10 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-"use strict";
+'use strict';
 
 var util = require('util');
 var _ = require('underscore');
-
-function checkNumber(val, name) {
-  if (!val) {
-    return undefined;
-  }
-  if (typeof val === 'string') {
-    return parseInt(val, 10);
-  } else if (typeof val === 'number') {
-    return val;
-  } else {
-    throw new Error(util.format('%s must be a number', name));
-  }
-}
 
 var TimeUnits = [ 'hour', 'minute', 'day', 'week' ];
 
@@ -80,12 +67,13 @@ function Quota(Spi, o) {
   }
 
   if (options.startTime) {
+    var time;
     if (typeof options.startTime === 'string') {
-      var sd = new Date(options.startTime);
-      options.startTime = sd.getTime();
+      options.startTime = new Date(options.startTime).getTime();
     } else if (options.startTime instanceof Date) {
       options.startTime = options.startTime.getTime();
-    } else if (typeof options.startTime !== 'number') {
+    }
+    if (isNaN(options.startTime) || typeof options.startTime !== 'number') {
       throw new Error(util.format('Invalid start time %s', options.startTime));
     }
   }
@@ -127,10 +115,10 @@ Quota.prototype.apply = function(o, cb) {
   if (options.key) { options.identifier = options.key; delete(options.key); }
 
   if (!options.identifier) {
-    return cb(new Error('identifier must be set'));
+    return cb(new Error('key must be set'));
   }
   if (typeof options.identifier !== 'string') {
-    return cb(new Error('identifier must be a string'));
+    return cb(new Error('key must be a string'));
   }
 
   this.quota.apply(options, function(err, result) {
@@ -149,3 +137,15 @@ Quota.prototype.argoMiddleware = function(options) {
   var mw = require('./quota-argo');
   return new mw(this, options);
 };
+
+function checkNumber(val, name) {
+  if (!val) { return undefined; }
+  if (typeof val === 'string') {
+    var int = parseInt(val, 10);
+    if (!isNaN(int)) { return int; }
+  }
+  else if (typeof val === 'number') {
+    return val;
+  }
+  throw new Error(util.format('%s must be a number', name));
+}

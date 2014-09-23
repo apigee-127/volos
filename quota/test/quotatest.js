@@ -45,7 +45,6 @@ exports.testQuota = function(config, Spi) {
 
   describe('Quota', function() {
     var pm;
-    var ph;
 
     before(function() {
       var options = extend(config, {
@@ -64,7 +63,9 @@ exports.testQuota = function(config, Spi) {
           interval: 'hey',
           allow: 2
         });
-        assert.throws(Spi.create(options));
+        assert.throws(function() {
+          Spi.create(options)
+        });
         done();
       });
 
@@ -74,7 +75,9 @@ exports.testQuota = function(config, Spi) {
           interval: 1,
           allow: 'hey'
         });
-        assert.throws(Spi.create(options));
+        assert.throws(function() {
+          Spi.create(options)
+        });
         done();
       });
 
@@ -85,7 +88,9 @@ exports.testQuota = function(config, Spi) {
           allow: 2,
           startTime: 'xxx'
         });
-        should.throws(Spi.create(options));
+        assert.throws(function() {
+          Spi.create(options)
+        });
 
         options.startTime = new Date();
         should.ok(Spi.create(options));
