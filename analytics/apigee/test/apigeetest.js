@@ -30,7 +30,6 @@ var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');
 var should = require('should');
-var nock = require('nock');
 
 describe('Apigee', function() {
 

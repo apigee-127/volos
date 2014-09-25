@@ -63,7 +63,7 @@ exports.testAnalytics = function(config, Spi) {
       });
       assert.throws(function() {
         Spi.create(options);
-      })
+      });
       done();
     });
 
@@ -76,7 +76,7 @@ exports.testAnalytics = function(config, Spi) {
       });
       assert.throws(function() {
         Spi.create(options);
-      })
+      });
       done();
     });
 
@@ -89,7 +89,7 @@ exports.testAnalytics = function(config, Spi) {
       });
       assert.throws(function() {
         Spi.create(options);
-      })
+      });
       done();
     });
 
@@ -102,7 +102,7 @@ exports.testAnalytics = function(config, Spi) {
       });
       assert.throws(function() {
         Spi.create(options);
-      })
+      });
       done();
     });
 
