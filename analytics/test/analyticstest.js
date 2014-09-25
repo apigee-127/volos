@@ -54,103 +54,119 @@ exports.testAnalytics = function(config, Spi) {
 
   describe('Analytics', function() {
 
-    it('bufferSize must be > 0', function(done) {
-      var options = extend(config, {
-        bufferSize: -5,
-        proxy: 'testAnalytics',
-        flushInterval: 100,
-        batchSize : 100
-      });
-      assert.throws(function() {
-        Spi.create(options);
-      });
-      done();
-    });
+    describe('create', function() {
 
-    it('flushInterval must be > 0', function(done) {
-      var options = extend(config, {
-        bufferSize: 50,
-        proxy: 'testAnalytics',
-        flushInterval: -1,
-        batchSize : 100
-      });
-      assert.throws(function() {
-        Spi.create(options);
-      });
-      done();
-    });
-
-    it('batchSize must be > 0', function(done) {
-      var options = extend(config, {
-        bufferSize: 50,
-        proxy: 'testAnalytics',
-        flushInterval: 1000,
-        batchSize : -100
-      });
-      assert.throws(function() {
-        Spi.create(options);
-      });
-      done();
-    });
-
-    it('batchSize must be <= bufferSize', function(done) {
-      var options = extend(config, {
-        bufferSize: 50,
-        proxy: 'testAnalytics',
-        flushInterval: 100,
-        batchSize : 100
-      });
-      assert.throws(function() {
-        Spi.create(options);
-      });
-      done();
-    });
-
-    it('must push a record onto the records queue', function(done) {
-      var options = extend(config, {
-          bufferSize: 10,
+      it('bufferSize must be > 0', function(done) {
+        var options = extend(config, {
+          bufferSize: -5,
           proxy: 'testAnalytics',
-          flushInterval: 5000,
-          batchSize : 5
+          flushInterval: 100,
+          batchSize : 100
         });
-      var a = Spi.create(options);
-      var prevSize = a.buffer.length;
-      a.push(record);
-      a.buffer.length.should.be.exactly(prevSize + 1);
-      done();
-    });
-
-    it('must not push when buffer is full', function(done) {
-      var options = extend(config, {
-          bufferSize: 2,
-          proxy: 'testAnalytics',
-          flushInterval: 5000,
-          batchSize : 1
+        assert.throws(function() {
+          Spi.create(options);
         });
-      var a = Spi.create(options);
-      var prevSize = a.buffer.length;
-      a.push(record);
-      a.push(record);
-      a.push(record);
-      a.buffer.should.have.length(2);
-      done();
-    });
-    
-    it('must flush at intervals', function(done) {
-      var options = extend(config, {
-          bufferSize: 2,
-          proxy: 'testAnalytics',
-          flushInterval: 500,
-          batchSize : 1
-        });
-      var a = Spi.create(options);
-      a.push(record);
-      a.push(record);
-      setTimeout(function() {
-        console.log(a.buffer.length);
-        a.buffer.length.should.be.below(2);
         done();
-      }, options.flushInterval);
+      });
+
+      it('flushInterval must be > 0', function(done) {
+        var options = extend(config, {
+          bufferSize: 50,
+          proxy: 'testAnalytics',
+          flushInterval: -1,
+          batchSize : 100
+        });
+        assert.throws(function() {
+          Spi.create(options);
+        });
+        done();
+      });
+
+      it('batchSize must be > 0', function(done) {
+        var options = extend(config, {
+          bufferSize: 50,
+          proxy: 'testAnalytics',
+          flushInterval: 1000,
+          batchSize : -100
+        });
+        assert.throws(function() {
+          Spi.create(options);
+        });
+        done();
+      });
+
+      it('batchSize must be <= bufferSize', function(done) {
+        var options = extend(config, {
+          bufferSize: 50,
+          proxy: 'testAnalytics',
+          flushInterval: 100,
+          batchSize : 100
+        });
+        assert.throws(function() {
+          Spi.create(options);
+        });
+        done();
+      });
+    });
+
+    describe('operation', function() {
+
+      var a;
+
+      afterEach(function() {
+        if (a) {
+          a.destroy();
+          a = null;
+        }
+      });
+
+      it('must push a record onto the records queue', function(done) {
+        var options = extend(config, {
+            bufferSize: 10,
+            proxy: 'testAnalytics',
+            flushInterval: 5000,
+            batchSize : 5
+          });
+        a = Spi.create(options);
+        var prevSize = a.buffer.length;
+        a.push(record);
+        a.buffer.length.should.be.exactly(prevSize + 1);
+        done();
+      });
+
+      it('must not push when buffer is full', function(done) {
+        var options = extend(config, {
+            bufferSize: 2,
+            proxy: 'testAnalytics',
+            flushInterval: 5000,
+            batchSize : 1
+          });
+        a = Spi.create(options);
+        a.push(record);
+        a.push(record);
+        a.push(record);
+        a.buffer.should.have.length(2);
+        a.destroy();
+        done();
+      });
+
+      it('must flush at intervals', function(done) {
+        var options = extend(config, {
+            bufferSize: 2,
+            proxy: 'testAnalytics',
+            flushInterval: 500,
+            batchSize : 1
+          });
+        a = Spi.create(options);
+        a.push(record);
+        a.push(record);
+        setTimeout(function() {
+          console.log(a.buffer.length);
+          a.buffer.length.should.be.below(2);
+          a.destroy();
+          done();
+        }, options.flushInterval);
+      });
     });
   });
 };

@@ -32,7 +32,7 @@ describe('Middleware', function() {
   
   var options = {
     bufferSize: 3,
-    flushInterval: 10,
+    flushInterval: 1000,
     batchSize : 3 
   };
 

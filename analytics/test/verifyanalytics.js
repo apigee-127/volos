@@ -39,17 +39,17 @@ module.exports.verify = function(server) {
         should.not.exist(err);
         res.status.should.equal(200);
         res.body.count.should.equal(0);
-      });
 
-    request(server)
-      .get('/count')
-      .end(function(err, res) {
-        should.not.exist(err);
-        res.status.should.equal(200);
-        res.body.count.should.equal(1);
-      });
+        request(server)
+          .get('/count')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.equal(200);
+            res.body.count.should.equal(1);
 
-    done(); 
+            done();
+          });
+      });
   });
 
   it('must flush', function(done) {
@@ -59,17 +59,17 @@ module.exports.verify = function(server) {
       .end(function(err, res) {
         should.not.exist(err);
         res.status.should.equal(200);
-        res.body.count.should.equal(0);
+        res.body.count.should.equal(2);
         setTimeout(function () {
-              request(server)
-              .get('/count')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.body.count.should.equal(0);
-                done(); 
-              });
-            }, 1500);
+          request(server)
+          .get('/count')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.equal(200);
+            res.body.count.should.equal(0);
+            done();
+          });
+        }, 1500);
       });
   });
 };

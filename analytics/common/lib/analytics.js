@@ -55,6 +55,7 @@ function Analytics(spi, options) {
   this.intervalObject = setInterval(function() {
     self.flush();
   }, this.flushInterval);
+  this.intervalObject.unref();
 }
 module.exports = Analytics;
 
@@ -66,7 +67,12 @@ Analytics.prototype.apply = function(req, resp) {
 	});
 };
 
-Analytics.prototype.push = function(record) {
+Analytics.prototype.destroy = function() {
+  clearInterval(this.intervalObject);
+  this.buffer = null;
+};
+
+  Analytics.prototype.push = function(record) {
 
 	if (this.buffer.length < this.bufferSize) {
 		this.buffer.push(record);
