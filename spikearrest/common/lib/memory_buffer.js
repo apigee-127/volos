@@ -25,7 +25,7 @@
 
 var assert = require('assert');
 var _ = require('underscore');
-var debug = require('debug')('spike');
+var debug = require('debug')('spikearrest');
 
 // todo: use a better queue structure for buffer
 // todo: can we avoid creating a bucket for the non-buffered case?
