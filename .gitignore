@@ -9,3 +9,4 @@ npm-debug.log
 mgr-config.js
 coverage
 samples/training/config/apigee.js
+dump.rdb
