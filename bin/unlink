@@ -28,4 +28,7 @@ rm -f volos-analytics-apigee
 rm -f volos-analytics-common
 rm -f volos-analytics-memory
 
+rm -f volos-spikearrest-common
+rm -f volos-spikearrest-memory
+
 popd

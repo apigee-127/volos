@@ -1,0 +1,21 @@
+{
+  "name": "volos-spikearrest-memory",
+  "version": "0.0.1",
+  "main": "lib/memory_spikearrest.js",
+  "license": "MIT",
+  "description": "In-memory provider for Spike Arrest enforcement in the Volos system.",
+  "homepage": "https://github.com/apigee/volos",
+  "keywords": [
+    "spike arrest",
+    "memory"
+  ],
+  "dependencies": {
+    "debug": "1.0.x",
+    "volos-spikearrest-common": "0.10.x"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apigee/volos.git"
+  }
+}

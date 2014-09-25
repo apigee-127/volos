@@ -32,4 +32,7 @@ ln -s ../analytics/apigee volos-analytics-apigee
 ln -s ../analytics/common volos-analytics-common
 ln -s ../analytics/memory volos-analytics-memory
 
+ln -s ../spikearrest/common volos-spikearrest-common
+ln -s ../spikearrest/memory volos-spikearrest-memory
+
 popd
