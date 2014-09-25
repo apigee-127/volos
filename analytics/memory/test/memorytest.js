@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var commonTest = require('../../test/analyticsTest');
+var commonTest = require('../../test/analyticstest');
 var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');
