@@ -51,8 +51,8 @@ module.exports = function() {
   }));
 
   app.use(function(err, req, res, next) {
-    if (err.status !== 403) { return next(err);}
-    res.status(403);
+    if (err.status !== 403 && err.status !== 503) { return next(err);}
+    res.status(err.status);
     res.send(err.message);
   });
 

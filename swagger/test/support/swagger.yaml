@@ -31,6 +31,11 @@ x-volos-resources:
       timeUnit: "minute"
       interval: 1
       allow: 2
+  spikeArrest:
+    provider: "volos-spikearrest-memory"
+    options:
+      timeUnit: "minute"
+      allow: 10
   analytics:
     provider: "volos-analytics-memory"
     options:
@@ -116,6 +121,37 @@ paths:
           key:
             helper: helper
             function: quotaId
+      operationId: "run"
+  /spikeArrest:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        spikeArrest:
+          key: "spikeArrest"
+      operationId: "run"
+  /spikeArrestWithKey:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        spikeArrest:
+          key: "spikeArrest"
+      operationId: "run"
+  /spikeArrestWithWeight:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        spikeArrest:
+          key: "spikeArrest"
+          weight: 2
+      operationId: "run"
+  /spikeArrestWithFunctionKey:
+    x-swagger-router-controller: "controller"
+    get:
+      x-volos-apply:
+        spikeArrest:
+          key:
+            helper: helper
+            function: spikeArrestId
       operationId: "run"
   /secured:
     x-swagger-router-controller: "controller"

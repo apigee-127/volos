@@ -3,7 +3,8 @@
 module.exports = {
   quotaId: quotaId,
   cacheId: cacheId,
-  passwordCheck: passwordCheck
+  passwordCheck: passwordCheck,
+  spikeArrestId: spikeArrestId
 };
 
 function quotaId(req) {
@@ -12,6 +13,10 @@ function quotaId(req) {
 
 function cacheId(req) {
   return '/cached';
+}
+
+function spikeArrestId(req) {
+  return 'spikeArrest';
 }
 
 function passwordCheck(username, password, cb) {

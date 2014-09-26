@@ -229,6 +229,70 @@ describe('Swagger Middleware', function() {
 
     });
 
+    describe('SpikeArrest', function() {
+
+      before(function(done) {
+        request(server)
+          .get('/spikeArrest')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+
+            done();
+          });
+      });
+
+      it('must hit with default', function(done) {
+
+        request(server)
+          .get('/spikeArrest')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(503);
+
+            done();
+          });
+      });
+
+      it('must hit with key', function(done) {
+
+        request(server)
+          .get('/spikeArrestWithKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(503);
+
+            done();
+          });
+      });
+
+      it('must hit with weight', function(done) {
+
+        request(server)
+          .get('/spikeArrestWithWeight')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(503);
+
+            done();
+          });
+      });
+
+      it('must hit with function key', function(done) {
+
+        request(server)
+          .get('/spikeArrestWithFunctionKey')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(503);
+
+            done();
+          });
+      });
+
+    });
+
     describe('Oauth', function() {
 
       it('must handle auth', function(done) {
