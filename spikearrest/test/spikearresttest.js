@@ -70,11 +70,11 @@ exports.testSpikeArrest = function(config, Spi) {
           ps = Spi.create(options);
         });
 
-        it('must have a key', function(done) {
+        it('has a default key', function(done) {
           ps.apply({
             weight: 1
           }, function(err) {
-            should.exist(err);
+            should.not.exist(err);
             done();
           });
         });

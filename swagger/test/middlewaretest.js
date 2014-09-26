@@ -233,7 +233,7 @@ describe('Swagger Middleware', function() {
 
       before(function(done) {
         request(server)
-          .get('/spikeArrest')
+          .get('/spikeArrestWithKey')
           .end(function(err, res) {
             should.not.exist(err);
             res.status.should.eql(200);
@@ -249,9 +249,17 @@ describe('Swagger Middleware', function() {
           .get('/spikeArrest')
           .end(function(err, res) {
             should.not.exist(err);
-            res.status.should.eql(503);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
 
-            done();
+            request(server)
+              .get('/spikeArrest')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(503);
+
+                done();
+              });
           });
       });
 

@@ -43,10 +43,10 @@ You create a Spike Arrest object with the following attributes:
 
 Once a Spike Arrest has been created, you "apply" the Spike Arrest by passing the following values:
 
-* weight: How much to add to the Spike Arrest -- the default is 1, but in some advanced cases, API providers will
-assign different weights to different API calls.
-* key: Identifies the Spike Arrest bucket. This is a string that may be set to any value. Each key locates
-a single bucket, which maintains separate windows from other buckets.
+* weight: (optional, default = 1) How much to add to the Spike Arrest -- in some advanced cases, API providers may 
+  want to assign different weights to different API calls.
+* key: (optional, default = '_default') Identifies the Spike Arrest bucket. This is a string that may be set to any value.
+  Each key locates a single bucket, which maintains separate windows from other buckets.
 
 ## Modules
 
@@ -78,11 +78,10 @@ particular place. Currently the options are:
 
 Apply the SpikeArrest and invoke "callback" with a result. Options can have the following parameters:
 
-* weight: How much to add to the Spike Arrest -- the default is 1, but in some advanced cases, API providers will
-assign different weights to different API calls.
-* key: Identifies the Spike Arrest bucket. This is a string that may be set to any value. Each key locates
-a single bucket, which maintains separate windows from other buckets.
-then the value of "allow" that was specified when the quota object was created is used.
+* weight: (optional, default = 1) How much to add to the Spike Arrest -- in some advanced cases, API providers may 
+  want to assign different weights to different API calls.
+* key: (optional, default = '_default') Identifies the Spike Arrest bucket. This is a string that may be set to any value.
+  Each key locates a single bucket, which maintains separate windows from other buckets.
 
 The result of this call is delivered by calling "callback." If there was an error, then the first parameter
 will be an Error object. Otherwise, the first parameter will be "undefined" and the second will be
@@ -104,7 +103,6 @@ Applies SpikeArrest and returns (403) error on exceeded.
 Options (optional) may contain:
 
 * key (optional) may be a string or a function that takes the request and generates a string id.
-    if not specified, id will default to the request originalUrl
 * weight (optional) may be a number or a function that takes the request and generates a number
 
 

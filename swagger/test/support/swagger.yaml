@@ -126,8 +126,7 @@ paths:
     x-swagger-router-controller: "controller"
     get:
       x-volos-apply:
-        spikeArrest:
-          key: "spikeArrest"
+        spikeArrest: {}
       operationId: "run"
   /spikeArrestWithKey:
     x-swagger-router-controller: "controller"

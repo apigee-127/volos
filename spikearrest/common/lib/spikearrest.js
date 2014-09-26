@@ -59,7 +59,7 @@ function SpikeArrest(Spi, o) {
 }
 module.exports = SpikeArrest;
 
-// options.key (Non-object) required
+// options.key (String) options, default = "_default"
 // options.weight (Number) default = 1
 // cb is invoked with first parameter error, second with stats on the spike arrest
 // stats.allowed = setting of "allow"
@@ -74,9 +74,7 @@ SpikeArrest.prototype.apply = function(o, cb) {
     return cb(err);
   }
 
-  if (!options.key) {
-    return cb(new Error('key must be set'));
-  }
+  options.key = options.key || "_default";
   if (typeof options.key !== 'string') {
     return cb(new Error('key must be a string'));
   }
