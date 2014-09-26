@@ -23,7 +23,6 @@
  ****************************************************************************/
 'use strict';
 
-var assert = require('assert');
 var SpikeArrest = require('volos-spikearrest-common');
 
 // options.timeUnit ('second', 'minute') default = second

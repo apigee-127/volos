@@ -23,7 +23,6 @@
  ****************************************************************************/
 'use strict';
 
-var assert = require('assert');
 var _ = require('underscore');
 var debug = require('debug')('spikearrest');
 

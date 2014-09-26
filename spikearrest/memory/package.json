@@ -1,6 +1,6 @@
 {
   "name": "volos-spikearrest-memory",
-  "version": "0.0.1",
+  "version": "0.10.0",
   "main": "lib/memory_spikearrest.js",
   "license": "MIT",
   "description": "In-memory provider for Spike Arrest enforcement in the Volos system.",
