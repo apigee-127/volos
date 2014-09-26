@@ -46,6 +46,7 @@ var apigee;
 var quota;
 var oauth;
 var analytics;
+var spikeArrest;
 var supportedVersion;
 
 // Discover which features are available by checking the local
@@ -60,6 +61,12 @@ try {
     supportedVersion = LATEST_VERSION;
   } catch (e) {
     supportedVersion = NO_AX_VERSION;
+  }
+  try {
+    spikeArrest = apigee.getSpikeArrest();
+    supportedVersion = LATEST_VERSION;
+  } catch (e) {
+    supportedVersion = NO_AX_VERSION; // todo: not sure how this version stuff works
   }
 } catch (e) {
   // The module or one of its features was missing, so continue and
@@ -77,6 +84,8 @@ function handleRequest(req, resp) {
 
   if (uri.pathname === '/v2/quotas/apply') {
     applyQuota(req, resp);
+  } else if (uri.pathname === '/v2/spikearrest/apply') {
+    applySpikeArrest(req, resp);
   } else if (uri.pathname === '/v2/oauth/verifyAccessToken') {
     verifyAccessToken(req, resp);
   } else if (uri.pathname === '/v2/oauth/verifyApiKey') {
@@ -103,6 +112,22 @@ function applyQuota(req, resp) {
   }
   verifyJsonRequest(req, resp, function(request) {
     quota.apply(request, function(err, result) {
+      if (err) {
+        sendError(500, resp, err.message);
+      } else {
+        sendJson(200, resp, result);
+      }
+    });
+  });
+}
+
+function applySpikeArrest(req, resp) {
+  if (!spikeArrest) {
+    sendError(400, resp, 'SpikeArrest support not available');
+    return;
+  }
+  verifyJsonRequest(req, resp, function(request) {
+    spikeArrest.apply(request, function(err, result) {
       if (err) {
         sendError(500, resp, err.message);
       } else {

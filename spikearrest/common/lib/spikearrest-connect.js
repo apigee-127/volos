@@ -24,7 +24,7 @@
 'use strict';
 
 var _ = require('underscore');
-var debug = require('debug')('spike');
+var debug = require('debug')('spikearrest');
 
 function SpikeArrestConnect(spikeArrest, options) {
   if (!(this instanceof SpikeArrestConnect)) {
@@ -36,60 +36,36 @@ function SpikeArrestConnect(spikeArrest, options) {
 }
 module.exports = SpikeArrestConnect;
 
-// applies spikeArrest and returns (403) error on exceeded
+// applies spikeArrest and returns (503) error on exceeded
 // options contains:
-// key (optional) may be a string or a function that takes the request and generates a string id
-//  note: for backward compatibility, 'identifier' may also be used
-//   if not specified, id will default to the request originalUrl
+// key may be a string or a function that takes the request and generates a string id
+// weight may be a number or a function that takes the request and generates a number
 SpikeArrestConnect.prototype.apply = function(options) {
   var self = this;
   return function(req, resp, next) {
     var opts = calcOptions(req, options);
-    applyQuota(self, opts, resp, next);
-  };
-};
-
-// applies quota on a per-caller address basis and returns (403) error on exceeded
-// options contains:
-// key (required, may be null) may be a string or a function that takes the request and generates a string id
-//  note: for backward compatibility, 'identifier' may also be used
-//   if not specified, key will be set to the request originalUrl
-// weight (optional) may be a number or a function that takes the request and generates a number
-//   if weight is specified, id is required (may be null)
-SpikeArrestConnect.prototype.applyPerAddress = function(options) {
-  var self = this;
-  return function(req, resp, next) {
-    var opts = calcOptions(req, options);
-    var remoteAddress = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
-    opts.identifier = opts.identifier + '/' + remoteAddress;
-    if (debug.enabled) { debug('Quota check: ' + opts.identifier); }
-    applyQuota(self, opts, resp, next);
+    applySpikeArrest(self, opts, resp, next);
   };
 };
 
 function calcOptions(req, opts) {
   var options = _.extend({}, opts); // clone
   if (_.isFunction(options.key)) { options.key = options.key(req); }
-  if (_.isFunction(options.identifier)) { options.identifier = options.identifier(req); }
   if (_.isFunction(options.weight)) { options.weight = options.weight(req); }
-  if (!options.identifier) { options.identifier = req.originalUrl; }
   return options;
 }
 
-function applyQuota(self, options, resp, next) {
-  if (debug.enabled) { debug('Quota check: ' + options.identifier); }
-  self.quota.apply(
+function applySpikeArrest(self, options, resp, next) {
+  if (debug.enabled) { debug('SpikeArrest check: ' + options.key); }
+  self.spikeArrest.apply(
     options,
     function(err, reply) {
       if (err) { return next(err); }
-      resp.setHeader('X-RateLimit-Limit', reply.allowed);
-      resp.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
-      resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
-        if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
-        resp.statusCode = 403;
-        err = new Error('exceeded quota');
-        err.status = 403;
+        if (debug.enabled) { debug('SpikeArrest engaged: ' + options.key); }
+        resp.statusCode = 503;
+        err = new Error('SpikeArrest engaged');
+        err.status = resp.statusCode;
       }
       next(err);
     }

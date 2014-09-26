@@ -1,7 +1,7 @@
 /****************************************************************************
  The MIT License (MIT)
 
- Copyright (c) 2014 Apigee Corporation
+ Copyright (c) 2013 Apigee Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,20 @@
  ****************************************************************************/
 'use strict';
 
-var Spi = require('..');
-var commonTest = require('../../test/spikearresttest');
+var SpikeArrest = require('../memory');
+var expressServer = require('./expressserver');
+var verifySpikeArrest = require('./verifySpikeArrest');
 
-describe('Spike Arrest', function() {
+describe('SpikeArrest Middleware', function() {
 
-  commonTest.testSpikeArrest({}, Spi);
+  describe('Express', function() {
+    var options = {
+      timeUnit: 'minute',
+      allow: 1
+    };
+    var spikeArrest = SpikeArrest.create(options);
+    var server = expressServer(spikeArrest);
+    verifySpikeArrest.verify(server);
+  });
+
 });

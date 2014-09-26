@@ -82,7 +82,8 @@ MemoryBuffer.prototype.scheduleBuffer = function(bucket, now) {
   var self = this;
   if (!bucket.applying && bucket.buffer.length > 0) {
     setTimeout(function() {
-      self.internalApply(bucket, bucket.buffer.pop());
+      var item = bucket.buffer.pop();
+      if (item) { self.internalApply(bucket, item); }
     }, bucket.nextWindow - now);
   }
 };

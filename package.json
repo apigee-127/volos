@@ -30,8 +30,8 @@
      "mocha": "x.x.x"
    },
   "scripts": {
-    "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js",
+    "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",
     "test-apigee": "mocha -u exports -R spec cache/apigee/test/apigeetest.js management/apigee/test oauth/apigee/test quota/apigee/test analytics/apigee/test",
-    "cover": "DEBUG=cache,quota,oauth,swagger,analytics,spikearrest ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js"
+    "cover": "DEBUG=cache,quota,oauth,swagger,analytics,spikearrest ROLLING_TESTS=true istanbul cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js"
   }
 }
