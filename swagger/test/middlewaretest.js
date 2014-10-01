@@ -144,7 +144,7 @@ describe('Swagger Middleware', function() {
 
                   done();
                 });
-            }, 10);
+            }, 20);
           });
       });
     });
