@@ -205,16 +205,34 @@ exports.testCache = function(config, Spi) {
       });
     });
 
-    describe('encodings', function() {
-      it('Binary', function(done) {
-        var tc = Spi.create(CACHE_NAME, config);
-        var ts = new Buffer('TestString1');
-        tc.set('B1', ts, function(err) {
-          should.not.exist(err);
-          tc.get('B1', function(err, val) {
+    describe('Encoding', function() {
+
+      describe('none', function() {
+
+        it('should return a Buffer when setting a String', function(done) {
+          var tc = Spi.create(CACHE_NAME, config);
+          var ts = 'TestString1';
+          tc.set('B1', ts, function(err) {
             should.not.exist(err);
-            assert.deepEqual(val, ts);
-            done();
+            tc.get('B1', function(err, val) {
+              should.not.exist(err);
+              assert(Buffer.isBuffer(val));
+              assert.equal(val.toString(), ts);
+              done();
+            });
+          });
+        });
+
+        it('should return a Buffer when setting a Buffer', function(done) {
+          var tc = Spi.create(CACHE_NAME, config);
+          var ts = new Buffer('TestString1');
+          tc.set('B1', ts, function(err) {
+            should.not.exist(err);
+            tc.get('B1', function(err, val) {
+              should.not.exist(err);
+              assert.deepEqual(val, ts);
+              done();
+            });
           });
         });
       });
