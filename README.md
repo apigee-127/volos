@@ -27,7 +27,8 @@ Apigee Proxy
 ------------
 All modules are capable of using Apigee Edge as a commercially supported, hardened and distributed backend
 implementation (though this is not required). If you intend to use the Apigee Edge implementations, you'll need to
-install an Apigee proxy into your Application on the Apigee Edge server. See [apigee proxy installation](proxy/README.md)
+install an Apigee proxy into your Application on the Apigee Edge server. 
+See [Apigee proxy installation](https://github.com/apigee-127/apigee-remote-proxy)
 
 Core Modules
 ------------

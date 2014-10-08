@@ -72,7 +72,7 @@ Running the examples against Apigee
 
 Setup Apigee
 ------------
-1. Create an Apigee Edge account and deploy the Volos proxy. 
+1. Create an Apigee Edge account and deploy the [Apigee Remote Proxy](https://github.com/apigee-127/apigee-remote-proxy). 
 2. Copy config/apigee-example.js to config/apigee.js
 3. Put your correct configuration values into config/apigee.js.
 

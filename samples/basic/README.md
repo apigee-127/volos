@@ -6,7 +6,7 @@ Setup
 
 ### Install The Apigee Proxy
 
-See [apigee proxy installation](../../proxy/README.md)
+See [Apigee proxy installation](https://github.com/apigee-127/apigee-remote-proxy)
 
 ### Install the modules
 

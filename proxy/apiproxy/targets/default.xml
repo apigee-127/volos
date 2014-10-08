@@ -1,5 +1,0 @@
-<TargetEndpoint name="default">
-  <ScriptTarget>
-     <ResourceURL>node://volos.js</ResourceURL>
-  </ScriptTarget>
-</TargetEndpoint>
