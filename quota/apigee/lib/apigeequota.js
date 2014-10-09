@@ -138,6 +138,10 @@ function selectImplementation(self, cb) {
       set('x-DNA-Api-Key', self.options.key).
       end(function(err, resp) {
         if (err) {
+          debug('Error getting version: %s', err);
+          if (err.code === 'ENOTFOUND') {
+            err.message = 'Apigee Remote Proxy not found at: ' + self.uri + '. Check your configuration.';
+          }
           cb(err);
         } else {
           if (resp.notFound || (resp.ok && !semver.satisfies(resp.text, '>=1.1.0'))) {
