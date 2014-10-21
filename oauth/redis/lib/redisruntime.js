@@ -241,6 +241,7 @@ RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
     if (reply) {
       var token = JSON.parse(reply);
       options.scope = token.scope;
+      options.attributes = token.attributes;
       createAndStoreToken(self, options, function(err, reply) {
         if (err) { return cb(err); }
         self.client.del(key);

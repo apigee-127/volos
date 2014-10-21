@@ -150,6 +150,35 @@ exports.verifyOauth = function(config) {
           });
         });
       });
+
+      it('refresh token', function(done) {
+        var body = {
+          grant_type: 'password',
+          username: validUserCreds.username,
+          password: validUserCreds.password,
+          client_id: client_id,
+          client_secret: client_secret
+        };
+        oauth.generateToken(body, options, function(err, token) {
+          should.not.exist(err);
+          should.exist(token.attributes.foo);
+          should.exist(token.refresh_token);
+          token.attributes.foo.should.equal(options.attributes.foo);
+
+          var body = {
+            grant_type: 'refresh_token',
+            client_id: client_id,
+            client_secret: client_secret,
+            refresh_token: token.refresh_token
+          };
+          oauth.refreshToken(querystring.stringify(body), {}, function(err, reply) {
+            should.not.exist(err);
+            should.exist(reply.attributes);
+            reply.attributes.foo.should.equal(options.attributes.foo);
+            done();
+          });
+        });
+      });
     });
 
     describe('beforeCreateToken()', function() {
