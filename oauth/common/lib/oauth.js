@@ -389,6 +389,10 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
     gr.scope = parsedBody.scope;
   }
 
+  if (options.refresh) {
+    gr.refresh = options.refresh;;
+  }
+
   this.spi.refreshToken(gr, function(err, result) {
     if (err) {
       cb(makeError(err));

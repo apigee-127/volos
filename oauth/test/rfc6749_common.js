@@ -45,6 +45,7 @@ exports.verifyOauth = function(config, server) {
 
   var creator = config.fixtureCreator;
   var validUserCreds = config.validUserCreds;
+  var oauth = config.oauth;
 
   function verifyAccessToken(access_token, done) {
     request(server)
@@ -829,6 +830,34 @@ exports.verifyOauth = function(config, server) {
           .end(function(err, res) {
             verify52ErrorResponse(err, res, done);
           });
+      });
+
+      it('must not return a new refresh token when the refresh option is not true', function(done) {
+        var body = {
+          grant_type: 'refresh_token',
+          client_id: client_id,
+          client_secret: client_secret,
+          refresh_token: refreshToken
+        };
+        oauth.refreshToken(querystring.stringify(body), {}, function(err, reply) {
+          should.not.exist(err);
+          should.not.exist(reply.refresh_token);
+          done();
+        });
+      });
+
+      it('must return a new refresh token when the refresh option is true', function(done) {
+        var body = {
+          grant_type: 'refresh_token',
+          client_id: client_id,
+          client_secret: client_secret,
+          refresh_token: refreshToken
+        };
+        oauth.refreshToken(querystring.stringify(body), {refresh: true}, function(err, reply) {
+          should.not.exist(err);
+          should.exist(reply.refresh_token);
+          done();
+        });
       });
 
       // also proves we can use client_id/client_secret in body instead of header
