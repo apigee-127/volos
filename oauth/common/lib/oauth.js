@@ -323,7 +323,7 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
 
 function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, options, cb) {
   if (!parsedBody.code) {
-    cb(makeError('invalid_request', 'Missing authorization code'));
+    return cb(makeError('invalid_request', 'Missing authorization code'));
   }
   var gr = {
     clientId: clientId,
