@@ -76,13 +76,15 @@ module.exports = Creator;
 
 Creator.prototype.createFixtures = function(cb) {
   var self = this;
-  checkDeveloper(self, DEV_1, APP_1, function(err, app1) {
-    if (err) { return cb(err); }
-    checkDeveloper(self, DEV_2, APP_2, function(err, app2) {
+  this.destroyFixtures(function() {
+    checkDeveloper(self, DEV_1, APP_1, function(err, app1) {
       if (err) { return cb(err); }
-      checkDeveloper(self, DEV_2, APP_3, function(err, app3) {
+      checkDeveloper(self, DEV_2, APP_2, function(err, app2) {
         if (err) { return cb(err); }
-        cb(undefined, [app1, app2, app3]);
+        checkDeveloper(self, DEV_2, APP_3, function(err, app3) {
+          if (err) { return cb(err); }
+          cb(undefined, [app1, app2, app3]);
+        });
       });
     });
   });
