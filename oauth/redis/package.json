@@ -1,6 +1,6 @@
 {
   "name": "volos-oauth-redis",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "license": "MIT",
   "main": "lib/redisruntime.js",
   "description": "Redis-backed OAuth library in the Volos system.",
