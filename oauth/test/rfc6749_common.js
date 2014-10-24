@@ -831,6 +831,27 @@ exports.verifyOauth = function(config, server) {
           });
       });
 
+      it('must invalidate the old refresh token and issue a new one', function(done) {
+        request(server)
+          .post('/refresh')
+          .auth(client_id, client_secret)
+          .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+          .end(function(err, res) {
+
+            res.body.should.have.property('refresh_token');
+            verify51SuccessfulResponse(err, res, function() {
+
+              request(server)
+                .post('/refresh')
+                .auth(client_id, client_secret)
+                .send(querystring.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }))
+                .end(function(err, res) {
+                  verify52ErrorResponse(err, res, done);
+                });
+            });
+          });
+      });
+
       // also proves we can use client_id/client_secret in body instead of header
       perform41and51CommonTests('/refresh', function() {
         return {
