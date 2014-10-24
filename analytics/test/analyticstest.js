@@ -165,7 +165,7 @@ exports.testAnalytics = function(config, Spi) {
           a.buffer.length.should.be.below(2);
           a.destroy();
           done();
-        }, options.flushInterval);
+        }, options.flushInterval + 10);
       });
     });
   });
