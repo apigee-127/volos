@@ -120,6 +120,7 @@ function createMiddlewareChain(applications) {
   _.each(applications, function(options, resourceName) {
     if (debug.enabled) { debug('chaining: ' + resourceName); }
     var resource = resourcesMap[resourceName];
+    if (!resource) { throw new Error('attempt to reference unknown resource: ' + resourceName); }
     var mwDef = resource.connectMiddleware();
     var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
     if (mwFactory) {
