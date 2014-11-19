@@ -77,15 +77,55 @@ CacheArgo.prototype.cache = function(id) {
 
       var populate = function(key, cb) {
         if (debug.enabled) { debug('cache miss: ' + key); }
+        var doCache, content, headers;
 
+        var addChunk = function(chunk) {
+          if (Buffer.isBuffer(content) && Buffer.isBuffer(chunk)) {
+            content = Buffer.concat([content, chunk]);
+            doCache = true;
+          } else {
+            debug('multiple non-Buffer writes, not caching');
+            doCache = false;
+          }
+        };
+
+        // replace write() to intercept the content sent to the client
+        resp._v_write = resp.write;
+        resp.write = function(chunk, encoding) {
+          resp._v_write(chunk, encoding);
+          if (chunk) {
+            if (content) {
+              addChunk(chunk);
+            } else {
+              doCache = true;
+              headers = resp._headers;
+              content = chunk;
+            }
+          }
+        };
+
+        // replace end() to intercept the content returned to the client
         var end = resp.end;
         resp.end = function(chunk, encoding) {
           resp.end = end;
+          if (chunk) {
+            if (content) {
+              addChunk(chunk, content);
+            } else {
+              resp.on('finish', function() {
+                doCache = true;
+                headers = resp._headers;
+                content = chunk;
+              });
+            }
+          }
           resp.end(chunk, encoding);
-          encoder.cache(resp.statusCode, resp._headers, chunk, cb);
+
+          if (!doCache) { headers = content = null; }
+          encoder.cache(resp.statusCode, headers, content, cb);
         };
 
-        next(env);
+        return next();
       };
 
       resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");

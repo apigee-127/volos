@@ -29,6 +29,10 @@ var request = require('supertest');
 var async = require('async');
 var debug = require('debug')('cachetest');
 var _ = require('underscore');
+var fs = require('fs');
+var path = require('path');
+
+var testdata = fs.readFileSync(path.join(__dirname, 'testdata.txt'), { encoding: 'utf8' });
 
 var ttl = 50;
 
@@ -36,8 +40,9 @@ module.exports.verify = function(server) {
   if (typeof server === 'string') {
     debug('verify target: %s', server);
   }
+  var count = 0;
 
-  it('must cache', function(done) {
+  it('must cache string', function(done) {
     debug('GET /count');
     request(server)
       .get('/count')
@@ -46,7 +51,7 @@ module.exports.verify = function(server) {
         debug('Result: %s %j', res.text, res.headers);
         res.status.should.eql(200);
         should.exist(res.header['cache-control']);
-        res.body.count.should.equal(1);
+        res.body.count.should.equal(++count);
         var headers = res.headers;
 
         debug('GET /count');
@@ -56,7 +61,7 @@ module.exports.verify = function(server) {
             should.not.exist(err);
             debug('Result: %s %j', res.text, res.headers);
             res.status.should.eql(200);
-            res.body.count.should.equal(1);
+            res.body.count.should.equal(count);
             _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
             debug('GET /count');
@@ -66,7 +71,7 @@ module.exports.verify = function(server) {
                 should.not.exist(err);
                 debug('Result: %s %j', res.text, res.headers);
                 res.status.should.eql(200);
-                res.body.count.should.equal(1);
+                res.body.count.should.equal(count);
                 _.keys(headers).length.should.equal(_.keys(res.headers).length);
 
                 done();
@@ -82,14 +87,14 @@ module.exports.verify = function(server) {
         .end(function(err, res) {
           should.not.exist(err);
           res.status.should.eql(200);
-          res.body.count.should.equal(2);
+          res.body.count.should.equal(++count);
 
           request(server)
             .get('/count')
             .end(function(err, res) {
               should.not.exist(err);
               res.status.should.eql(200);
-              res.body.count.should.equal(2);
+              res.body.count.should.equal(count);
 
               done();
             });
@@ -103,7 +108,7 @@ module.exports.verify = function(server) {
       .end(function(err, res) {
         should.not.exist(err);
         res.status.should.eql(200);
-        res.body.count.should.equal(2);
+        res.body.count.should.equal(count);
 
         done();
       });
@@ -115,7 +120,7 @@ module.exports.verify = function(server) {
       .end(function(err, res) {
         should.not.exist(err);
         res.status.should.eql(200);
-        res.body.count.should.equal(2);
+        res.body.count.should.equal(count);
 
         done();
       });
@@ -127,14 +132,14 @@ module.exports.verify = function(server) {
       .end(function(err, res) {
         should.not.exist(err);
         res.status.should.eql(201);
-        res.body.count.should.equal(3);
+        res.body.count.should.equal(++count);
 
         request(server)
           .get('/emit201')
           .end(function(err, res) {
             should.not.exist(err);
             res.status.should.eql(201);
-            res.body.count.should.equal(3);
+            res.body.count.should.equal(count);
 
             done();
           });
@@ -147,14 +152,14 @@ module.exports.verify = function(server) {
       .end(function(err, res) {
         should.not.exist(err);
         res.status.should.eql(500);
-        res.body.count.should.equal(4);
+        res.body.count.should.equal(++count);
 
         request(server)
           .get('/emit500')
           .end(function(err, res) {
             should.not.exist(err);
             res.status.should.eql(500);
-            res.body.count.should.equal(5);
+            res.body.count.should.equal(++count);
 
             done();
           });
@@ -172,13 +177,13 @@ module.exports.verify = function(server) {
           .post('/count')
           .end(function(err, res) {
             should.not.exist(err);
-            res.body.count.should.equal(6);
+            res.body.count.should.equal(++count);
 
             request(server)
               .get('/count')
               .end(function(err, res) {
                 should.not.exist(err);
-                res.body.count.should.equal(7);
+                res.body.count.should.equal(++count);
 
                 done();
               });
@@ -191,9 +196,39 @@ module.exports.verify = function(server) {
       .get('/countIdFunctionNull')
       .end(function(err, res) {
         should.not.exist(err);
-        res.body.count.should.equal(8);
+        res.body.count.should.equal(++count);
 
         done();
+      });
+  });
+
+  it('must cache a stream', function(done) {
+
+    debug('GET /stream');
+    request(server)
+      .get('/stream')
+      .end(function(err, res) {
+        should.not.exist(err);
+        debug('Result: %s %j', res.text, res.headers);
+        res.status.should.eql(200);
+        should.exist(res.header['cache-control']);
+        res.text.should.equal(testdata);
+        var headers = res.headers;
+        var counter = res.headers['counter'];
+
+        debug('GET /stream');
+        request(server)
+          .get('/stream')
+          .end(function(err, res) {
+            should.not.exist(err);
+            debug('Result: %s %j', res.text, res.headers);
+            res.status.should.eql(200);
+            res.text.should.equal(testdata);
+            _.keys(headers).length.should.equal(_.keys(res.headers).length);
+            counter.should.equal(res.headers['counter']);
+
+            done();
+          });
       });
   });
 

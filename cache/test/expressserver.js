@@ -25,12 +25,12 @@
 
 var express = require('express');
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 
 module.exports = function(cache) {
   var app = express();
   var counter = 1;
-
-//  app.use(cache.expressMiddleware().cache());
 
   app.get('/count',
     cache.expressMiddleware().cache(),
@@ -72,6 +72,13 @@ module.exports = function(cache) {
     cache.expressMiddleware().cache(nullIdFunc),
     function(req, resp) {
       resp.json({ count: counter++ });
+    });
+
+  app.get('/stream',
+    cache.expressMiddleware().cache(),
+    function(req, resp) {
+      resp.setHeader('counter', ++counter);
+      fs.createReadStream(path.join(__dirname, 'testdata.txt')).pipe(resp);
     });
 
   return app;

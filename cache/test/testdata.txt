@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/terms/"
+  xmlns:foaf="http://xmlns.com/foaf/0.1/"
+  xmlns:og="http://ogp.me/ns#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:sioc="http://rdfs.org/sioc/ns#"
+  xmlns:sioct="http://rdfs.org/sioc/types#"
+  xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="canonical" href="http://apigee.com/about/" />
+<link rel="shortlink" href="http://apigee.com/about/" />
+<meta name="generator" content="Drupal 7 (http://drupal.org)" />
+<link rel="shortcut icon" href="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Tdzh6mXwkPoqQ-big-KdVrWi0YLhYlgLHLbUcP1-RBA/mtime:1407171137/sites/mktg-new/files/favicon.ico" type="image/vnd.microsoft.icon" />
+<meta name="keywords" content="api management, APIs, analytics, predictive analytics" />
+<meta name="abstract" content="Apigee is a unified API management and predictive analytics platform that helps enterprises create and operate APIs and apps. Apigee Edge helps enterprises launch API programs fast, onboard partners and developers at low cost, and participate fully in a digital ecosystem. Apigee Insights provides big data predictive analytics with time-based graph processing that enables enterprises to deliver API-powered adaptive apps that anticipate and adapt to the needs of individual customers." />
+<meta http-equiv="x-dns-prefetch-control" content="on" />
+<link rel="dns-prefetch" href="//d38wlcdzwz02m5.cloudfront.net" />
+<link rel="dns-prefetch" href="//" />
+<meta name="description" content="Apigee is an API management and predictive analytics platform that helps enterprises create and operate APIs and apps. Apigee helps enterprises launch and operate APIs, onboard partners and developers, deliver API-powered adaptive apps with predictive analytics , and participate fully in a digital ecosystems." />
+  <title>Apigee | API Management | Predictive Analytics</title>
+  <link type="text/css" rel="stylesheet" href="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Wa6fgYLTjHeN7u3L3e91osMnvckyd1gLXQhLD1U7Lng/mtime:1414196304/sites/mktg-new/files/cdn/css/http/css_tXf6AJFhNvD-PNx25P702fw60SpkIVuWa601-Gh3Hyo.css" media="all" />
+<link type="text/css" rel="stylesheet" href="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/cFC7Jz7duOctfCZ36nBA2WlDzj0pnQJ3jblV_lmQjmg/mtime:1415247031/sites/mktg-new/files/cdn/css/http/css_XoXiw0qvhPmzjg1FbT3EtD7xVgHYQ9iZH399eZxpG98.css" media="all" />
+<link type="text/css" rel="stylesheet" href="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/ilN3xRuE9sh622_rbJEnBckH31fZIuW2YSBNl0MxlCo/mtime:1414812866/sites/mktg-new/files/cdn/css/http/css_prsC66g8NxAhj4Hc23U8OwTxcYI-p208P0yehmRzQx4.css" media="all" />
+<style>.jquery_colorpicker_color_display_226_0_249e4f{background-color:#249e4f;}
+.jquery_colorpicker_color_display_226_0_249e4f{background-color:#249e4f;}
+.jquery_colorpicker_color_display_226_0_3998d3{background-color:#3998d3;}
+.jquery_colorpicker_color_display_226_0_249e4f{background-color:#249e4f;}
+.jquery_colorpicker_color_display_226_0_3998d3{background-color:#3998d3;}
+.jquery_colorpicker_color_display_226_0_803395{background-color:#803395;}
+</style>
+<link type="text/css" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" media="all" />
+<link type="text/css" rel="stylesheet" href="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/k-1Fs3mixGylkAAz069mnLeh-1E79lZ5TiiE5nnWEO0/mtime:1416245088/sites/mktg-new/files/cdn/css/http/css_Nj3BEdj39UQQAWE32_DtSAUPE4Qbh7CiWvavLdGDnuI.css" media="all" />
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- HTML5 element support for IE6-8 -->
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script src="//use.typekit.net/ueg0nce.js"></script>
+  <script>try{Typekit.load();}catch(e){}</script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+<script>window.jQuery || document.write("<script src='/about/sites/all/modules/contrib/jquery_update/replace/jquery/1.7/jquery.js'>\x3C/script>")</script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Z6oTt6tA-0GvDmYe-j2AMlGXy0QHVyqFTp7_SaD5Wm0/mtime:1414443730/sites/mktg-new/files/js/js_IkgOrrVZK1UTp2HktvFi5vo1g7b25Muyr5GoySikuic.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/5DGXTm6tdJ-KQQq8MmBFGva74LmNntBN667wBDqAIzs/mtime:1415473145/sites/mktg-new/files/js/js_ddnKsFF-7YuoD-m7Ia_D4yS9m7QTd80uIp44H5KQFI0.js"></script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/gZZMD2SqR1iRU53QyOHGqa2TCSiS6D_V-UwrKpx1et4/mtime:1415473145/sites/mktg-new/files/js/js_9o1NhLbpBXTrhoEsIHDCH1U55pkypMTK_yaXiGklqCY.js"></script>
+<script>var _vwo_code=(function(){
+var account_id=64122,
+settings_tolerance=2000,
+library_tolerance=1500,
+use_existing_jquery=false,
+f=false,d=document;return{use_existing_jquery:function(){return use_existing_jquery;},library_tolerance:function(){return library_tolerance;},finish:function(){if(!f){f=true;var a=d.getElementById('_vis_opt_path_hides');if(a)a.parentNode.removeChild(a);}},finished:function(){return f;},load:function(a){var b=d.createElement('script');b.src=a;b.type='text/javascript';b.innerText;b.onerror=function(){_vwo_code.finish();};d.getElementsByTagName('head')[0].appendChild(b);},init:function(){settings_timer=setTimeout('_vwo_code.finish()',settings_tolerance);this.load('//dev.visualwebsiteoptimizer.com/j.php?a='+account_id+'&u='+encodeURIComponent(d.URL)+'&r='+Math.random());var a=d.createElement('style'),b='body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}',h=d.getElementsByTagName('head')[0];a.setAttribute('id','_vis_opt_path_hides');a.setAttribute('type','text/css');if(a.styleSheet)a.styleSheet.cssText=b;else a.appendChild(d.createTextNode(b));h.appendChild(a);return settings_timer;}};}());_vwo_settings_timer=_vwo_code.init();</script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/zaGbjkLdhC2VQ78yQLlJT4tFvqp4McxcWf_-01aZmmA/mtime:1415475969/sites/mktg-new/files/js/js_wCYUZ7MVXp50ty1cS_Uxtzduxh125GGyy7HqmR0_M_w.js"></script>
+<script>window.CKEDITOR_BASEPATH = '/about/sites/all/libraries/ckeditor/'</script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/MY5kENRMRcjF7pO3nA7eKqSu1rywM-xxH8S4CkGmbqY/mtime:1416321133/sites/mktg-new/files/js/js_xKPSAaB9bnxipG11RAavREbhF00FZpcvtuP8TtwVUCA.js"></script>
+<script>jQuery.extend(Drupal.settings, {"basePath":"\/about\/","pathPrefix":"","ajaxPageState":{"theme":"apigee_bootstrap","theme_token":"1KF6xDYr9sC2aVULqEK5mLZPbf-Ivfa7u6b18zF3UME","js":{"0":1,"sites\/all\/themes\/bootstrap\/js\/bootstrap.js":1,"https:\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/1.7.1\/jquery.js":1,"1":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"\/\/netdna.bootstrapcdn.com\/bootstrap\/3.0.2\/js\/bootstrap.min.js":1,"sites\/all\/modules\/custom\/apigee_custom\/apigee_mktg_hooks\/js\/apigee-mktg-hooks.js":1,"sites\/all\/modules\/contrib\/media_colorbox\/media_colorbox.js":1,"sites\/all\/libraries\/colorbox\/jquery.colorbox-min.js":1,"sites\/all\/modules\/contrib\/colorbox\/js\/colorbox.js":1,"sites\/all\/modules\/contrib\/colorbox\/styles\/default\/colorbox_style.js":1,"sites\/all\/modules\/contrib\/colorbox\/js\/colorbox_inline.js":1,"2":1,"sites\/all\/modules\/contrib\/views_bootstrap\/js\/views-bootstrap-carousel.js":1,"3":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/js\/global.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/js\/modernizr.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/affix.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/alert.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/button.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/carousel.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/collapse.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/dropdown.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/modal.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/tooltip.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/popover.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/scrollspy.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/tab.js":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/bootstrap\/js\/transition.js":1},"css":{"modules\/system\/system.base.css":1,"sites\/all\/modules\/custom\/apigee_custom\/apigee_mktg_hooks\/css\/apigee-mktg-hooks.css":1,"sites\/all\/modules\/contrib\/date\/date_api\/date.css":1,"sites\/all\/modules\/contrib\/date\/date_popup\/themes\/datepicker.1.7.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/contrib\/mollom\/mollom.css":1,"sites\/all\/modules\/contrib\/views\/css\/views.css":1,"sites\/all\/modules\/contrib\/colorbox\/styles\/default\/colorbox_style.css":1,"sites\/all\/modules\/contrib\/ctools\/css\/ctools.css":1,"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"\/\/netdna.bootstrapcdn.com\/bootstrap\/3.0.2\/css\/bootstrap.min.css":1,"sites\/all\/themes\/bootstrap\/css\/overrides.css":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/css\/field_collection.theme.css":1,"sites\/all\/themes\/apigee_themes\/apigee_bootstrap\/css\/style.css":1}},"colorbox":{"opacity":"0.85","current":"{current} of {total}","previous":"\u00ab Prev","next":"Next \u00bb","close":"Close","maxWidth":"98%","maxHeight":"98%","fixed":true,"mobiledetect":true,"mobiledevicewidth":"480px"},"viewsBootstrap":{"carousel":[{"id":1,"name":"homepage_slideshow","attributes":{"interval":0,"pause":"hover"}},{"id":2,"name":"homepage_slideshow","attributes":{"interval":6000,"pause":"hover"}}]},"bootstrap":{"anchorsFix":1,"anchorsSmoothScrolling":1,"popoverEnabled":1,"popoverOptions":{"animation":1,"html":0,"placement":"right","selector":"","trigger":"click","title":"","content":"","delay":0,"container":"body"},"tooltipEnabled":1,"tooltipOptions":{"animation":1,"html":0,"placement":"auto left","selector":"","trigger":"hover focus","delay":0,"container":"body"}}});</script>
+</head>
+<body class="html front not-logged-in no-sidebars page-front-page front-page" >
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-N52333"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-N52333');</script>
+<!-- End Google Tag Manager -->
+
+  <div id="skip-link">
+    <a href="#main-content" class="element-invisible element-focusable">Skip to main content</a>
+  </div>
+    <header id="navbar" role="banner" class="navbar navbar-default navbar-static-top">
+  <div class="container">
+
+
+    <div class="navbar-header">
+            <a class="logo navbar-btn pull-left" href="/about/" title="Home">
+        <img src="/about/sites/all/themes/apigee_themes/apigee_bootstrap/logo.svg" alt="Home" /></a>
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+
+          <div class="navbar-collapse collapse">
+        <nav role="navigation">
+                      <ul class="menu nav navbar-nav"><li class="first expanded dropdown"><a href="/about/products/apis-and-edge" data-target="#" class="dropdown-toggle" data-toggle="dropdown">Products <span class="caret"></span></a><ul class="dropdown-menu"><li class="first leaf"><a href="/about/products/apis-and-edge">Edge - API digital business platform</a></li>
+<li class="last leaf"><a href="/about/products/big-data-and-insights">Insights - big data predictive analytics</a></li>
+</ul></li>
+<li class="leaf"><a href="/about/customers">Customers</a></li>
+<li class="leaf"><a href="/about/why-apigee">Why Apigee</a></li>
+<li class="collapsed"><a href="/about/resources" title="Resources and Best Practices">Resources</a></li>
+<li class="leaf"><a href="https://accounts.apigee.com/accounts/sign_in?callback=https://accounts.apigee.com/accounts/dashboard" rel="nofollow">Sign In</a></li>
+<li class="last leaf"><a href="/about/search/node" class="js-addicon js-icon-search">Search</a></li>
+</ul>                  </nav>
+      </div>
+      </div>
+</header>
+<!--<div class="main-container coclass="main-container >-->
+<div class="main-container container">
+
+  <header role="banner" id="page-header">
+
+      <div class="region region-header">
+    <section id="block-block-21" class="block block-block clearfix">
+
+
+  <form class="search-form apigee-search-form navbar-search" style="display:none" onsubmit="document.location.href=this.action+&quot;/&quot;+jQuery(&quot;.apigee-search-keys&quot;, this).get(0).value; return false;" action="/about/search/site" method="post" id="search-form" accept-charset="UTF-8"><div><input type="hidden" name="form_build_id" value="form-e7MtXkVDjczDQVYz8JOXMcNwamU9Oz7Wq2htBF-lyXY" /><input type="hidden" name="form_id" value="search_form" /><div class="control-group form-type-textfield form-item-keys">
+ <div class="controls"> <input title="Enter the terms you wish to search for." placeholder="Search" autocapitalize="off" autocorrect="off" class="apigee-search-keys unprocessed apachesolr-autocomplete searchField form-text" type="text" id="edit-keys" name="keys" value="" size="20" maxlength="255" /></div></div>
+<input type="hidden" name="submit" value="Search" /></div></form>
+</section> <!-- /.block -->
+  </div>
+  </header> <!-- /#page-header -->
+
+
+  <div class="row intro-image-container">
+    <div class="col-sm-12">
+                  <a id="main-content"></a>
+                    <h1 class="page-header">About Apigee</h1>
+                                                      </div>
+  </div>
+
+
+
+  <div class="row">
+  <section class="col-sm-12">
+      <div class="region region-content">
+    <section id="block-views-homepage-slideshow-block-1" class="block block-views clearfix">
+
+
+  <div class="view view-homepage-slideshow view-id-homepage_slideshow view-display-id-block_1 view-dom-id-f6596c41ede3e925bcc1f373df797b3a">
+
+
+
+      <div class="view-content">
+      <div id="views-bootstrap-carousel-1" class="views-bootstrap-carousel-plugin-style carousel slide" >
+      <!-- Carousel indicators -->
+    <ol class="carousel-indicators">
+              <li data-target="#views-bootstrap-carousel-1" data-slide-to="0" class="active"></li>
+              <li data-target="#views-bootstrap-carousel-1" data-slide-to="1" class=""></li>
+              <li data-target="#views-bootstrap-carousel-1" data-slide-to="2" class=""></li>
+              <li data-target="#views-bootstrap-carousel-1" data-slide-to="3" class=""></li>
+          </ol>
+
+  <!-- Carousel items -->
+  <div class="carousel-inner">
+          <div class="item active">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/A4lFKMkoNS9pi3OHQXiQTJHPtmFHH90ifMu1FYBkkhE/mtime:1416322293/sites/mktg-new/files/hp-accelerate-banner.jpg" width="1200" height="500" alt="" /></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/products/apis-and-edge">Learn more</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/9bvN8qTi4OJvhi8DEJUJOzIcFv-458IFEKxu1X700V0/mtime:1414773406/sites/mktg-new/files/API-DummiesCarousel_1140x475.jpg" width="1140" height="475" alt="APIs are the foundation on which digital businesses are built. Learn about the strategic significance of APIs." title="APIs for Dummies" /></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Go beyond the acronym to understand the strategic significance of APIs that help transform your business and enable you to compete in the digital economy.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=hpb-gray&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies">Read APIs for Dummies</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/FOtBH54hulgp3W3ady0kggtHvIFHRUy6KWO_UxbmIYo/mtime:1411157062/sites/mktg-new/files/HP-walgreens-banner.jpg" width="1140" height="475" alt="Walgreens puts an API around its stores with Apigee" title="Walgreens puts an API around its stores " /></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration, enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/customer-story/walgreens-putting-api-around-their-stores">Learn more</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/wYSsFtZcCFt8LC2QgKyfhPi9R11lcVnU5XEoTjOq5V0/mtime:1414198984/sites/mktg-new/files/Live_nation-v2.jpg" width="1140" height="475" alt="Livenation and Apigee" title="Livenation and Apigee" /></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/customer-story/live-nation-accelerating-event-ticketing-innovation-apis">Learn more</a></div>  </div>      </div>
+      </div>
+
+      <!-- Carousel navigation -->
+    <a class="previous-slide-button" href="#views-bootstrap-carousel-1" data-slide="prev">
+      <i class="fa fa-angle-left"></i>
+    </a>
+    <a class="next-slide-button" href="#views-bootstrap-carousel-1" data-slide="next">
+      <i class="fa fa-angle-right"></i>
+    </a>
+  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-homepage-slideshow-block" class="block block-views clearfix">
+
+
+  <div class="view view-homepage-slideshow view-id-homepage_slideshow view-display-id-block view-dom-id-c6cfe1bcac6c7aac2c189d8fe7f03fb1">
+
+
+
+      <div class="view-content">
+      <div id="views-bootstrap-carousel-2" class="views-bootstrap-carousel-plugin-style carousel slide" >
+      <!-- Carousel indicators -->
+    <ol class="carousel-indicators">
+              <li data-target="#views-bootstrap-carousel-2" data-slide-to="0" class="active"></li>
+              <li data-target="#views-bootstrap-carousel-2" data-slide-to="1" class=""></li>
+              <li data-target="#views-bootstrap-carousel-2" data-slide-to="2" class=""></li>
+              <li data-target="#views-bootstrap-carousel-2" data-slide-to="3" class=""></li>
+          </ol>
+
+  <!-- Carousel items -->
+  <div class="carousel-inner">
+          <div class="item active">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><a href="/about/products/apis-and-edge"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/A4lFKMkoNS9pi3OHQXiQTJHPtmFHH90ifMu1FYBkkhE/mtime:1416322293/sites/mktg-new/files/hp-accelerate-banner.jpg" width="1200" height="500" alt="" /></a></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/products/apis-and-edge">Learn more</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=hpb-gray&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/9bvN8qTi4OJvhi8DEJUJOzIcFv-458IFEKxu1X700V0/mtime:1414773406/sites/mktg-new/files/API-DummiesCarousel_1140x475.jpg" width="1140" height="475" alt="APIs are the foundation on which digital businesses are built. Learn about the strategic significance of APIs." title="APIs for Dummies" /></a></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Go beyond the acronym to understand the strategic significance of APIs that help transform your business and enable you to compete in the digital economy.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=hpb-gray&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies">Read APIs for Dummies</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><a href="/about/customer-story/walgreens-putting-api-around-their-stores"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/FOtBH54hulgp3W3ady0kggtHvIFHRUy6KWO_UxbmIYo/mtime:1411157062/sites/mktg-new/files/HP-walgreens-banner.jpg" width="1140" height="475" alt="Walgreens puts an API around its stores with Apigee" title="Walgreens puts an API around its stores " /></a></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration, enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/customer-story/walgreens-putting-api-around-their-stores">Learn more</a></div>  </div>      </div>
+          <div class="item ">
+
+  <div class="views-field views-field-field-still-image">        <div class="field-content"><a href="/about/customer-story/live-nation-accelerating-event-ticketing-innovation-apis"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/wYSsFtZcCFt8LC2QgKyfhPi9R11lcVnU5XEoTjOq5V0/mtime:1414198984/sites/mktg-new/files/Live_nation-v2.jpg" width="1140" height="475" alt="Livenation and Apigee" title="Livenation and Apigee" /></a></div>  </div>
+  <div class="views-field views-field-field-homepage-slide-text">        <div class="field-content"><p>Apigee is the leading platform for digital acceleration enabling companies to operate with the speed, scale, and agility required of digital business.</p>
+</div>  </div>
+  <div class="views-field views-field-field-homepage-slide-button">        <div class="field-content"><a href="http://apigee.com/about/customer-story/live-nation-accelerating-event-ticketing-innovation-apis">Learn more</a></div>  </div>      </div>
+      </div>
+
+      <!-- Carousel navigation -->
+    <a class="previous-slide-button" href="#views-bootstrap-carousel-2" data-slide="prev">
+      <i class="fa fa-angle-left"></i>
+    </a>
+    <a class="next-slide-button" href="#views-bootstrap-carousel-2" data-slide="next">
+      <i class="fa fa-angle-right"></i>
+    </a>
+  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-mini-ctas-block" class="block block-views clearfix">
+
+
+  <div class="view view-mini-ctas view-id-mini_ctas view-display-id-block view-dom-id-49c189f634a85de8397891ab6978e8e7">
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first">
+
+  <div class="views-field views-field-field-minicta-type">        <div class="field-content">Demo</div>  </div>
+  <div class="views-field views-field-field-minicta-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/-GVWcqEhZNB3nallK3LGhyvvMYdSvEoQnEwESfDcVCs/mtime:1416335158/sites/mktg-new/files/demo_signup_sm.png" width="169" height="158" alt="" /></div>  </div>
+  <div class="views-field views-field-title">        <span class="field-content">Edge Demo</span>  </div>
+  <div class="views-field views-field-field-minicta-body">        <div class="field-content"><p>Apigee Edge - the leading infrastructure for creating &amp; operating APIs and apps</p>
+</div>  </div>
+  <div class="views-field views-field-field-minicta-link">        <div class="field-content"><a href="https://pages.apigee.com/apigee-product-website-demo-registration.html?utm_medium=website&amp;utm_campaign=demo%20request&amp;utm_asset=hpt">Watch Demo</a></div>  </div>  </div>
+  <div class="views-row views-row-2 views-row-even">
+
+  <div class="views-field views-field-field-minicta-type">        <div class="field-content">eBook</div>  </div>
+  <div class="views-field views-field-field-minicta-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/4lDa7HjTqv2ty_uNnqx5TOFpnhpvK_PkmMXDyn5urHg/mtime:1403297220/sites/mktg-new/files/ebook-05.png" width="168" height="157" alt="" /></div>  </div>
+  <div class="views-field views-field-title">        <span class="field-content">APIs are Different than Integration</span>  </div>
+  <div class="views-field views-field-field-minicta-body">        <div class="field-content"><p>Explore API-centric architecture in detail</p>
+</div>  </div>
+  <div class="views-field views-field-field-minicta-link">        <div class="field-content"><a href="https://pages.apigee.com/ebook-apis-are-different-than-integration-reg.html?utm_source=hpt-orange&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=apis-different-than-integration">Download eBook</a></div>  </div>  </div>
+  <div class="views-row views-row-3 views-row-odd views-row-last">
+
+  <div class="views-field views-field-field-minicta-type">        <div class="field-content">Get Started</div>  </div>
+  <div class="views-field views-field-field-minicta-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/UmFKEEkVkJndJfu4VPHtr-Iaap962DItFjj4EXZDFKM/mtime:1403298916/sites/mktg-new/files/get-started-06.png" width="168" height="157" alt="" /></div>  </div>
+  <div class="views-field views-field-title">        <span class="field-content">Product</span>  </div>
+  <div class="views-field views-field-field-minicta-body">        <div class="field-content"><p>Get started right away. Use the full Apigee Platform and API free!</p>
+</div>  </div>
+  <div class="views-field views-field-field-minicta-link">        <div class="field-content"><a href="https://accounts.apigee.com/accounts/sign_up?utm_source=hpt-orange&amp;utm_medium=website&amp;utm_campaign=signup&amp;utm_content=edge">Sign up</a></div>  </div>  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-product-overview-block" class="block block-views clearfix">
+
+
+  <div class="view view-product-overview view-id-product_overview view-display-id-block view-dom-id-b22a2ff40b8b4dadbea7f4ed78e6a5db">
+            <div class="view-header">
+      <h1 class="text-center homepage">The Digital Business Platform</h1>
+<h2 class="text-center"><strong>Achieve digital acceleration</strong></h2>
+<h3 class="text-center" style="margin-top: -10px;">with the speed, scale, and agility required to succeed in today's mobile-first digital world</h3>
+<p></p>    </div>
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
+
+
+<div  about="/about/block/api-management" typeof="" class="entity entity-bean bean-product-overview view-mode-product_overview_a">
+    <div class="row">
+    <div class="col-sm-6 ">
+      <div class="field field-name-field-productoffering-icon field-type-image field-label-hidden"><div class="field-items"><div class="field-item even"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Z12LJ9ntPFmuomX7UW811nafl-jSi16uF_tPQVxYRC8/mtime:1404170951/sites/mktg-new/files/apis_round_icon_0.png" width="87" height="87" alt="Apigee is the leading platform for digital acceleration, powering companies that operate with the speed, scale, and agility required of digital business." title="APIs " /></div></div></div><div class="field field-name-field-productoffering-headline field-type-text field-label-hidden"><div class="field-items"><div class="field-item even">Edge - API digital business platform</div></div></div><div class="field field-name-field--productoffering-text field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even"><p>Mobile devices and apps have changed the way customers connect with every business. To be relevant and compete, businesses must become digital and choose a technology platform capable of reaching new levels of scale, insight, and agility. </p>
+<p>Apigee Edge is purpose-built for digital business and extends across the digital value chain to help organizations launch API programs fast, onboard partners and developers at low cost, and participate fully in a digital ecosystem.</p>
+</div></div></div><div class="field field-name-field--productoffering-link field-type-link-field field-label-hidden"><div class="field-items"><div class="field-item even"><a href="http://apigee.com/about/products/apis-and-edge">Learn more</a></div></div></div>    </div>
+    <div class="col-sm-6 ">
+      <div class="field field-name-field--productoffering-image field-type-image field-label-hidden"><div class="field-items"><div class="field-item even"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/zAfVsFQ9pFehAsA972MdFFGKZt_E1jBHoBZ32wW9tLk/mtime:1404172141/sites/mktg-new/files/HP-dashboard-1-07.png" width="405" height="350" alt="Apigee is the leading platform for digital acceleration, powering companies that operate with the speed, scale, and agility required of digital business." title="Apigee API management" /></div></div></div>    </div>
+  </div>
+</div>
+
+
+<!-- Needed to activate display suite support on forms -->
+  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-product-overview-block-1" class="block block-views clearfix">
+
+
+  <div class="view view-product-overview view-id-product_overview view-display-id-block_1 view-dom-id-80f23bf32ddb21f54a8af988ec1b003c">
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
+
+
+<div  about="/about/block/big-data-analytics" typeof="" class="entity entity-bean bean-product-overview view-mode-product_overview_b">
+    <div class="row">
+    <div class="col-sm-6 ">
+      <div class="field field-name-field-productoffering-icon field-type-image field-label-hidden"><div class="field-items"><div class="field-item even"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/U0B5EOYAts1GKYM4hT2sEZVMdn5pmGnV73pou72oW9M/mtime:1404171175/sites/mktg-new/files/bi_data_round_icon.png" width="87" height="87" alt="Apigee is the leading platform for digital acceleration, powering companies that operate with the speed, scale, and agility required of digital business." title="Apigee Insights" /></div></div></div><div class="field field-name-field--productoffering-image field-type-image field-label-hidden"><div class="field-items"><div class="field-item even"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/IXH1HtKDqLbdmaQ39iO94QTue6fmcOiPtUEHMc5FVKk/mtime:1404172888/sites/mktg-new/files/analytics-v2-07.png" width="810" height="700" alt="Apigee Insights" title="Apigee Insights" /></div></div></div>    </div>
+    <div class="col-sm-6 ">
+      <div class="field field-name-field-productoffering-headline field-type-text field-label-hidden"><div class="field-items"><div class="field-item even">Insights - big data predictive analytics</div></div></div><div class="field field-name-field--productoffering-text field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even"><p>The intelligence from the massive amount of data generated by increasingly connected customers is proving critical to understanding user engagement and for optimizing experience across multiple channels. </p>
+<p>Apigee Insights provides big data predictive analytics with time-based graph processing that enables enterprises to deliver API-powered adaptive apps that anticipate and adapt to the needs of individual customers.</p>
+</div></div></div><div class="field field-name-field--productoffering-link field-type-link-field field-label-hidden"><div class="field-items"><div class="field-item even"><a href="http://apigee.com/about/products/insights">Learn more</a></div></div></div>    </div>
+  </div>
+</div>
+
+
+<!-- Needed to activate display suite support on forms -->
+  </div>
+    </div>
+
+
+
+
+      <div class="view-footer">
+      <a href="https://accounts.apigee.com/accounts/sign_up?utm_source=start-here&utm_medium=website&utm_campaign=signup&utm_content=edge" class="btn">Sign up</a>
+    </div>
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-block-6" class="block block-block clearfix">
+
+
+  <img alt="" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/ZE_Zc2m2WoQHbpeGoS9eTbMLrxJzX3v0XNgi8wz1uNc/mtime:1411150228/sites/mktg-new/files/default_images/homepage_conf_walkers.jpg" />
+</section> <!-- /.block -->
+<section id="block-views-customers-front-block" class="block block-views clearfix">
+
+
+  <div class="view view-customers-front view-id-customers_front view-display-id-block view-dom-id-a215acefaf2950cef5ce25f42ecd9491">
+            <div class="view-header">
+      <h2 style="text-align: center; font-size: 54px; line-height: 56px; color: #4a494a; margin-bottom: 40px;">Apigee powers the most API programs</h2>
+    </div>
+
+
+
+      <div class="view-content">
+      <div class="item-list">    <ul class="list-unstyled">          <li class="views-row views-row-1 views-row-odd views-row-first">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Exb7Mk3SpuR9Z3ImXR06NcN1oP8adkZNZrHMgn6dihI/mtime:1406564618/sites/mktg-new/files/customers/dig_river.png" width="150" height="120" alt="" /></a></div>  </div></li>
+          <li class="views-row views-row-2 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/hmuHUw-UTzGNl39Ovc-xNDyr1oEWeF-uH3z57tJfGn8/mtime:1411489717/sites/mktg-new/files/customers/citrix-logo-black-small.png" width="150" height="120" alt="Citrix" /></a></div>  </div></li>
+          <li class="views-row views-row-3 views-row-odd">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Hlay0tzAB9Lx7unotnvjg3QpXOTv_OsWUDtT84T8Mrc/mtime:1397759798/sites/mktg-new/files/customers/intralinks.jpg" width="150" height="120" alt="Intralinks" /></a></div>  </div></li>
+          <li class="views-row views-row-4 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/9C8jKxNIoBJKfz3QH_216o3UOqzggpzqeLA2yAt8ynw/mtime:1397759805/sites/mktg-new/files/customers/samtrafiken.jpg" width="150" height="120" alt="Samtrafiken" /></a></div>  </div></li>
+          <li class="views-row views-row-5 views-row-odd">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/sWbnmWyJ-QHUw4jstR621Cqp9VmDrZ8KvLvZUETL9Dk/mtime:1402084422/sites/mktg-new/files/customers/tradier.png" width="150" height="120" alt="Tradier" /></a></div>  </div></li>
+          <li class="views-row views-row-6 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Jkwrb0MW5vcPIz1PTcNC7eULPGZD3MpImNv1rpBhKeM/mtime:1397759802/sites/mktg-new/files/customers/morningstar.jpg" width="150" height="120" alt="Morningstar" /></a></div>  </div></li>
+          <li class="views-row views-row-7 views-row-odd">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Sc8I8I9iCuqFHjXtTp-51cGqKnJS-Y3J3O3mUdzQLMw/mtime:1397759809/sites/mktg-new/files/customers/transunion.jpg" width="150" height="120" alt="TransUnion" /></a></div>  </div></li>
+          <li class="views-row views-row-8 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/jTjjwlZc_OLiY2UEl08A5_8yweKEVx2Y2Yox70A-JgA/mtime:1397759794/sites/mktg-new/files/customers/equifax.jpg" width="150" height="120" alt="Equifax" /></a></div>  </div></li>
+          <li class="views-row views-row-9 views-row-odd">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/l4kRanOrIOt1o7Y02vdFCQXLq19I2IQL8wONvzZHcdQ/mtime:1397759803/sites/mktg-new/files/customers/orange.jpg" width="150" height="120" alt="Orange" /></a></div>  </div></li>
+          <li class="views-row views-row-10 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/n461VIS1wrklfOdIJBp8H8WverhjPE2tJFOKJMAwX9s/mtime:1397759793/sites/mktg-new/files/customers/dell.jpg" width="150" height="120" alt="Dell" /></a></div>  </div></li>
+          <li class="views-row views-row-11 views-row-odd">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/FaU06eLZN8P44reS7_-1vyOVlUuyGGzooakpMMeL9L0/mtime:1397759797/sites/mktg-new/files/customers/inmarsat.jpg" width="150" height="120" alt="Inmarsat" /></a></div>  </div></li>
+          <li class="views-row views-row-12 views-row-even">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/Ltm52lhsXo5Yir6xpISCLS219aMS8COA570CZ_E9rk8/mtime:1397759799/sites/mktg-new/files/customers/kaiser.jpg" width="150" height="120" alt="Kaiser" /></a></div>  </div></li>
+          <li class="views-row views-row-13 views-row-odd views-row-last">
+  <div class="views-field views-field-field-customer-logo">        <div class="field-content"><a href="/about/customers"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/4ndjiC6W7TkCCvw1lujRHMiiaBzCuEPQBKQ-Rx_-md8/mtime:1397759809/sites/mktg-new/files/customers/tradeking.jpg" width="150" height="120" alt="TradeKing" /></a></div>  </div></li>
+      </ul></div>    </div>
+
+
+
+
+      <div class="view-footer">
+      <a href="/about/customers" class="btn btn-primary">See More Customers</a>    </div>
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-block-16" class="block block-block clearfix">
+
+
+  <img alt="" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/CULMWL99CKSv8Ju6uiigHo3wg4WQaS4PIO12F7F2s2U/mtime:1411150367/sites/mktg-new/files/cityscape.jpg" style="width: 1200px; height: auto;" />
+</section> <!-- /.block -->
+<section id="block-views-home-page-ctas-block-1" class="block block-views clearfix">
+
+
+  <div class="view view-home-page-ctas view-id-home_page_ctas view-display-id-block_1 view-dom-id-a892e2641a4cbb73f253d116468d7673">
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
+
+  <div class="views-field views-field-field-cta-read-more-link cta_column">        <div class="field-content"><h3>APIs for Dummies</h3>
+This book demystifies APIs, going beyond the acronym to help you understand their strategic significance, as well as providing insight into how they can help your business.
+<a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies">Get your free copy</a></div>  </div>
+  <div class="views-field views-field-field-cta-button cta_column">        <div class="field-content"><a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/cvzNaGFtqgCfK6xztIuG8LgFtW825X3vSotLShD2Z34/mtime:1406497798/sites/mktg-new/files/APIs%20for%20Dummies_0.png" width="147" height="190" alt="" /></a>
+<p> </p>
+<a href="https://pages.apigee.com/ebook-apis-for-dummies-a-b-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=dummies" target="_blank">Get eBook</a></div>  </div>  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-home-page-ctas-block-2" class="block block-views clearfix">
+
+
+  <div class="view view-home-page-ctas view-id-home_page_ctas view-display-id-block_2 view-dom-id-e4fd505815a30e836a6cc2f84a27feef">
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
+
+  <div class="views-field views-field-field-cta-read-more-link cta_column">        <div class="field-content"><h3>Resources</h3>
+Getting in Shape for the Digital World! Download the resources you need to accelerate your business. Learn about best practices with ebooks and webcasts.
+<a href="https://pages.apigee.com/ebook-digital-transformation-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=digital-transformation">GET Digital Ready</a></div>  </div>
+  <div class="views-field views-field-field-cta-button cta_column">        <div class="field-content"><a href="https://pages.apigee.com/ebook-digital-transformation-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=digital-transformation"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/x6OYTFF2_AhY7sT6C7q8eX4fr0cpyk_kfJbd1aR6ic0/mtime:1402411493/sites/mktg-new/files/Digital_transformation.png" width="150" height="199" alt="" /></a>
+<p> </p>
+<a href="https://pages.apigee.com/ebook-digital-transformation-reg.html?utm_source=events-right-rail&amp;utm_medium=website&amp;utm_campaign=ebook&amp;utm_content=digital-transformation" target="_blank">Get eBook</a></div>  </div>  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-curated-tweets-block" class="block block-views clearfix">
+
+
+  <div class="view view-curated-tweets view-id-curated_tweets view-display-id-block view-dom-id-cf897b5657cff63a07442eaac6a1c29c">
+
+
+
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first">
+
+  <div class="views-field views-field-field-tweet-body">        <div class="field-content"><p>Retailers, ready for the holidays? Don't miss the new @Apigee #Webcast: Digital retailer, 11/20 11am PT <a href="http://bit.ly/1sar1LQ">http://bit.ly/1sar1LQ</a></p>
+</div>  </div>
+  <div class="views-field views-field-field-tweet-source">        <div class="field-content"><a href="https://twitter.com/Apigee" target="_blank">Follow us on Twitter!</a></div>  </div>  </div>
+  <div class="views-row views-row-2 views-row-even">
+
+  <div class="views-field views-field-field-tweet-body">        <div class="field-content"><p>@Apigee named 5th fastest growing company by @DeloitteTMT's #Fast500 w/ 17,384% growth <a href="http://bit.ly/1v86Hlq">http://bit.ly/1v86Hlq</a></p>
+</div>  </div>
+  <div class="views-field views-field-field-tweet-source">        <div class="field-content"><a href="https://twitter.com/Apigee" target="_blank">Follow us on Twitter!</a></div>  </div>  </div>
+  <div class="views-row views-row-3 views-row-odd views-row-last">
+
+  <div class="views-field views-field-field-tweet-body">        <div class="field-content"><p>#Apps have the potential to fundamentally reshape your biz - is your IT dept ready? <a href="http://spr.ly/6013SFVZ">http://spr.ly/6013SFVZ</a> @ApigeeInstitute</p>
+</div>  </div>
+  <div class="views-field views-field-field-tweet-source">        <div class="field-content"><a href="https://twitter.com/Apigee">Follow us on Twitter!</a></div>  </div>  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-views-ctas-block-1" class="block block-views clearfix">
+
+
+  <div class="view view-ctas view-id-ctas view-display-id-block_1 view-dom-id-b6612d335f3a3fa6611b4d2bcc36ef65">
+
+
+
+      <div class="view-content">
+
+<div id="views-bootstrap-thumbnail-1" class="views-bootstrap-thumbnail-plugin-style">
+
+          <div class="row">
+                  <div class="col col-lg-6">
+            <div class="thumbnail">
+
+          <h3 class="customer-cta-title">Next Steps</h3>
+  <div class="views-field views-field-field-cta-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/WGjhaOVfYO5TIE5TCYyvwd-3GpdOtRBom5jGhwNfX0I/mtime:1416334819/sites/mktg-new/files/demo_signup.png" width="269" height="252" alt="" /></div>  </div>
+  <div>        <div class="customer-cta-body">Apigee Edge: the leading infrastructure for creating and operating APIs and apps.</div>  </div>
+  <div>        <div class="customer-cta-button btn btn-default"><a href="http://pages.apigee.com/watch-demo-edge-reg.html?utm_source=next-steps&amp;utm_medium=website&amp;utm_campaign=watch-demo&amp;utm_content=edge" target="_blank">Watch Demo</a></div>  </div>            </div>
+          </div>
+                  <div class="col col-lg-6">
+            <div class="thumbnail">
+
+          <h3 class="customer-cta-title">Get Started</h3>
+  <div class="views-field views-field-field-cta-image">        <div class="field-content"><img typeof="foaf:Image" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/ESGJBHJaxU6c0B430S-gWylhhNhFu7dPCS-ELp-jyHI/mtime:1403825216/sites/mktg-new/files/signup-thumb_0.png" width="269" height="252" alt="" /></div>  </div>
+  <div>        <div class="customer-cta-body">Get started right away with Apigee Edge or Apigee Developer - the free, self-service, non-expiring trial of Apigee Edge.
+ </div>  </div>
+  <div>        <div class="customer-cta-button btn btn-default"><a href="https://accounts.apigee.com/accounts/sign_up?utm_source=next-steps&amp;utm_medium=website&amp;utm_campaign=signup&amp;utm_content=edge" target="_blank">Sign up</a></div>  </div>            </div>
+          </div>
+              </div>
+
+  </div>
+    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+<section id="block-block-11" class="block block-block clearfix">
+
+
+  <img alt="Apigee offices in downtown San Jose" width="1200" src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/z0PriZJ9itdaCOMjwkPNbam30hVeb2baBJxFfjNQEYw/mtime:1411151006/sites/mktg-new/files/pictures/skydiver.jpg" />
+</section> <!-- /.block -->
+  </div>
+  </section>
+  </div>
+
+
+      <section class="col-sm-12 content-bottom">
+        <div class="region region-content-bottom">
+    <section id="block-views-cta-bar-block" class="block block-views clearfix">
+
+
+  <div class="view view-cta-bar view-id-cta_bar view-display-id-block view-dom-id-2091b0dfafe32aeaa52b86d3164388c4">
+
+
+
+      <div class="view-content">
+      <div class="item-list">    <ul class="list-unstyled list-inline">          <li class="views-row views-row-1 views-row-odd views-row-first"><div  about="/about/cta_bar/cta_bar/1" typeof="" class="ds-1col entity entity-cta-bar cta-bar-cta-bar view-mode-full clearfix">
+
+
+  <div class="field field-name-field-cta-bar-link field-type-link-field field-label-hidden"><div class="field-items"><div class="field-item even"><a href="https://pages.apigee.com/contact-sales-reg.html?utm_source=follow&amp;utm_medium=website&amp;utm_campaign=contact-us&amp;utm_content=contact-us">Contact Us</a></div></div></div><div class="field field-name-field-cta-bar-color field-type-jquery-colorpicker field-label-hidden"><div class="field-items"><div class="field-item even"><div id ="jquery_colorpicker_color_display_1_226_0" class="jquery_colorpicker_color_display jquery_colorpicker_color_display_226 jquery_colorpicker_color_display_226_0_249e4f">&nbsp;</div></div></div></div></div>
+
+</li>
+          <li class="views-row views-row-2 views-row-even"><div  about="/about/cta_bar/cta_bar/2" typeof="" class="ds-1col entity entity-cta-bar cta-bar-cta-bar view-mode-full clearfix">
+
+
+  <div class="field field-name-field-cta-bar-link field-type-link-field field-label-hidden"><div class="field-items"><div class="field-item even"><a href="https://pages.apigee.com/watch-demo-edge-reg.html?utm_source=follow&amp;utm_medium=website&amp;utm_campaign=watch-demo&amp;utm_content=edge">Watch Demo</a></div></div></div><div class="field field-name-field-cta-bar-color field-type-jquery-colorpicker field-label-hidden"><div class="field-items"><div class="field-item even"><div id ="jquery_colorpicker_color_display_2_226_0" class="jquery_colorpicker_color_display jquery_colorpicker_color_display_226 jquery_colorpicker_color_display_226_0_3998d3">&nbsp;</div></div></div></div></div>
+
+</li>
+          <li class="views-row views-row-3 views-row-odd views-row-last"><div  about="/about/cta_bar/cta_bar/3" typeof="" class="ds-1col entity entity-cta-bar cta-bar-cta-bar view-mode-full clearfix">
+
+
+  <div class="field field-name-field-cta-bar-link field-type-link-field field-label-hidden"><div class="field-items"><div class="field-item even"><a href="https://accounts.apigee.com/accounts/sign_up?utm_medium=website&amp;utm_campaign=signup&amp;utm_asset=hpt">Sign Up</a></div></div></div><div class="field field-name-field-cta-bar-color field-type-jquery-colorpicker field-label-hidden"><div class="field-items"><div class="field-item even"><div id ="jquery_colorpicker_color_display_3_226_0" class="jquery_colorpicker_color_display jquery_colorpicker_color_display_226 jquery_colorpicker_color_display_226_0_803395">&nbsp;</div></div></div></div></div>
+
+</li>
+      </ul></div>    </div>
+
+
+
+
+
+
+</div>
+</section> <!-- /.block -->
+  </div>
+    </section>
+
+</div>
+<footer class="footer">
+  <div class="container">
+      <div class="footer-left col-sm-2">
+        <div class="region region-footer-left">
+    <section id="block-block-1" class="block block-block clearfix">
+
+
+  <div class="office">
+  <div>Apigee Corporation</div>
+  <div>1 (408) 343-7300</div>
+</div>
+<div class="office">
+  <div>Apigee Europe Ltd</div>
+  <div>+44 (0) 203-402-3121</div>
+</div>
+<div class="office">
+  <div>Apigee India</div>
+  <div>+91 (80) 67696800</div>
+</div>
+</section> <!-- /.block -->
+  </div>
+    </div>
+        <div class="footer-main col-sm-10">
+        <div class="region region-footer">
+    <section id="block-menu-menu-footer" class="block block-menu clearfix">
+
+
+  <ul class="menu nav"><li class="first expanded dropdown"><span data-target="#" class="dropdown-toggle nolink" data-toggle="dropdown">Products <span class="caret"></span></span><ul class="dropdown-menu"><li class="first leaf"><a href="/about/products/apis-and-edge">Edge - APIs</a></li>
+<li class="leaf"><a href="/about/products/big-data-and-insights">Insights - Big Data</a></li>
+<li class="leaf"><a href="/about/plans">Plans</a></li>
+<li class="last leaf"><a href="/about/datasheets">Datasheets</a></li>
+</ul></li>
+<li class="expanded dropdown"><span data-target="#" class="dropdown-toggle nolink" data-toggle="dropdown">Developers <span class="caret"></span></span><ul class="dropdown-menu"><li class="first leaf"><a href="http://developers.apigee.com">Overview</a></li>
+<li class="leaf"><a href="http://apigee.com/docs">Documentation</a></li>
+<li class="leaf"><a href="http://community.apigee.com">Community</a></li>
+<li class="last leaf"><a href="http://community.apigee.com">Q&amp;A Forum</a></li>
+</ul></li>
+<li class="expanded dropdown"><span data-target="#" class="dropdown-toggle nolink" data-toggle="dropdown">Resources <span class="caret"></span></span><ul class="dropdown-menu"><li class="first leaf"><a href="/about/resources">Overview</a></li>
+<li class="leaf"><a href="http://blog.apigee.com">Blog</a></li>
+<li class="leaf"><a href="/about/apigee-institute">Apigee Institute</a></li>
+<li class="leaf"><a href="http://community.apigee.com">Community</a></li>
+<li class="leaf"><a href="https://community.apigee.com/academy">Academy</a></li>
+<li class="last leaf"><a href="http://apigee.com/docs">Documentation</a></li>
+</ul></li>
+<li class="expanded dropdown"><span data-target="#" class="dropdown-toggle nolink" data-toggle="dropdown">Company <span class="caret"></span></span><ul class="dropdown-menu"><li class="first leaf"><a href="/about/apigee">Overview</a></li>
+<li class="leaf"><a href="/about/press-releases">Press Releases</a></li>
+<li class="leaf"><a href="/about/in-the-news">In the News</a></li>
+<li class="leaf"><a href="/about/customers">Customers</a></li>
+<li class="leaf"><a href="/about/partners">Partners</a></li>
+<li class="leaf"><a href="/about/apigee#block-bean-about-apigee-team-header">Team</a></li>
+<li class="leaf"><a href="/about/events">Events</a></li>
+<li class="leaf"><a href="/about/careers">Careers</a></li>
+<li class="last leaf"><a href="/about/apigee#block-bean-about-apigee-contact-us-header">Contact Us</a></li>
+</ul></li>
+<li class="last expanded dropdown"><span data-target="#" class="dropdown-toggle nolink" data-toggle="dropdown">Support <span class="caret"></span></span><ul class="dropdown-menu"><li class="first leaf"><a href="http://community.apigee.com/content/apigee-customer-support">Contact Support</a></li>
+<li class="leaf"><a href="http://apigee.com/docs">Documentation</a></li>
+<li class="leaf"><a href="/about/privacy">Privacy Policy</a></li>
+<li class="last leaf"><a href="/about/terms">Terms &amp; Conditions</a></li>
+</ul></li>
+</ul>
+</section> <!-- /.block -->
+  </div>
+    </div>
+    </div>
+  <div class="copyright">
+    &copy; 2014 Apigee Corp. All rights reserved.
+  </div>
+</footer>
+  <script>  (function (d, t) {
+    var bh = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    bh.type = 'text/javascript';
+    bh.src = '//www.bugherd.com/sidebarv2.js?apikey=n142ixz6n5vbkmrkfrekwa';
+    s.parentNode.insertBefore(bh, s);
+  })(document, 'script');
+</script>
+<script src="//d38wlcdzwz02m5.cloudfront.net/about/cdn/farfuture/O9tW7fjcEZBMuxn9ojF0LUwARks6a_KC8SnuuxbBVi8/mtime:1415473103/sites/mktg-new/files/js/js_B2uv6dkjoYobfQVyuXdchgrpnnx4oM0TkP_bDVf8Qrg.js"></script>
+</body>
+</html>
+

@@ -26,6 +26,8 @@
 var argo = require('argo');
 var port = 10010;
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 
 module.exports = function(cache) {
   var counter = 1;
@@ -100,6 +102,17 @@ module.exports = function(cache) {
         handle('request', function(env, next) {
           cache.argoMiddleware().cache(nullIdFunc)(env, function() {
             env.response.body = { count: counter++ };
+            next(env);
+          });
+        });
+    })
+
+    .get('/stream',
+      function(handle) {
+        handle('request', function(env, next) {
+          cache.argoMiddleware().cache()(env, function() {
+            env.response.setHeader('counter', ++counter);
+            env.response.body = fs.createReadStream(path.join(__dirname, 'testdata.txt'));
             next(env);
           });
         });
