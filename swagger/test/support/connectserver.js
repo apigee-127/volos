@@ -23,18 +23,22 @@
  ****************************************************************************/
 'use strict';
 
-var express = require('express');
 var assert = require('assert');
 var swagger = require('swagger-tools').middleware.v2_0;
 var volos = require('../../');
 var path = require('path');
 var yaml = require('yamljs');
+var qs = require('querystring');
+var Url = require('url');
+var connect = require('connect');
 
-module.exports = function() {
-  var app = express();
-  app.use(express.urlencoded());
+var bodyParser = require('body-parser');
 
-  var swaggerObject = require('./swagger.yaml');
+module.exports = function(swaggerObject) {
+
+  var app = connect();
+  app.use(expressCompatibility);
+  app.use(bodyParser.urlencoded({ extended: false }));
 
   var volosSwagger = volos(swaggerObject, {
     helpers: path.join(__dirname, 'helpers')
@@ -53,9 +57,39 @@ module.exports = function() {
   app.use(function(err, req, res, next) {
     if (err.status !== 403 && err.status !== 503) { return next(err);}
     res.status(err.status);
-    res.send(err.message);
+    res.end(err.message);
   });
 
   app.volos = volosSwagger; // allow test to access this object
   return app;
 };
+
+function expressCompatibility(req, res, next) {
+
+  if (!req.query) {
+    req.query = ~req.url.indexOf('?')
+      ? qs.parse(Url.parse(req.url).query, options)
+      : {};
+  }
+
+  res.json = function(obj) {
+    if (!res.getHeader('Content-Type')) {
+      res.setHeader('Content-Type', 'application/json');
+    }
+    res.end(JSON.stringify(obj));
+  };
+
+  if (!req.get) req.get = function(name) {
+    return this.headers[name];
+  };
+
+  if (!res.set) { res.set = res.setHeader; }
+  if (!res.get) { res.get = res.getHeader; }
+  if (!res.status) {
+    res.status = function(status) {
+      res.statusCode = status;
+    };
+  }
+
+  next();
+}

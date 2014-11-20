@@ -26,7 +26,7 @@
 var assert = require('assert');
 var should = require('should');
 var request = require('supertest');
-var expressServer = require('./support/expressserver');
+var expressServer = require('./support/connectserver');
 var async = require('async');
 var _ = require('underscore');
 var querystring = require('querystring');
@@ -36,28 +36,58 @@ var oauth = redisConfig.oauth;
 
 describe('Swagger Middleware', function() {
 
-  var client_id, client_secret, defaultScope, scopes;
-  var creator = redisConfig.fixtureCreator;
-  var server = expressServer();
+  // I can't figure out how to run these concurrently. If you need to run the old volos
+  // test, just uncomment it and comment out the a127 one.
+
+//  describe('volos', function() {
+//    var swaggerObject = require('./support/swagger-old.yaml');
+//    var server = expressServer(swaggerObject);
+//    verifyMiddleware(server);
+//  });
+
+  describe('a127', function() {
+    var swaggerObject = require('./support/swagger.yaml');
+    var server = expressServer(swaggerObject);
+    verifyMiddleware(server);
+  });
+});
+
+function verifyMiddleware(server) {
+
   var count = 0;
+  var client_id, client_secret, defaultScope, scopes;
 
   before(function(done) {
-    creator.createFixtures(function(err, apps) {
-      if (err) { return done(err); }
-      client_id = apps[0].credentials[0].key;
-      client_secret = apps[0].credentials[0].secret;
-      defaultScope = apps[0].defaultScope;
-      scopes = apps[0].scopes;
+    redisConfig.fixtureCreator.createFixtures(function(err, result) {
+      should.not.exist(err);
+      var app = result[0];
+      client_id = app.credentials[0].key;
+      client_secret = app.credentials[0].secret;
+      defaultScope = app.defaultScope;
+      scopes = app.scopes;
       done();
     });
   });
 
   after(function(done) {
-    creator.destroyFixtures(done);
+    redisConfig.fixtureCreator.destroyFixtures(done);
   });
 
-  describe('Operations', function() {
+  function getToken(scope, cb) {
+    var tokenRequest = {
+      clientId: client_id,
+      clientSecret: client_secret
+    };
 
+    if (scope) { tokenRequest.scope = scope; }
+
+    oauth.spi.createTokenClientCredentials(tokenRequest, function(err, result) {
+      if (err) { cb(err); }
+      cb(null, result.access_token);
+    });
+  }
+
+  describe('Operations', function() {
 
     it('must access clean', function(done) {
       request(server)
@@ -394,30 +424,30 @@ describe('Swagger Middleware', function() {
       });
     });
 
-    describe('Analytics', function() {
-
-      it('must apply and flush', function(done) {
-
-        var makeRecordCalled = false;
-        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
-          makeRecordCalled = true;
-        });
-
-        server.volos.resources['analytics'].spi.once('flush', function(records) {
-          records.length.should.equal(1);
-          makeRecordCalled.should.ok;
-          done();
-        });
-
-        request(server)
-          .get('/analyzedPath')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-          });
-      });
-    });
+//    describe('Analytics', function() {
+//
+//      it('must apply and flush', function(done) {
+//
+//        var makeRecordCalled = false;
+//        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
+//          makeRecordCalled = true;
+//        });
+//
+//        server.volos.resources['analytics'].spi.once('flush', function(records) {
+//          records.length.should.equal(1);
+//          makeRecordCalled.should.ok;
+//          done();
+//        });
+//
+//        request(server)
+//          .get('/analyzedPath')
+//          .end(function(err, res) {
+//            should.not.exist(err);
+//            res.status.should.eql(200);
+//            res.body.count.should.equal(++count);
+//          });
+//      });
+//    });
 
   });
 
@@ -502,20 +532,4 @@ describe('Swagger Middleware', function() {
     });
 
   });
-
-  function getToken(scope, cb) {
-
-    var tokenRequest = {
-      clientId: client_id,
-      clientSecret: client_secret
-    };
-
-    if (scope) { tokenRequest.scope = scope; }
-
-    oauth.spi.createTokenClientCredentials(tokenRequest, function(err, result) {
-      if (err) { cb(err); }
-      cb(null, result.access_token);
-    });
-  }
-});
-
+}

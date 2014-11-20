@@ -19,7 +19,7 @@ consumes:
   - "application/json"
 produces:
   - "application/json"
-x-a127-services:
+x-volos-resources:
   cache:
     provider: "volos-cache-memory"
     options:
@@ -67,27 +67,27 @@ paths:
   /cached:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         cache: {}
       operationId: "run"
   /cachedWithKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         cache:
           key: '/cached'
       operationId: "run"
   /cachedWithLowTtl:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         cache:
           ttl: 10
       operationId: "run"
   /cachedWithfunctionKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         cache:
           key:
             helper: "helper"
@@ -96,27 +96,27 @@ paths:
   /quota:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         quota: {}
       operationId: "run"
   /quotaWithKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         quota:
           key: "/quota"
       operationId: "run"
   /quotaWithWeight:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         quota:
           weight: 2
       operationId: "run"
   /quotaWithFunctionKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         quota:
           key:
             helper: helper
@@ -125,20 +125,20 @@ paths:
   /spikeArrest:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         spikeArrest: {}
       operationId: "run"
   /spikeArrestWithKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         spikeArrest:
           key: "spikeArrest"
       operationId: "run"
   /spikeArrestWithWeight:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         spikeArrest:
           key: "spikeArrest"
           weight: 2
@@ -146,7 +146,7 @@ paths:
   /spikeArrestWithFunctionKey:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-apply:
+      x-volos-apply:
         spikeArrest:
           key:
             helper: helper
@@ -155,38 +155,38 @@ paths:
   /secured:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-authorizations:
+      x-volos-authorizations:
         oauth2: {}
       operationId: "run"
   /securedScope2:
     x-swagger-router-controller: "controller"
     get:
-      x-a127-authorizations:
+      x-volos-authorizations:
         oauth2:
           scope: "scope2"
       operationId: "run"
   /cachedPath:
     x-swagger-router-controller: "controller"
-    x-a127-apply:
+    x-volos-apply:
       cache: {}
     get:
       operationId: "run"
   /quotaPath:
     x-swagger-router-controller: "controller"
-    x-a127-apply:
+    x-volos-apply:
       quota: {}
     get:
       operationId: "run"
   /securedPath:
     x-swagger-router-controller: "controller"
-    x-a127-authorizations:
+    x-volos-authorizations:
       oauth2:
         scope: "scope1"
     get:
       operationId: "run"
   /analyzedPath:
     x-swagger-router-controller: "controller"
-    x-a127-apply:
+    x-volos-apply:
       analytics: {}
     get:
       operationId: "run"

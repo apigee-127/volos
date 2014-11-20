@@ -10,13 +10,14 @@ var operationsMap; // operationId -> middleware chain
 var authorizationsMap; // operationId -> middleware chain
 var helpersDir = 'api/helpers';
 
-var RESOURCES = 'x-volos-resources';
-var APPLY = 'x-volos-apply';
-var AUTH = 'x-volos-authorizations';
+var SERVICES = ['x-a127-services', 'x-volos-resources'];
+var VOLOS_APPLY = 'x-volos-apply';
+var A127_APPLY = 'x-a127-apply';
+var VOLOS_AUTH = 'x-volos-authorizations';
+var A127_AUTH = 'x-a127-authorizations';
 
 var yamljs = require('yamljs');
 var oauthSwagger = require('../spec/oauth_operations.yaml');
-var oauthTokenPaths = {};
 
 module.exports = middleware;
 
@@ -74,7 +75,10 @@ function ifAuthenticated(req, res, next) {
   if (!authChain) {
     if (debug.enabled) { debug('creating auth chain for: ' + operation.operationId); }
 
-    var authorizations = operation[AUTH] || req.swagger.path[AUTH];
+    var authorizations = operation[A127_AUTH] ||
+                         req.swagger.path[A127_AUTH] ||
+                         operation[VOLOS_AUTH] ||
+                         req.swagger.path[VOLOS_AUTH];
 
     var middlewares = [];
     if (authorizations) {
@@ -103,10 +107,15 @@ function applyMiddleware(req, res, next) {
 
   if (!mwChain) {
     if (debug.enabled) { debug('creating volos chain for: ' + operation.operationId); }
-    var opMw = createMiddlewareChain(operation[APPLY] || {});
-    var pathMw = createMiddlewareChain(req.swagger.path[APPLY] || {});
 
-    mwChain = chain([opMw, pathMw]);
+    var middlewares = [
+      createMiddlewareChain(operation[A127_APPLY]),
+      createMiddlewareChain(req.swagger.path[A127_APPLY]),
+      createMiddlewareChain(operation[VOLOS_APPLY]),
+      createMiddlewareChain(req.swagger.path[VOLOS_APPLY])
+    ].filter(function(ea) { return !!ea; });
+
+    mwChain = chain(middlewares);
 
     if (!req.swagger.volos) { req.swagger.volos = {}; }
     operation.volos.mwChain = mwChain;
@@ -116,6 +125,7 @@ function applyMiddleware(req, res, next) {
 }
 
 function createMiddlewareChain(applications) {
+  if (!applications) { return undefined; }
   var middlewares = [];
   _.each(applications, function(options, resourceName) {
     if (debug.enabled) { debug('chaining: ' + resourceName); }
@@ -161,26 +171,28 @@ function createResources() {
 
   var resources = {};
 
-  _.each(swagger[RESOURCES], function(def, name) {
-    var module = require(def.provider);
+  SERVICES.forEach(function(resource) {
+    _.each(swagger[resource], function(def, name) {
+      var module = require(def.provider);
 
-    if (debug.enabled) {
-      debug('creating resource: ' + name);
-      debug('module: ' + def.provider);
-      debug('options: ' + JSON.stringify(def.options));
-    }
+      if (debug.enabled) {
+        debug('creating resource: ' + name);
+        debug('module: ' + def.provider);
+        debug('options: ' + JSON.stringify(def.options));
+      }
 
-    if (def.options.passwordCheck) { // only exists on oauth
-      def.options.passwordCheck = getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
-    }
+      if (def.options.passwordCheck) { // only exists on oauth
+        def.options.passwordCheck = getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
+      }
 
-    var resource = module.create.apply(this, [def.options]);
+      var resource = module.create.apply(this, [def.options]);
 
-    if (def.options.tokenPaths) { // only exists on oauth
-      importOAuth(resource, def.options.tokenPaths);
-    }
+      if (def.options.tokenPaths) { // only exists on oauth
+        importOAuth(resource, def.options.tokenPaths);
+      }
 
-    resources[name] = resource;
+      resources[name] = resource;
+    });
   });
 
   return resources;
