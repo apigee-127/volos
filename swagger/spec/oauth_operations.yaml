@@ -118,7 +118,7 @@ paths:
       description: "OAuth 2.0 token endpoint"
       summary: "OAuth 2.0 token endpoint"
       x-swagger-router-controller: oauth
-      operationId: "invalidateToken"
+      operationId: "invalidate"
       produces:
         - "application/json"
       parameters:
@@ -164,7 +164,7 @@ paths:
       description: "OAuth 2.0 refresh token endpoint"
       summary: "OAuth 2.0 refresh token endpoint"
       x-swagger-router-controller: oauth
-      operationId: "refreshToken"
+      operationId: "refresh"
       produces:
         - "application/json"
       parameters:

@@ -420,7 +420,61 @@ function verifyMiddleware(server) {
                 done();
               });
           });
+      });
 
+      it('must allow invalidate', function(done) {
+        getToken(null, function(err, token) {
+          if (err) { return done(err); }
+
+          var q = { token: token };
+          var qs = querystring.stringify(q);
+          request(server)
+            .post('/invalidate')
+            .auth(client_id, client_secret)
+            .send(qs)
+            .end(function(err, res) {
+              should.not.exist(err);
+
+              res.status.should.eql(200);
+              should.not.exist(res.body.access_token);
+
+              done();
+            });
+        });
+      });
+
+      it('must allow refresh', function(done) {
+        var q = {
+          grant_type: 'password',
+          username: 'jimmy',
+          password: 'jimmy'
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(client_id, client_secret)
+          .send(qs)
+          .end(function(err, res) {
+            should.not.exist(err);
+
+            res.status.should.eql(200);
+            should.exist(res.body.access_token);
+            should.exist(res.body.refresh_token);
+
+            q = { refresh_token: res.body.refresh_token, grant_type: 'refresh_token' };
+            var qs = querystring.stringify(q);
+            request(server)
+              .post('/refresh')
+              .auth(client_id, client_secret)
+              .send(qs)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                should.exist(res.body.access_token);
+
+                done();
+              });
+          });
       });
     });
 

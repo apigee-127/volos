@@ -354,11 +354,15 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
  * Refresh an access token or a refresh token. Parse the body as in the regular OAuth spec.
  */
 OAuth.prototype.refreshToken = function(body, options, cb) {
-  if (typeof body !== 'string') {
-    cb(makeError('invalid_request', 'body must be a string'));
+  var parsedBody;
+  if (typeof body === 'object') {
+    parsedBody = body;
+  } else if (typeof body === 'string') {
+    parsedBody = querystring.parse(body);
+  } else {
+    cb(makeError('invalid_request', 'body must be a string or object'));
     return;
   }
-  var parsedBody = querystring.parse(body);
 
   if (!parsedBody.grant_type || !parsedBody.refresh_token) {
     cb(makeError('invalid_request', 'must include grant_type and refresh_token'));
@@ -403,11 +407,15 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
  * Invalidate a token based on the spec.
  */
 OAuth.prototype.invalidateToken = function(body, options, cb) {
-  if (typeof body !== 'string') {
-    cb(makeError('invalid_request', 'body must be a string'));
+  var parsedBody;
+  if (typeof body === 'object') {
+    parsedBody = body;
+  } else if (typeof body === 'string') {
+    parsedBody = querystring.parse(body);
+  } else {
+    cb(makeError('invalid_request', 'body must be a string or object'));
     return;
   }
-  var parsedBody = querystring.parse(body);
 
   var idSecret = getIdAndSecret(options.authorizeHeader, parsedBody);
   if (!idSecret) {
