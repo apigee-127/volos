@@ -424,30 +424,30 @@ function verifyMiddleware(server) {
       });
     });
 
-//    describe('Analytics', function() {
-//
-//      it('must apply and flush', function(done) {
-//
-//        var makeRecordCalled = false;
-//        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
-//          makeRecordCalled = true;
-//        });
-//
-//        server.volos.resources['analytics'].spi.once('flush', function(records) {
-//          records.length.should.equal(1);
-//          makeRecordCalled.should.ok;
-//          done();
-//        });
-//
-//        request(server)
-//          .get('/analyzedPath')
-//          .end(function(err, res) {
-//            should.not.exist(err);
-//            res.status.should.eql(200);
-//            res.body.count.should.equal(++count);
-//          });
-//      });
-//    });
+    describe('Analytics', function() {
+
+      it('must apply and flush', function(done) {
+
+        var makeRecordCalled = false;
+        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
+          makeRecordCalled = true;
+        });
+
+        server.volos.resources['analytics'].spi.once('flush', function(records) {
+          records.length.should.equal(1);
+          makeRecordCalled.should.ok;
+          done();
+        });
+
+        request(server)
+          .get('/analyzedPath')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+          });
+      });
+    });
 
   });
 
