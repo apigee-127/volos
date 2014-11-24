@@ -1,6 +1,6 @@
 {
   "name": "volos-swagger",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "license": "MIT",
   "description": "Middleware for bridging swagger (via swagger-tools) and volos",
   "homepage": "https://github.com/apigee/volos",
