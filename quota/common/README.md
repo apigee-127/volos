@@ -4,7 +4,7 @@ This module adds support for "quotas" to any API.
 
 A quota is a traffic-management construct that is often used in building APIs and presenting them to
 developers. It is common in the API world to offer a service that is available to each individual application
-for a limited number of requests per hour, day, or week.
+for a limited number of requests per minute, hour, day, or week.
 
 For instance, the developers of an API may wish to identify each application that uses the API using an "API key"
 and offer different levels of service  based on the application. For instance, some applications might be allowed
@@ -12,7 +12,7 @@ to make only 100 API calls per hour, while others might have a much higher limit
 
 This module may be used to do that. Using it, you create a "quota," and each quota has the following attributes:
 
-* timeUnit: How often the quota resets -- may be in minutes, hours, days, or weeks
+* timeUnit: How often the quota resets -- may be "minute", "hour", "day", or "week"
 * interval: Works with the timeUnit to determine how often the quota resets. For instance, every 5 days or 2 weeks.
 * startTime: A time at which the quota calculations should begin. For instance, if there is no start time then a
 quota set to reset in "one day" will reset 24 hours after the first message is receiver, but if the start time
