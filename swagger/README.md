@@ -19,16 +19,16 @@ The following sections discuss examples from [this](test/support/swagger.yaml) s
 
 Important: Be sure to include any referenced Volos modules in your package.json and run `npm install`.   
 
-### Resources
+### Services
 
-The "x-volos-resources" vendors extension section defines how the modules that will be referenced in the other sections 
+The "x-a127-services" vendors extension section defines how the modules that will be referenced in the other sections 
 of this file will be instantiated and configured. The basic idea is that you simply define the array of 
 parameters that would have been passed in to create the Volos module had you done it programmatically.
  
 For example, [volos-cache-memory](../cache/memory/README.md) requires a name and a hash of options. If we want to create
 and use a cache named "memCache" that has a time-to-live (ttl) of 1000ms, we'd do so like this: 
 
-    x-volos-resources:
+    x-a127-services:
       cache:
         provider: "volos-cache-memory"
         options:
@@ -56,24 +56,53 @@ Similarly, we create a [volos-quota-memory](../quota/memory/README.md) ("quota")
 
 #### Cache & Quota middleware
 
-Volos modules are applied in a Swagger path or operation with the "x-volos-apply" extension. In the example below, we 
+Volos modules are applied in a Swagger path or operation with the "x-a127-apply" extension. In the example below, we 
 have examples of applying a cache ("cache") and a quota ("quota"). In each case, we're applying with the Volos defaults.
 
     paths:
       /cached:
-        x-volos-apply:
+        x-a127-apply:
           cache: {}
       /quota:
-        x-volos-apply: 
+        x-a127-apply: 
           quota: {}
 
 #### OAuth authorization
 
-Volos authorization is applied in a Swagger path or operation with the "x-volos-authorizations" extension. In the 
-example below, we are requiring that the request is using an OAuth Token validated by the "oauth2" resource requiring 
-the "scope1" scope. (Note: Additional scopes could also be required by space-delimiting them or using an array.)
+Once you've defined a Volos OAuth provider in x-a127-services, you may use standard Swagger 2.0 authorization constructs
+to delegate to it. This is done by creating a SecurityDefinition like so:
+ 
+    securityDefinitions:
+      oauth2:
+        type: oauth2
+        scopes: []
+        flow: accessCode
+        authorizationUrl: ignored
+        tokenUrl: ignored
+
+SecurityDefinition Notes:
+ 
+  - The SecurityDefinition name (in this case, "oauth2") MUST match the name of the x-a127-service name.
+  - "type" MUST be "oauth2"
+  - The remainder of the fields do not affect operation and are for documentation only. 
+
+Once you've defined the SecurityDefinition, you can apply it to your operations. The following will require 
+a valid OAuth token for the scope "scope1" on the "GET /secured" operation using the provider called "oauth2":  
+ 
+    /secured:
+      get:
+      security:
+        -
+          oauth2:
+            - scope1
+
+
+Deprecated: Volos authorization may also applied in a Swagger path or operation with the "x-a127-authorizations" 
+extension. The example below performs the same function as above: It requires that the request is using an OAuth 
+Token validated by the "oauth2" resource requiring the "scope1" scope. (Additional scopes could be required  
+by space-delimiting them or using an array.)
 
     /secured:
-      x-volos-authorizations: 
+      x-a127-authorizations: 
         oauth2: 
           scope: "scope1"

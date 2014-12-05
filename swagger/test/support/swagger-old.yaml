@@ -190,3 +190,27 @@ paths:
       analytics: {}
     get:
       operationId: "run"
+  /swaggerSecured:
+    x-swagger-router-controller: "controller"
+    get:
+      security:
+        -
+          oauth2: []
+      operationId: "run"
+  /swaggerSecuredScope2:
+    x-swagger-router-controller: "controller"
+    get:
+      security:
+        -
+          oauth2:
+            - scope2
+      operationId: "run"
+securityDefinitions:
+  oauth2:
+    type: oauth2
+    scopes:
+      -
+        scope2: "ignored"
+    flow: accessCode
+    authorizationUrl: ignored
+    tokenUrl: ignored

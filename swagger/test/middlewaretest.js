@@ -26,7 +26,7 @@
 var assert = require('assert');
 var should = require('should');
 var request = require('supertest');
-var expressServer = require('./support/connectserver');
+var connectServer = require('./support/connectserver');
 var async = require('async');
 var _ = require('underscore');
 var querystring = require('querystring');
@@ -41,13 +41,13 @@ describe('Swagger Middleware', function() {
 
 //  describe('volos', function() {
 //    var swaggerObject = require('./support/swagger-old.yaml');
-//    var server = expressServer(swaggerObject);
+//    var server = connectServer(swaggerObject);
 //    verifyMiddleware(server);
 //  });
 
   describe('a127', function() {
     var swaggerObject = require('./support/swagger.yaml');
-    var server = expressServer(swaggerObject);
+    var server = connectServer(swaggerObject);
     verifyMiddleware(server);
   });
 });
@@ -331,7 +331,7 @@ function verifyMiddleware(server) {
 
     });
 
-    describe('Oauth', function() {
+    describe('A127 Oauth', function() {
 
       it('must handle auth', function(done) {
 
@@ -586,4 +586,63 @@ function verifyMiddleware(server) {
     });
 
   });
+
+  describe('Swagger Oauth', function() {
+
+    it('must handle auth', function(done) {
+
+      request(server)
+        .get('/swaggerSecured')
+        .end(function(err, res) {
+          should.not.exist(err);
+          res.status.should.eql(401);
+
+          getToken(null, function(err, token) {
+            if (err) { return done(err); }
+
+            request(server)
+              .get('/swaggerSecured')
+              .set('Authorization', 'Bearer ' + token)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(++count);
+
+                done();
+              });
+          });
+        });
+    });
+
+    it('must handle scopes', function(done) {
+
+      getToken(null, function(err, token) {
+        if (err) { return done(err); }
+
+        request(server)
+          .get('/swaggerSecuredScope2')
+          .set('Authorization', 'Bearer ' + token)
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(400);
+
+            getToken('scope2', function(err, token) {
+              if (err) { return done(err); }
+
+              request(server)
+                .get('/swaggerSecuredScope2')
+                .set('Authorization', 'Bearer ' + token)
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(200);
+                  res.body.count.should.equal(++count);
+
+                  done();
+                });
+            });
+          });
+      });
+    });
+  });
+
 }

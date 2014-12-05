@@ -1,3 +1,26 @@
+/****************************************************************************
+ The MIT License (MIT)
+
+ Copyright (c) 2014 Apigee Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
 'use strict';
 
 var _ = require('underscore');
@@ -6,18 +29,16 @@ var debug = require('debug')('swagger');
 
 var swagger;
 var resourcesMap; // name -> volos resource
-var operationsMap; // operationId -> middleware chain
 var authorizationsMap; // operationId -> middleware chain
-var helpersDir = 'api/helpers';
 
 var SERVICES = ['x-a127-services', 'x-volos-resources'];
-var VOLOS_APPLY = 'x-volos-apply';
-var A127_APPLY = 'x-a127-apply';
 var VOLOS_AUTH = 'x-volos-authorizations';
 var A127_AUTH = 'x-a127-authorizations';
 
 var yamljs = require('yamljs');
 var oauthSwagger = require('../spec/oauth_operations.yaml');
+
+var helpers = require('./helpers');
 
 module.exports = middleware;
 
@@ -26,13 +47,11 @@ module.exports = middleware;
 function middleware(swaggerObject, config) {
 
   config = config || {};
-  helpersDir = config.helpers || helpersDir;
+  helpers.init(config);
 
   setSwagger(swaggerObject, config);
 
-  operationsMap = {};
   authorizationsMap = {};
-  var mwChain = chain([ifAuthenticated, applyMiddleware]);
 
   var mwFunction = function(req, res, next) {
     if (debug.enabled) { debug('handle req: ' + req.path); }
@@ -42,17 +61,61 @@ function middleware(swaggerObject, config) {
       setSwagger(req.swagger.swaggerObject, config);
     }
 
-    mwChain(req, res, next);
+    ifAuthenticated(req, res, next);
   };
 
   mwFunction.resources = resourcesMap; // backward compatible and exposes the resourceMap to clients
   mwFunction.controllers = path.resolve(__dirname, 'controllers'); // to map default oauth token routes
+  mwFunction.swaggerSecurityHandlers = swaggerSecurityHandlers();
 
   return mwFunction;
 }
 
+function swaggerSecurityHandlers() {
+
+  var handlers = {}; // name -> handler
+
+  _.each(resourcesMap, function(resource, name) {
+    if (resource.passwordCheck) { // passwordCheck only exists on oauth
+      handlers[name] = new SwaggerSecurityHandler(resource);
+    }
+  });
+
+  return handlers;
+}
+
+function SwaggerSecurityHandler(oauth) {
+
+  return function(request, securityDefinition, scopes, cb) {
+    if (securityDefinition.type !== 'oauth2') {
+      debug('Invalidate type for security handler (%s). Must be "oauth2"', securityDefinition.type);
+      return cb();
+    }
+    if (debug.enabled) { debug('authenticate scopes: %s', scopes); }
+    oauth.verifyToken(
+      request.headers.authorization,
+      scopes,
+      function(err, result) {
+        if (err) {
+          if (debug.enabled) {
+            debug('Authentication error: ' + err);
+          }
+          cb(err);
+        } else {
+          request.token = result;
+          cb();
+        }
+      }
+    );
+  }
+}
+
+
 function addResourceToRequestMW(oauth) {
-  var resource = { oauth: oauth};
+  var resource = {
+    oauth: oauth,
+    resourcesMap: resourcesMap
+  };
   return function(req, res, next) {
     req.volos = resource;
     next();
@@ -91,80 +154,13 @@ function ifAuthenticated(req, res, next) {
     }
 
     middlewares.push(addResourceToRequestMW(req.swagger.path.oauth));
-    authChain = chain(middlewares);
+    authChain = helpers.chain(middlewares);
 
     if (!operation.volos) { operation.volos = {}; }
     operation.volos.authChain = authChain;
   }
 
   authChain(req, res, next);
-}
-
-function applyMiddleware(req, res, next) {
-
-  var operation = req.swagger.operation;
-  var mwChain = operation.volos ? operation.volos.mwChain : undefined; // cache
-
-  if (!mwChain) {
-    if (debug.enabled) { debug('creating volos chain for: ' + operation.operationId); }
-
-    var middlewares = [
-      createMiddlewareChain(operation[A127_APPLY]),
-      createMiddlewareChain(req.swagger.path[A127_APPLY]),
-      createMiddlewareChain(operation[VOLOS_APPLY]),
-      createMiddlewareChain(req.swagger.path[VOLOS_APPLY])
-    ].filter(function(ea) { return !!ea; });
-
-    mwChain = chain(middlewares);
-
-    if (!req.swagger.volos) { req.swagger.volos = {}; }
-    operation.volos.mwChain = mwChain;
-  }
-
-  mwChain(req, res, next);
-}
-
-function createMiddlewareChain(applications) {
-  if (!applications) { return undefined; }
-  var middlewares = [];
-  _.each(applications, function(options, resourceName) {
-    if (debug.enabled) { debug('chaining: ' + resourceName); }
-    var resource = resourcesMap[resourceName];
-    if (!resource) { throw new Error('attempt to reference unknown resource: ' + resourceName); }
-    var mwDef = resource.connectMiddleware();
-    var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()
-    if (mwFactory) {
-      if (_.isObject(options.key)) {
-        options.key = getHelperFunction(resourceName + '.key', options.key);
-      }
-      var mw = mwFactory.apply(mwDef, [options || {}]);
-      middlewares.push(mw);
-    } else {
-      throw new Error('unknown middleware: ' + resourceName);
-    }
-  });
-
-  return chain(middlewares);
-}
-
-function chain(middlewares) {
-
-  if (!middlewares || middlewares.length < 1) {
-    return function(req, res, next) { next(); };
-  }
-
-  return function(req, res, next) {
-    function createNext(middleware, index) {
-      return function(err) {
-        if (err) { return next(err); }
-
-        var nextIndex = index + 1;
-        var nextMiddleware = middlewares[nextIndex] ? createNext(middlewares[nextIndex], nextIndex) : next;
-        middleware(req, res, nextMiddleware);
-      };
-    }
-    return createNext(middlewares[0], 0)();
-  };
 }
 
 function createResources() {
@@ -182,7 +178,7 @@ function createResources() {
       }
 
       if (def.options.passwordCheck) { // only exists on oauth
-        def.options.passwordCheck = getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
+        def.options.passwordCheck = helpers.getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
       }
 
       var resource = module.create.apply(this, [def.options]);
@@ -234,20 +230,4 @@ function importOAuth(oauth, paths) {
   _.each(oauthSwagger.definitions, function(value, key) {
     allDefinitions[key] = value;
   });
-}
-
-
-function getHelperFunction(resourceName, options) {
-  if (_.isFunction(options)) { return options; }
-  if (options.helper && options.function) {
-    var helperPath = path.join(helpersDir, options.helper);
-    var helper = require(helperPath);
-    var func = helper[options.function];
-    if (!func) {
-      throw new Error('unknown function: \'' + options.function + '\' on helper: ' + helperPath);
-    }
-    return func;
-  } else {
-    throw new Error('illegal options for: ' + resourceName);
-  }
 }

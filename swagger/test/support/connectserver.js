@@ -25,14 +25,16 @@
 
 var assert = require('assert');
 var swagger = require('swagger-tools').middleware.v2_0;
-var volos = require('../../');
 var path = require('path');
 var yaml = require('yamljs');
 var qs = require('querystring');
 var Url = require('url');
 var connect = require('connect');
-
 var bodyParser = require('body-parser');
+var _ = require('underscore');
+var debug = require('debug')('swagger');
+
+var volos = require('../../');
 
 module.exports = function(swaggerObject) {
 
@@ -40,17 +42,21 @@ module.exports = function(swaggerObject) {
   app.use(expressCompatibility);
   app.use(bodyParser.urlencoded({ extended: false }));
 
-  var volosSwagger = volos(swaggerObject, {
+  // this must be before swaggerMetadata - it rewrites swaggerObject
+  var volosAuth = volos.auth(swaggerObject, {
     helpers: path.join(__dirname, 'helpers')
   });
 
   app.use(swagger.swaggerMetadata(swaggerObject));
-  app.use(volosSwagger);
+  app.use(swagger.swaggerSecurity(volosAuth.swaggerSecurityHandlers));
+
+  app.use(volosAuth);
+  app.use(volos.app);
 
   app.use(swagger.swaggerRouter({
     controllers: [
       path.join(__dirname, 'controllers'),
-      volosSwagger.controllers
+      path.join(__dirname, '..', '..', 'lib', 'controllers')
     ]
   }));
 
@@ -60,7 +66,7 @@ module.exports = function(swaggerObject) {
     res.end(err.message);
   });
 
-  app.volos = volosSwagger; // allow test to access this object
+  app.volos = volosAuth; // allow test to access volosAuth
   return app;
 };
 

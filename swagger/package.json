@@ -10,7 +10,7 @@
     "swagger"
   ],
   "author": "Scott Ganyo <sganyo@apigee.com>",
-  "main": "lib/connect-middleware.js",
+  "main": "lib/index.js",
   "dependencies": {
     "debug": "1.0.x",
     "underscore": "1.6.x",

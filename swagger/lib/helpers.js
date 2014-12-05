@@ -23,25 +23,52 @@
  ****************************************************************************/
 'use strict';
 
+var _ = require('underscore');
+var path = require('path');
+var debug = require('debug')('swagger');
+var helpersDir = 'api/helpers';
+
 module.exports = {
-  token: token,
-  authorize: authorize,
-  invalidate: invalidate,
-  refresh: refresh
+  init: init,
+  chain: chain,
+  getHelperFunction: getHelperFunction
 };
 
-function authorize(req, res, next) {
-  req.volos.oauth.expressMiddleware().handleAuthorize()(req, res, next);
+function init(config) {
+  helpersDir = config.helpers || helpersDir;
 }
 
-function token(req, res, next) {
-  req.volos.oauth.expressMiddleware().handleAccessToken()(req, res, next);
+function chain(middlewares) {
+
+  if (!middlewares || middlewares.length < 1) {
+    return function(req, res, next) { next(); };
+  }
+
+  return function(req, res, next) {
+    function createNext(middleware, index) {
+      return function(err) {
+        if (err) { return next(err); }
+
+        var nextIndex = index + 1;
+        var nextMiddleware = middlewares[nextIndex] ? createNext(middlewares[nextIndex], nextIndex) : next;
+        middleware(req, res, nextMiddleware);
+      };
+    }
+    return createNext(middlewares[0], 0)();
+  };
 }
 
-function invalidate(req, res, next) {
-  req.volos.oauth.expressMiddleware().invalidateToken()(req, res, next);
-}
-
-function refresh(req, res, next) {
-  req.volos.oauth.expressMiddleware().refreshToken()(req, res, next);
+function getHelperFunction(resourceName, options) {
+  if (_.isFunction(options)) { return options; }
+  if (options.helper && options.function) {
+    var helperPath = path.join(helpersDir, options.helper);
+    var helper = require(helperPath);
+    var func = helper[options.function];
+    if (!func) {
+      throw new Error('unknown function: \'' + options.function + '\' on helper: ' + helperPath);
+    }
+    return func;
+  } else {
+    throw new Error('illegal options for: ' + resourceName);
+  }
 }
