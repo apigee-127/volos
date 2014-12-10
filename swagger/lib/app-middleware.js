@@ -36,6 +36,8 @@ module.exports = middleware;
 
 function middleware(req, res, next) {
 
+  if (!req.swagger) { return next(); }
+
   var operation = req.swagger.operation;
   var mwChain = operation.volos ? operation.volos.mwChain : undefined; // cache
 
@@ -46,7 +48,7 @@ function middleware(req, res, next) {
       createMiddlewareChain(operation[A127_APPLY], req),
       createMiddlewareChain(req.swagger.path[A127_APPLY], req),
       createMiddlewareChain(operation[VOLOS_APPLY], req),
-      createMiddlewareChain(req.swagger.path[VOLOS_APPLY], req),
+      createMiddlewareChain(req.swagger.path[VOLOS_APPLY], req)
     ].filter(function(ea) { return !!ea; });
 
     mwChain = helpers.chain(middlewares);
