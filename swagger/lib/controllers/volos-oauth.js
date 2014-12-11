@@ -31,17 +31,21 @@ module.exports = {
 };
 
 function authorize(req, res, next) {
-  req.volos.oauth.expressMiddleware().handleAuthorize()(req, res, next);
+  var oauth = req.volos.resources[req.swagger.path['x-volos-oauth-service']];
+  oauth.expressMiddleware().handleAuthorize()(req, res, next);
 }
 
 function token(req, res, next) {
-  req.volos.oauth.expressMiddleware().handleAccessToken()(req, res, next);
+  var oauth = req.volos.resources[req.swagger.path['x-volos-oauth-service']];
+  oauth.expressMiddleware().handleAccessToken()(req, res, next);
 }
 
 function invalidate(req, res, next) {
-  req.volos.oauth.expressMiddleware().invalidateToken()(req, res, next);
+  var oauth = req.volos.resources[req.swagger.path['x-volos-oauth-service']];
+  oauth.expressMiddleware().invalidateToken()(req, res, next);
 }
 
 function refresh(req, res, next) {
-  req.volos.oauth.expressMiddleware().refreshToken()(req, res, next);
+  var oauth = req.volos.resources[req.swagger.path['x-volos-oauth-service']];
+  oauth.expressMiddleware().refreshToken()(req, res, next);
 }

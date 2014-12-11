@@ -34,6 +34,7 @@ var authorizationsMap; // operationId -> middleware chain
 var SERVICES = ['x-a127-services', 'x-volos-resources'];
 var VOLOS_AUTH = 'x-volos-authorizations';
 var A127_AUTH = 'x-a127-authorizations';
+var OAUTH_PROP = 'x-volos-oauth-service';
 
 var yamljs = require('yamljs');
 var oauthSwagger = require('../spec/oauth_operations.yaml');
@@ -49,7 +50,7 @@ function middleware(swaggerObject, config) {
   config = config || {};
   helpers.init(config);
 
-  setSwagger(swaggerObject, config);
+  setSwagger(swaggerObject);
 
   authorizationsMap = {};
 
@@ -58,7 +59,7 @@ function middleware(swaggerObject, config) {
     if (!(req.swagger && req.swagger.operation)) { return next(); }
 
     if (!swagger) {
-      setSwagger(req.swagger.swaggerObject, config);
+      setSwagger(req.swagger.swaggerObject);
     }
 
     ifAuthenticated(req, res, next);
@@ -111,18 +112,17 @@ function SwaggerSecurityHandler(oauth) {
 }
 
 
-function addResourceToRequestMW(oauth) {
-  var resource = {
-    oauth: oauth,
-    resourcesMap: resourcesMap
+function addResourcesToRequestMW() {
+  var resources = {
+    resources: resourcesMap
   };
   return function(req, res, next) {
-    req.volos = resource;
+    req.volos = resources;
     next();
   };
 }
 
-function setSwagger(swaggerObject, config) {
+function setSwagger(swaggerObject) {
   if (swaggerObject) {
     swagger = swaggerObject;
     resourcesMap = createResources();
@@ -147,13 +147,12 @@ function ifAuthenticated(req, res, next) {
     if (authorizations) {
       _.each(authorizations, function(authorization, name) {
         var oauth = resourcesMap[name];
-        var scopes = [];
         if (debug.enabled) { debug('authenticate scope: ' + authorization.scope); }
         middlewares.push(oauth.connectMiddleware().authenticate(authorization.scope));
       });
     }
 
-    middlewares.push(addResourceToRequestMW(req.swagger.path.oauth));
+    middlewares.push(addResourcesToRequestMW());
     authChain = helpers.chain(middlewares);
 
     if (!operation.volos) { operation.volos = {}; }
@@ -165,36 +164,37 @@ function ifAuthenticated(req, res, next) {
 
 function createResources() {
 
-  var resources = {};
+  var services = {};
 
-  SERVICES.forEach(function(resource) {
-    _.each(swagger[resource], function(def, name) {
-      var module = require(def.provider);
+  SERVICES.forEach(function(serviceDefNameTuple) {
+    _.each(swagger[serviceDefNameTuple], function(serviceDefinition, serviceName) {
+      var module = require(serviceDefinition.provider);
 
       if (debug.enabled) {
-        debug('creating resource: ' + name);
-        debug('module: ' + def.provider);
-        debug('options: ' + JSON.stringify(def.options));
+        debug('creating service: ' + serviceName);
+        debug('module: ' + serviceDefinition.provider);
+        debug('options: ' + JSON.stringify(serviceDefinition.options));
       }
 
-      if (def.options.passwordCheck) { // only exists on oauth
-        def.options.passwordCheck = helpers.getHelperFunction(name + ' passwordCheck', def.options.passwordCheck);
+      if (serviceDefinition.options.passwordCheck) { // only exists on oauth
+        serviceDefinition.options.passwordCheck =
+          helpers.getHelperFunction(serviceName + ' passwordCheck', serviceDefinition.options.passwordCheck);
       }
 
-      var resource = module.create.apply(this, [def.options]);
+      var service = module.create.apply(this, [serviceDefinition.options]);
 
-      if (def.options.tokenPaths) { // only exists on oauth
-        importOAuth(resource, def.options.tokenPaths);
+      if (serviceDefinition.options.tokenPaths) { // only exists on oauth
+        importOAuth(serviceName, serviceDefinition.options.tokenPaths);
       }
 
-      resources[name] = resource;
+      services[serviceName] = service;
     });
   });
 
-  return resources;
+  return services;
 }
 
-function importOAuth(oauth, paths) {
+function importOAuth(resourceName, paths) {
 
   if (paths.length === 0) { return; }
 
@@ -212,7 +212,7 @@ function importOAuth(oauth, paths) {
     return _.contains(Object.keys(oauthSwagger.definitions), key);
   });
   if (existingDefinitions.length > 0) {
-    throw new Error('Definition ' + existingDefinitions + ' already exist. Cannot insert OAuth.');
+    throw new Error('Definitions ' + existingDefinitions + ' already exist. Cannot insert OAuth.');
   }
 
   // add the token paths
@@ -223,7 +223,7 @@ function importOAuth(oauth, paths) {
       var keys = Object.keys(oauthSwagger.paths).map(function(key) { return key.substring(1); });
       throw new Error('Invalid tokenPath key: ' + name + '. Must be one of: ' + keys);
     }
-    allPaths[path].oauth = oauth;
+    allPaths[path][OAUTH_PROP] = resourceName;
   });
 
   // add the definitions

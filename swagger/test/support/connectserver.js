@@ -24,7 +24,7 @@
 'use strict';
 
 var assert = require('assert');
-var swagger = require('swagger-tools').middleware.v2_0;
+var initializeSwagger = require('swagger-tools').initializeMiddleware;
 var path = require('path');
 var yaml = require('yamljs');
 var qs = require('querystring');
@@ -36,38 +36,40 @@ var debug = require('debug')('swagger');
 
 var volos = require('../../');
 
-module.exports = function(swaggerObject) {
-
-  var app = connect();
-  app.use(expressCompatibility);
-  app.use(bodyParser.urlencoded({ extended: false }));
+module.exports = function(swaggerObject, cb) {
 
   // this must be before swaggerMetadata - it rewrites swaggerObject
   var volosAuth = volos.auth(swaggerObject, {
     helpers: path.join(__dirname, 'helpers')
   });
 
-  app.use(swagger.swaggerMetadata(swaggerObject));
-  app.use(swagger.swaggerSecurity(volosAuth.swaggerSecurityHandlers));
+  initializeSwagger(swaggerObject, function(swagger) {
+    var app = connect();
+    app.use(expressCompatibility);
+    app.use(bodyParser.urlencoded({ extended: false }));
 
-  app.use(volosAuth);
-  app.use(volos.app);
+    app.use(swagger.swaggerMetadata(swaggerObject));
+    app.use(swagger.swaggerSecurity(volosAuth.swaggerSecurityHandlers));
 
-  app.use(swagger.swaggerRouter({
-    controllers: [
-      path.join(__dirname, 'controllers'),
-      path.join(__dirname, '..', '..', 'lib', 'controllers')
-    ]
-  }));
+    app.use(volosAuth);
+    app.use(volos.app);
 
-  app.use(function(err, req, res, next) {
-    if (err.status !== 403 && err.status !== 503) { return next(err);}
-    res.status(err.status);
-    res.end(err.message);
+    app.use(swagger.swaggerRouter({
+      controllers: [
+        path.join(__dirname, 'controllers'),
+        path.join(__dirname, '..', '..', 'lib', 'controllers')
+      ]
+    }));
+
+    app.use(function(err, req, res, next) {
+      if (err.status !== 403 && err.status !== 503) { return next(err);}
+      res.status(err.status);
+      res.end(err.message);
+    });
+
+    app.volos = volosAuth; // allow test to access volosAuth
+    cb(app);
   });
-
-  app.volos = volosAuth; // allow test to access volosAuth
-  return app;
 };
 
 function expressCompatibility(req, res, next) {

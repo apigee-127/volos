@@ -36,19 +36,21 @@ var oauth = redisConfig.oauth;
 
 describe('Swagger Middleware', function() {
 
-  // I can't figure out how to run these concurrently. If you need to run the old volos
-  // test, just uncomment it and comment out the a127 one.
+  // I can't get these to run sequentially. If you need to run the old volos
+  // test, just uncomment it and comment out the new a127 one.
 
-//  describe('volos', function() {
-//    var swaggerObject = require('./support/swagger-old.yaml');
-//    var server = connectServer(swaggerObject);
-//    verifyMiddleware(server);
-//  });
+  //describe('volos', function() {
+  //  var swaggerObject = require('./support/swagger-old.yaml');
+  //  connectServer(swaggerObject, function(server) {
+  //    verifyMiddleware(server);
+  //  });
+  //});
 
   describe('a127', function() {
     var swaggerObject = require('./support/swagger.yaml');
-    var server = connectServer(swaggerObject);
-    verifyMiddleware(server);
+    connectServer(swaggerObject, function(server) {
+      verifyMiddleware(server);
+    });
   });
 });
 

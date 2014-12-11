@@ -1,4 +1,4 @@
-swagger: 2
+swagger: "2.0"
 info:
   version: "0.9.0"
   title: "OAuth 2.0 token operations"
@@ -23,7 +23,7 @@ paths:
     get:
       description: "OAuth 2.0 authorize endpoint"
       summary: "OAuth 2.0 authorize endpoint"
-      x-swagger-router-controller: oauth
+      x-swagger-router-controller: volos-oauth
       operationId: "authorize"
       produces:
         - "application/json"
@@ -64,12 +64,12 @@ paths:
         default:
           description: "Error payload"
           schema:
-            $ref: "OAuthErrorModel"
+            $ref: "#/definitions/OAuthError"
   /token:
     post:
       description: "OAuth 2.0 token endpoint"
       summary: "OAuth 2.0 token endpoint"
-      x-swagger-router-controller: oauth
+      x-swagger-router-controller: volos-oauth
       operationId: "token"
       produces:
         - "application/json"
@@ -108,16 +108,16 @@ paths:
         200:
           description: "Token payload"
           schema:
-            $ref: "OAuthToken"
+            $ref: "#/definitions/OAuthToken"
         default:
           description: "Error payload"
           schema:
-            $ref: "OAuthError"
+            $ref: "#/definitions/OAuthError"
   /invalidate:
     post:
       description: "OAuth 2.0 token endpoint"
       summary: "OAuth 2.0 token endpoint"
-      x-swagger-router-controller: oauth
+      x-swagger-router-controller: volos-oauth
       operationId: "invalidate"
       produces:
         - "application/json"
@@ -158,12 +158,12 @@ paths:
         default:
           description: "Error payload"
           schema:
-            $ref: "OAuthError"
+            $ref: "#/definitions/OAuthError"
   /refresh:
     post:
       description: "OAuth 2.0 refresh token endpoint"
       summary: "OAuth 2.0 refresh token endpoint"
-      x-swagger-router-controller: oauth
+      x-swagger-router-controller: volos-oauth
       operationId: "refresh"
       produces:
         - "application/json"
@@ -202,11 +202,11 @@ paths:
         200:
           description: "Token payload"
           schema:
-            $ref: "OAuthToken"
+            $ref: "#/definitions/OAuthToken"
         default:
           description: "Error payload"
           schema:
-            $ref: "OAuthError"
+            $ref: "#/definitions/OAuthError"
 definitions:
   OAuthToken:
     required:

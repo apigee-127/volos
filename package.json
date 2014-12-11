@@ -21,7 +21,7 @@
     "debug": "1.0.x",
     "apigeetool": "x.x.x",
     "yamljs": "0.1.x",
-    "swagger-tools": "",
+    "swagger-tools": "^0.7.0",
     "semver": "3.x.x",
     "superagent": "0.x.x",
     "on-response": "~1.0.1",
