@@ -77,7 +77,7 @@ function swaggerSecurityHandlers() {
   var handlers = {}; // name -> handler
 
   _.each(resourcesMap, function(resource, name) {
-    if (resource.passwordCheck) { // passwordCheck only exists on oauth
+    if (resource.validGrantTypes) { // validGrantTypes only exists on oauth
       handlers[name] = new SwaggerSecurityHandler(resource);
     }
   });
