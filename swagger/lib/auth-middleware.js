@@ -183,18 +183,31 @@ function createResources() {
 
       var service = module.create.apply(this, [serviceDefinition.options]);
 
-      if (serviceDefinition.options.tokenPaths) { // only exists on oauth
-        importOAuth(serviceName, serviceDefinition.options.tokenPaths);
-      }
-
       services[serviceName] = service;
+
+      if (service.validGrantTypes) { // the presence of validGrantTypes identifies the service as oauth
+        if (serviceDefinition.options.cache) {
+          service.cacheName = serviceDefinition.options.cache;
+        }
+        if (serviceDefinition.options.tokenPaths) {
+          importOAuthTokenPaths(serviceName, serviceDefinition.options.tokenPaths);
+        }
+      }
     });
+  });
+
+   // make 2nd pass to ensure forward oauth cache references will work
+  _.each(services, function(service) {
+    if (service.validGrantTypes && service.cacheName) { // the presence of validGrantTypes identifies the service as oauth
+      var cache = services[service.cacheName];
+      service.useCache(cache);
+    }
   });
 
   return services;
 }
 
-function importOAuth(resourceName, paths) {
+function importOAuthTokenPaths(resourceName, paths) {
 
   if (paths.length === 0) { return; }
 
@@ -202,7 +215,8 @@ function importOAuth(resourceName, paths) {
   var allDefinitions = swagger.definitions || (swagger.definitions = {});
 
   // err if would overwrite any paths
-  var existingPaths = _.filter(paths, function(path) { return _.contains(allPaths, path); });
+  var allPathNames = Object.keys(allPaths);
+  var existingPaths = _.filter(paths, function(path) { return _.contains(allPathNames, path); });
   if (existingPaths.length > 0) {
     throw new Error('Paths ' + existingPaths + ' already exist. Cannot insert OAuth.');
   }

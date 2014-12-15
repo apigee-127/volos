@@ -392,6 +392,45 @@ function verifyMiddleware(server) {
         });
       });
 
+      it('must work with cache', function(done) {
+
+        getToken(null, function(err, token) {
+          if (err) { return done(err); }
+
+          request(server)
+            .get('/securedCache')
+            .set('Authorization', 'Bearer ' + token)
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(400);
+
+              getToken('scope2', function(err, token) {
+                if (err) { return done(err); }
+
+                request(server)
+                  .get('/securedCache')
+                  .set('Authorization', 'Bearer ' + token)
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    res.body.count.should.equal(++count);
+
+                    var cache = server.volos.resources.cache;
+                    cache.get(token, function(err, reply) {
+                      should.not.exist(err);
+                      should.exist(reply);
+
+                      var cachedToken = JSON.parse(reply.toString());
+                      cachedToken.access_token.should.eql(token);
+
+                      done();
+                    });
+                  });
+              });
+            });
+        });
+      });
+
       it('must allow passwordCheck', function(done) {
         var q = {
           grant_type: 'password',

@@ -59,6 +59,24 @@ x-a127-services:
         token: /accesstoken
         invalidate: /invalidate
         refresh: /refresh
+  cachedOauth:
+    provider: volos-oauth-redis
+    options:
+      cache: cache
+      encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+      validGrantTypes:
+        - client_credentials
+        - authorization_code
+        - implicit_grant
+        - password
+      passwordCheck:
+        helper: helper
+        function: passwordCheck
+      tokenPaths:
+        authorize: /authorizeX
+        token: /accesstokenX
+        invalidate: /invalidateX
+        refresh: /refreshX
 paths:
   /clean:
     x-swagger-router-controller: controller
@@ -191,6 +209,15 @@ paths:
     get:
       x-a127-authorizations:
         oauth2:
+          scope: scope2
+      operationId: run
+      responses:
+        default: {}
+  /securedCache:
+    x-swagger-router-controller: controller
+    get:
+      x-a127-authorizations:
+        cachedOauth:
           scope: scope2
       operationId: run
       responses:
