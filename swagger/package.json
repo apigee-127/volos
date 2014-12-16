@@ -1,6 +1,6 @@
 {
   "name": "volos-swagger",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "license": "MIT",
   "description": "Middleware for bridging swagger (via swagger-tools) and volos",
   "homepage": "https://github.com/apigee/volos",
@@ -21,7 +21,7 @@
     "mocha": "1.19.x",
     "should": "3.1.x",
     "express": "3.4.x",
-    "swagger-tools": "^0.7.0",
+    "swagger-tools": "^0.7.1",
     "volos-cache-memory": "",
     "volos-quota-memory": "",
     "volos-oauth-redis": ""
