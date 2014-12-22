@@ -94,7 +94,7 @@ paths:
           type: "string"
         -
           name: "scope"
-          in: "query"
+          in: "formData"
           description: "The requested scopes (space delimited)"
           required: false
           type: "string"
