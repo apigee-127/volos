@@ -125,12 +125,7 @@ RedisRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) {
  */
 RedisRuntimeSpi.prototype.createTokenPasswordCredentials = function(options, cb) {
   options = extend(options, { type: 'password', refresh: true });
-  var self = this;
-  this.mgmt.getAppIdForCredentials(options.clientId, options.clientSecret, function(err, reply) {
-    if (err) { return cb(err); }
-    if (!reply) { return cb(errorWithCode('invalid_client')); }
-    createAndStoreToken(self, options, cb);
-  });
+  createAndStoreToken(this, options, cb);
 };
 
 /*
