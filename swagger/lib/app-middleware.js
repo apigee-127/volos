@@ -36,7 +36,7 @@ module.exports = middleware;
 
 function middleware(req, res, next) {
 
-  if (!req.swagger) { return next(); }
+  if (!req.swagger || !req.swagger.operation) { return next(); }
 
   var operation = req.swagger.operation;
   var mwChain = operation.volos ? operation.volos.mwChain : undefined; // cache
