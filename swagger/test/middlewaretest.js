@@ -463,6 +463,29 @@ function verifyMiddleware(server) {
           });
       });
 
+      it('must allow beforeCreateToken', function(done) {
+        var q = {
+          grant_type: 'password',
+          username: 'jimmy',
+          password: 'jimmy'
+        };
+        var qs = querystring.stringify(q);
+        request(server)
+          .post('/accesstoken')
+          .auth(client_id, client_secret)
+          .send(qs)
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            should.exist(res.body.access_token);
+
+            should.exist(res.body.attributes);
+            res.body.attributes['beforeCreateTokenCalled'].should.eql(true);
+
+            done();
+          });
+      });
+
       it('must allow invalidate', function(done) {
         getToken(null, function(err, token) {
           if (err) { return done(err); }

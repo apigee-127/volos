@@ -72,6 +72,9 @@ x-a127-services:
       passwordCheck:
         helper: helper
         function: passwordCheck
+      beforeCreateToken:
+        helper: helper
+        function: beforeCreateToken
       tokenPaths:
         authorize: /authorizeX
         token: /accesstokenX

@@ -4,7 +4,8 @@ module.exports = {
   quotaId: quotaId,
   cacheId: cacheId,
   passwordCheck: passwordCheck,
-  spikeArrestId: spikeArrestId
+  spikeArrestId: spikeArrestId,
+  beforeCreateToken: beforeCreateToken
 };
 
 function quotaId(req) {
@@ -21,4 +22,10 @@ function spikeArrestId(req) {
 
 function passwordCheck(username, password, cb) {
   cb(null, username === password);
+}
+
+function beforeCreateToken(parsedBody, options, next) {
+  options.attributes = options.attributes || {};
+  options.attributes['beforeCreateTokenCalled'] = true;
+  next();
 }

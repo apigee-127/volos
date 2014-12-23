@@ -181,6 +181,11 @@ function createResources() {
           helpers.getHelperFunction(serviceName + ' passwordCheck', serviceDefinition.options.passwordCheck);
       }
 
+      if (serviceDefinition.options.beforeCreateToken) { // only exists on oauth
+        serviceDefinition.options.beforeCreateToken =
+          helpers.getHelperFunction(serviceName + ' beforeCreateToken', serviceDefinition.options.beforeCreateToken);
+      }
+
       var service = module.create.apply(this, [serviceDefinition.options]);
 
       services[serviceName] = service;
