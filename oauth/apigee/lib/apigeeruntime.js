@@ -102,7 +102,6 @@ function selectImplementation(self, cb) {
     return;
   }
 
-  var impl;
   if (self.useApigeeAccess) {
     self.impl = new newImpl.OAuthImpl(self, true);
     debug('Selected local apigee-access implementation');
