@@ -104,6 +104,18 @@ paths:
           description: "The authorization header"
           required: false
           type: "string"
+        -
+          name: "username"
+          in: "formData"
+          description: "The user name"
+          required: false
+          type: "string"
+        -
+          name: "password"
+          in: "formData"
+          description: "The password"
+          required: false
+          type: "string"
       responses:
         200:
           description: "Token payload"
