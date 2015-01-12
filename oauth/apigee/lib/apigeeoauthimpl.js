@@ -344,6 +344,9 @@ OAuthImpl.prototype.verifyToken = function(token, requiredScopes, cb) {
 
   var self = this;
   if (self.hasApigeeAccess) {
+    if (Array.isArray(r.scope) && r.scope.length === 0) { // workaround a bug in Edge w/ empty arrays
+      delete(r.scope);
+    }
     self.apigee.verifyAccessToken(undefined, r, function(err, data) {
       if (err) {
         // Need to fix the error code because Apigee doesn't set it right
