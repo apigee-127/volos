@@ -166,7 +166,8 @@ ApigeeManagementSpi.prototype.createApp = function(app, cb) {
     var api = {
       name: getApiProductName(app),
       environments: app.environments || DEFAULT_ENVIRONMENTS,
-      scopes: app.scopes
+      scopes: app.scopes,
+      apiResources: ['/'] // the '/' apiResources is required for OAuth token validation to work in apigee-access
     };
     self.createApiProduct(api, function(err) {
       if (err && err.statusCode !== 409) { // 409 == already exists, assuming this is ok
@@ -324,6 +325,9 @@ ApigeeManagementSpi.prototype.createApiProduct = function(product, cb) {
   };
   if (product.scopes) {
     ar.scopes = Array.isArray(product.scopes) ? product.scopes : product.scopes.split(' ');
+  }
+  if (product.apiResources) {
+    ar.apiResources = product.apiResources;
   }
   makeRequest(this, 'POST', path.join('/apiproducts'), ar, function(err, apiProd) {
     if (err) {
