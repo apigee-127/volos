@@ -267,8 +267,8 @@ function getApiProductName(app) {
       }
     });
   }
-  if (rc) {return rc;}
-  return app.name + ' product'; // default (a heuristic)
+  if (rc) { return rc; }
+  return app.name;
 }
 
 function makeApp(data) {
