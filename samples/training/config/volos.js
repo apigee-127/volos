@@ -23,7 +23,7 @@ var VolosQuotaApigee = require('volos-quota-apigee');
 
 // Provider Configuration
 
-var apigeeConfig = require('./apigee');
+var apigeeConfig = require('./apigee-example');
 var redisConfig = require('./redis');
 
 
