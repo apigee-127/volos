@@ -114,7 +114,7 @@ function selectImplementation(self, cb) {
       end(function(err, resp) {
         if (err) {
           debug('Error getting version: %s', err);
-          if (err.code === 'ENOTFOUND') {
+          if (err.code === 'ENOTFOUND' || err.code === 'CLASSIFICATION_FAILED') {
             err.message = 'Apigee Remote Proxy not found at: ' + self.uri + '. Check your configuration.';
           }
           cb(err);
