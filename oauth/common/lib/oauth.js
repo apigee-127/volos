@@ -475,6 +475,30 @@ OAuth.prototype.verifyToken = function(authorizationHeader, requiredScopes, cb) 
 };
 
 /*
+ * Verify an API key given an api key and the request (optional).
+ */
+OAuth.prototype.verifyApiKey = function(apiKey, request, cb) {
+  if (typeof request === 'function') {
+    cb = request;
+    request = undefined;
+  }
+  if (!apiKey || typeof apiKey !== 'string') {
+    return cb(makeError('invalid_token'));
+  }
+  debug('verifyApiKey: %s', apiKey);
+  this.spi.verifyApiKey(apiKey, request,
+    function(err, result) {
+      if (err) {
+        cb(makeError(err));
+      } else {
+        cb(undefined, result);
+      }
+    });
+};
+
+// Private
+
+/*
  * Generate an Error. "code" must be set to a valid error code from section 5.2.
  */
 function makeError(code, message, errProps) {

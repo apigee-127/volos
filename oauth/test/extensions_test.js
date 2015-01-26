@@ -282,5 +282,15 @@ exports.verifyOauth = function(config) {
       });
     });
 
+    it('verify apiKey', function(done) {
+      var request = null;
+      oauth.verifyApiKey(client_id, request, function(err, valid) {
+        should.not.exist(err);
+        should.exist(valid);
+        valid.should.be.true;
+        done();
+      });
+    });
+
   });
 };

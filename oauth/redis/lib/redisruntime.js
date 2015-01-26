@@ -300,6 +300,15 @@ RedisRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
   });
 };
 
+RedisRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
+  debug('verifyApiKey: %s', apiKey);
+  var self = this;
+  self.mgmt.getAppForClientId(apiKey, function(err, app) {
+    if (err) { return cb(err); }
+    cb(null, !!app);
+  });
+};
+
 // utility functions
 
 // in seconds

@@ -386,6 +386,45 @@ OAuthImpl.prototype.verifyToken = function(token, requiredScopes, cb) {
   }
 };
 
+/*
+ * Validate an access token.
+ */
+OAuthImpl.prototype.verifyApiKey = function(apiKey, request, cb) {
+  var r = {
+    apiKey: apiKey
+  };
+  debug('verifyApiKey request: %j', r);
+
+  var self = this;
+  if (self.hasApigeeAccess) {
+    self.apigee.verifyApiKey(undefined, r, function(err, data) {
+      if (err) {
+        cb(err);
+      } else {
+        checkResultError(data, function(err, result) {
+          cb(err, result);
+        });
+      }
+    });
+  } else {
+    superagent.agent().
+      post(self.uri + '/v2/oauth/verifyApiKey').
+      set('x-DNA-Api-Key', self.key).
+      type('json').
+      send(r).
+      end(function(err, resp) {
+        if (err) {
+          cb(err);
+        } else {
+          debug('Verify response: %j', resp.body);
+          checkResultError(resp.body, function(err, result) {
+            cb(err, result);
+          });
+        }
+      });
+  }
+};
+
 function createCredentials(self, request, options, cb) {
   if (self.hasApigeeAccess) {
     debug('Local generateAccessToken %s', request.grantType);

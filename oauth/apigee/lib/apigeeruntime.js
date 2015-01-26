@@ -109,7 +109,7 @@ function selectImplementation(self, cb) {
 
   } else {
     superagent.agent().
-      get(self.uri + '/v2/version').
+      get(self.uri +  '/v2/version').
       set('x-DNA-Api-Key', self.key).
       end(function(err, resp) {
         if (err) {
@@ -280,5 +280,18 @@ ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
     } else {
       impl.verifyToken(token, requiredScopes, cb);
     }
+  });
+};
+
+/*
+ * Validate an api key.
+ */
+ApigeeRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
+  selectImplementation(this, function(err, impl) {
+    if (err) { return cb(err); }
+    impl.verifyApiKey(apiKey, request, function(err, reply) {
+      if (err) { return cb(err); }
+      cb(null, reply.status === 'approved');
+    });
   });
 };

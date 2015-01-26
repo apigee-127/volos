@@ -88,26 +88,44 @@ function swaggerSecurityHandlers() {
 function SwaggerSecurityHandler(oauth) {
 
   return function(request, securityDefinition, scopes, cb) {
-    if (securityDefinition.type !== 'oauth2') {
-      debug('Invalidate type for security handler (%s). Must be "oauth2"', securityDefinition.type);
+    if (securityDefinition.type === 'oauth2') {
+      if (debug.enabled) { debug('authenticate oauth, scopes: %s', scopes); }
+      oauth.verifyToken(
+        request.headers.authorization,
+        scopes,
+        function(err, result) {
+          if (err) {
+            if (debug.enabled) {
+              debug('Authentication error: ' + err);
+            }
+            cb(err);
+          } else {
+            request.token = result;
+            cb();
+          }
+        }
+      );
+    } else if (securityDefinition.type === 'apiKey') {
+      var apiKey = scopes;
+      if (debug.enabled) { debug('authenticate api key'); }
+      oauth.verifyApiKey(
+        apiKey,
+        function(err, result) {
+          if (err) {
+            if (debug.enabled) {
+              debug('Authentication error: ' + err);
+            }
+            cb(err);
+          } else {
+            request.token = result;
+            cb();
+          }
+        }
+      );
+    } else {
+      debug('Invalidate type for security handler (%s). Must be "oauth2" or "apiKey', securityDefinition.type);
       return cb();
     }
-    if (debug.enabled) { debug('authenticate scopes: %s', scopes); }
-    oauth.verifyToken(
-      request.headers.authorization,
-      scopes,
-      function(err, result) {
-        if (err) {
-          if (debug.enabled) {
-            debug('Authentication error: ' + err);
-          }
-          cb(err);
-        } else {
-          request.token = result;
-          cb();
-        }
-      }
-    );
   }
 }
 

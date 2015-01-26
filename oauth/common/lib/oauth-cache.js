@@ -216,6 +216,50 @@ OAuthCache.prototype.verifyToken = function(token, requiredScopes, cb) {
   });
 };
 
+OAuthCache.prototype.cacheApiKey = function(apiKey, cb) {
+  try {
+    var key = 'apiKey:' + apiKey;
+    this.cache.set(key, apiKey);
+    cb(null, apiKey);
+  } catch (err) {
+    debug('err: %s', err);
+    cb(err);
+  }
+};
+
+OAuthCache.prototype.getCachedApiKey = function(apiKey, cb) {
+  var key = 'apiKey:' + apiKey;
+  this.cache.get(key, function(err, reply) {
+    if (err) { return cb(err); }
+    if (!reply) {
+      debug('cache miss: %s', key);
+      return cb();
+    }
+
+    debug('cache hit: %s', key);
+    cb(err, apiKey);
+  });
+};
+
+/*
+ * Validate an API Key.
+ */
+OAuthCache.prototype.verifyApiKey = function(apiKey, request, cb) {
+  var self = this;
+  this.getCachedApiKey(apiKey, function(err, reply) {
+    if (err || reply) { return cb(err, !!reply); }
+
+    self.target.verifyApiKey(apiKey, request, function(err) {
+      if (err) { return cb(err); }
+
+      self.cacheApiKey(apiKey, function(err, reply) {
+        if (err) { return cb(err);}
+        cb(null, !!reply);
+      });
+    });
+  });
+};
+
 function errorWithCode(code) {
   var err = new Error(code);
   err.errorCode = code;
