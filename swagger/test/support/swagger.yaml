@@ -80,6 +80,14 @@ x-a127-services:
         token: /accesstokenX
         invalidate: /invalidateX
         refresh: /refreshX
+  apiKeyHeader:
+    provider: volos-oauth-redis
+    options:
+      encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+  apiKeyQuery:
+    provider: volos-oauth-redis
+    options:
+      encryptionKey: "This is the key to encrypt/decrypt stored credentials"
 paths:
   /clean:
     x-swagger-router-controller: controller
@@ -277,6 +285,24 @@ paths:
       operationId: run
       responses:
         default: {}
+  /swaggerApiKeySecuredHeader:
+    x-swagger-router-controller: controller
+    get:
+      security:
+        -
+          apiKeyHeader: []
+      operationId: run
+      responses:
+        default: {}
+  /swaggerApiKeySecuredQuery:
+    x-swagger-router-controller: controller
+    get:
+      security:
+        -
+          apiKeyQuery: []
+      operationId: run
+      responses:
+        default: {}
 securityDefinitions:
   oauth2:
     type: oauth2
@@ -285,3 +311,11 @@ securityDefinitions:
     flow: accessCode
     authorizationUrl: ignored
     tokenUrl: ignored
+  apiKeyHeader:
+    type: apiKey
+    name: X-API-KEY
+    in: header
+  apiKeyQuery:
+    type: apiKey
+    name: apiKey
+    in: query

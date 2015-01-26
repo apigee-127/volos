@@ -75,9 +75,7 @@ module.exports = function(swaggerObject, cb) {
 function expressCompatibility(req, res, next) {
 
   if (!req.query) {
-    req.query = ~req.url.indexOf('?')
-      ? qs.parse(Url.parse(req.url).query, options)
-      : {};
+    req.query = Url.parse(req.url, true).query;
   }
 
   res.json = function(obj) {

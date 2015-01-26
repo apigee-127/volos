@@ -709,4 +709,48 @@ function verifyMiddleware(server) {
     });
   });
 
+  describe('Swagger ApiKey', function() {
+
+    it('must handle auth in header', function(done) {
+
+      request(server)
+        .get('/swaggerApiKeySecuredHeader')
+        .end(function(err, res) {
+          should.not.exist(err);
+          res.status.should.eql(401);
+
+          request(server)
+            .get('/swaggerApiKeySecuredHeader')
+            .set({ 'X-API-KEY': client_id })
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              done();
+            });
+        });
+    });
+
+    it('must handle auth in query', function(done) {
+
+      request(server)
+        .get('/swaggerApiKeySecuredQuery')
+        .end(function(err, res) {
+          should.not.exist(err);
+          res.status.should.eql(401);
+
+          request(server)
+            .get('/swaggerApiKeySecuredQuery')
+            .query({ apiKey: client_id })
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              done();
+            });
+        });
+    });
+  });
 }
