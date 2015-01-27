@@ -496,6 +496,24 @@ OAuth.prototype.verifyApiKey = function(apiKey, request, cb) {
     });
 };
 
+/*
+ * Verify basic Auth using password helper function.
+ */
+OAuth.prototype.verifyPassword = function(username, password, cb) {
+  if (!this.passwordCheck) {
+    return cb(makeError('internal_error', 'Password check function not supplied'));
+  }
+  if (!username || !password) {
+    return cb(makeError('missing_authorization', 'Missing username and/or password'));
+  }
+
+  this.passwordCheck(username, password, function(err, reply) {
+    if (err) { return cb(makeError(err)); }
+    if (reply) { return cb(); }
+    cb(makeError('invalid_authorization'));
+  });
+};
+
 // Private
 
 /*
@@ -526,6 +544,7 @@ function makeError(code, message, errProps) {
       break;
     case "invalid_token":
     case "missing_authorization":
+    case "invalid_authorization":
       err.statusCode = 401;
       break;
     default:
