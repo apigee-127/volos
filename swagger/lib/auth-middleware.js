@@ -88,43 +88,37 @@ function swaggerSecurityHandlers() {
 function SwaggerSecurityHandler(oauth) {
 
   return function(request, securityDefinition, scopes, cb) {
+
+    function done(err, result) {
+      if (err) {
+        debug('Authentication error: %s', err);
+        cb(err);
+      } else {
+        request.token = result;
+        cb();
+      }
+    }
+
     if (securityDefinition.type === 'oauth2') {
-      if (debug.enabled) { debug('authenticate oauth, scopes: %s', scopes); }
-      oauth.verifyToken(
-        request.headers.authorization,
-        scopes,
-        function(err, result) {
-          if (err) {
-            if (debug.enabled) {
-              debug('Authentication error: ' + err);
-            }
-            cb(err);
-          } else {
-            request.token = result;
-            cb();
-          }
-        }
-      );
+      debug('authenticate oauth, scopes: %s', scopes);
+      oauth.verifyToken(request.headers.authorization, scopes, done);
+
     } else if (securityDefinition.type === 'apiKey') {
       var apiKey = scopes;
-      if (debug.enabled) { debug('authenticate api key'); }
-      oauth.verifyApiKey(
-        apiKey,
-        function(err, result) {
-          if (err) {
-            if (debug.enabled) {
-              debug('Authentication error: ' + err);
-            }
-            cb(err);
-          } else {
-            request.token = result;
-            cb();
-          }
-        }
-      );
+      debug('authenticate api key');
+      oauth.verifyApiKey(apiKey, done);
+
+    } else if (securityDefinition.type === 'basic') {
+      debug('authenticate basic auth');
+      var header = request.headers['authorization'] || '';
+      var token = header.split(/\s+/).pop() || '';
+      var auth = new Buffer(token, 'base64').toString();
+      var usernamePassword = auth.split(/:/);
+      oauth.verifyPassword(usernamePassword[0], usernamePassword[1], done);
+
     } else {
-      debug('Invalidate type for security handler (%s). Must be "oauth2" or "apiKey', securityDefinition.type);
-      return cb();
+      // should never happen
+      return cb(new Error(util.format('Invalidate type for security handler: %s', securityDefinition.type)));
     }
   }
 }

@@ -88,6 +88,13 @@ x-a127-services:
     provider: volos-oauth-redis
     options:
       encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+  basic:
+    provider: volos-oauth-redis
+    options:
+      encryptionKey: "This is the key to encrypt/decrypt stored credentials"
+      passwordCheck:
+        helper: helper
+        function: passwordCheck
 paths:
   /clean:
     x-swagger-router-controller: controller
@@ -303,6 +310,15 @@ paths:
       operationId: run
       responses:
         default: {}
+  /swaggerBasicAuth:
+    x-swagger-router-controller: controller
+    get:
+      security:
+        -
+          basic: []
+      operationId: run
+      responses:
+        default: {}
 securityDefinitions:
   oauth2:
     type: oauth2
@@ -319,3 +335,5 @@ securityDefinitions:
     type: apiKey
     name: apiKey
     in: query
+  basic:
+    type: basic

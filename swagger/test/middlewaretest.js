@@ -753,4 +753,36 @@ function verifyMiddleware(server) {
         });
     });
   });
+
+  describe('Swagger Basic Auth', function() {
+
+    it('must handle', function(done) {
+
+      request(server)
+        .get('/swaggerBasicAuth')
+        .end(function(err, res) {
+          should.not.exist(err);
+          res.status.should.eql(401);
+
+          request(server)
+            .get('/swaggerBasicAuth')
+            .auth('wrong', 'password')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(401);
+
+              request(server)
+                .get('/swaggerBasicAuth')
+                .auth('scott', 'scott')
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(200);
+                  res.body.count.should.equal(++count);
+
+                  done();
+                });
+            });
+        });
+    });
+  });
 }
