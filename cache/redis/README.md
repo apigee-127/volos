@@ -14,6 +14,7 @@ The options can contain the following parameters:
  encoding: the default string encoding to use for cached values (optional)
  host:     redis host (optional, default = 127.0.0.1)
  port:     redis port (optional, default = 6379)
+ db:       redis [DB](http://redis.io/commands/SELECT) to use - defaults to `0`.
  options:  redis options (hash, optional) - note: return_buffers will be forced to true
 
 Note: The cache name represents a namespace. A created cache will share values (but not necessary options)

@@ -24,6 +24,7 @@ parameters:
 
 * host: The host name or IP address of the Redis server.
 * port: The port number the Redis server is configured to use for client requests.
+* db:   Redis [DB](http://redis.io/commands/SELECT) to use - defaults to `0`.
 * options: A hash of Redis options (see [this](https://github.com/mranney/node_redis#rediscreateclientport-host-options) for list).
 
 The result of this call will be an "OAuth" object, which may be used according to the interface defined

@@ -88,12 +88,14 @@ function RedisManagementSpi(config) {
   config = config || {};
   var port = config.port || 6379;
   var host = config.host || '127.0.0.1';
+  var db = config.db || 0;
   var ropts = _.extend({}, config.options) || {};
   this.hashAlgo = config.hashAlgo || 'sha256';
   this.cypherAlgo = config.cypherAlgo || 'aes192';
   if (!config.encryptionKey) { throw new Error('you must provide an encryptionKey in config'); }
   this.encryptionKey = config.encryptionKey;
   this.client = redis.createClient(port, host, ropts);
+  this.client.select(db);
 }
 
 // Operations on developers

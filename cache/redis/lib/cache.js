@@ -58,10 +58,11 @@ function Cache(name, options) {
 
   var host = options.host || '127.0.0.1';
   var port = options.port || 6379;
+  var db = options.db || 0;
   var ropts = _.extend({}, options.options) || {};
   ropts.return_buffers = true;
   this.client = redis.createClient(port, host, ropts);
-
+  this.client.select(db);
   this.name = name;
 }
 

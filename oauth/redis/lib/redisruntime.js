@@ -85,9 +85,11 @@ var RedisRuntimeSpi = function(mgmt, config) {
   config = config || {};
   var host = config.host || '127.0.0.1';
   var port = config.port || 6379;
+  var db = config.db || 0;
   var ropts = _.extend({}, config.options) || {};
   this.hashAlgo = config.hashAlgo || 'sha256';
   this.client = redis.createClient(port, host, ropts);
+  this.client.select(db);
   this.mgmt = mgmt;
 };
 
