@@ -237,3 +237,12 @@ may choose to use them to check if the client is authorized to invoke a specific
                         function(err, result) {
                           // Check both as described before
                         });
+
+### OAuth.verifyApiKey(apiKey, request, callback)
+
+Verify an ApiKey (client id) header against the database. Request is not required.
+
+    oauth.verifyApiKey('some api key', request, function(err, result) {
+                        function(err, result) {
+                          // Check both as described before
+                        });
