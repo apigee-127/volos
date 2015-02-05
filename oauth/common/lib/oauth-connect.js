@@ -46,10 +46,8 @@ OAuthConnect.prototype.handleAuthorize = function() {
     }
     self.oauth.authorize(req.query, req, function(err, result) {
       if (err) {
-        if (debug.enabled) {
-          debug('Authorization error: ' + err);
-        }
-        makeError(err, resp);
+        debug('Authorization error: %s', err);
+        sendError(err, resp);
       } else {
         resp.statusCode = 302;
         debug('Setting location header to %s', result);
@@ -69,10 +67,8 @@ OAuthConnect.prototype.handleAccessToken = function() {
       self.oauth.generateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debug.enabled) {
-              debug('Access token error: ' + err);
-            }
-            makeError(err, resp);
+            debug('Access token error: %s', err);
+            sendError(err, resp);
           } else {
             resp.setHeader('Cache-Control', 'no-store');
             resp.setHeader('Pragma', 'no-cache');
@@ -91,33 +87,67 @@ OAuthConnect.prototype.authenticate = function(scopes) {
       req.headers.authorization,
       scopes,
       function(err, result) {
-        if (err) {
-          if (debug.enabled) {
-            debug('Authentication error: ' + err);
-          }
-          makeError(err, resp);
-        } else {
-          req.token = result;
-          next();
-        }
+        handleAuthenticateResult(err, result, req, resp, next);
       }
     );
   };
 };
 
+OAuthConnect.prototype.authenticateApiKey = function(keyFunction) {
+  var self = this;
+  return function(req, resp, next) {
+    debug('Connect authenticate ApiKey');
+    keyFunction(request, function(err, apiKey) {
+      if (err) { return cb(err); }
+      self.oauth.verifyApiKey(
+        apiKey,
+        function(err, result) {
+          handleAuthenticateResult(err, result, req, resp, next);
+        }
+      );
+    });
+  };
+};
+
+OAuthConnect.prototype.authenticateBasicAuth = function() {
+  var self = this;
+  return function(req, resp, next) {
+    debug('Connect authenticate BasicAuth');
+    var header = request.headers['authorization'] || '';
+    var token = header.split(/\s+/).pop() || '';
+    var auth = new Buffer(token, 'base64').toString();
+    var usernamePassword = auth.split(/:/);
+    self.oauth.verifyPassword(
+      usernamePassword[0],
+      usernamePassword[1],
+      function(err, result) {
+        handleAuthenticateResult(err, result, req, resp, next);
+      }
+    );
+  };
+};
+
+function handleAuthenticateResult(err, result, req, resp, next) {
+  if (err) {
+    debug('Authentication error: %s', err);
+    sendError(err, resp);
+  } else {
+    req.token = result;
+    next();
+  }
+}
+
 OAuthConnect.prototype.refreshToken = function() {
   var self = this;
   return function(req, resp) {
-    debug('Express refreshToken');
+    debug('Connect refreshToken');
     getRequestBody(req, function(body) {
       req.body = body;
       self.oauth.refreshToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debug.enabled) {
-              debug('Refresh token error: ' + err);
-            }
-            makeError(err, resp);
+            debug('Refresh token error: %s', err);
+            sendError(err, resp);
           } else {
             resp.setHeader('Cache-Control', 'no-store');
             resp.setHeader('Pragma', 'no-cache');
@@ -131,22 +161,40 @@ OAuthConnect.prototype.refreshToken = function() {
 OAuthConnect.prototype.invalidateToken = function() {
   var self = this;
   return function(req, resp) {
-    debug('Express invalidateToken');
+    debug('Connect invalidateToken');
     getRequestBody(req, function(body) {
       req.body = body;
       self.oauth.invalidateToken(body, { authorizeHeader: req.headers.authorization, request: req },
         function(err, result) {
           if (err) {
-            if (debug.enabled) {
-              debug('Refresh token error: ' + err);
-            }
-            makeError(err, resp);
+            debug('Invalidate token error: %s', err);
+            sendError(err, resp);
           } else {
             sendJson(resp, result);
           }
         });
     });
   };
+};
+
+function sendError(err, resp) {
+  var rb = {
+    error_description: err.message
+  };
+  if (err.state) {
+    rb.state = err.state;
+  }
+  if (err.code) {
+    rb.error = err.code;
+  } else {
+    rb.error = 'server_error';
+  }
+  if (err.headers) {
+    _.each(_.keys(err.headers), function(name) {
+      resp.setHeader(name, err.headers[name]);
+    });
+  }
+  sendJson(resp, err.statusCode, rb);
 };
 
 function getRequestBody(req, cb) {
@@ -165,26 +213,6 @@ function getRequestBody(req, cb) {
   req.on('end', function() {
     cb(body);
   });
-}
-
-function makeError(err, resp) {
-  var rb = {
-    error_description: err.message
-  };
-  if (err.state) {
-    rb.state = err.state;
-  }
-  if (err.code) {
-    rb.error = err.code;
-  } else {
-    rb.error = 'server_error';
-  }
-  if (err.headers) {
-    _.each(_.keys(err.headers), function(name) {
-      resp.setHeader(name, err.headers[name]);
-    });
-  }
-  sendJson(resp, err.statusCode, rb);
 }
 
 function sendJson(resp, code, body) {
