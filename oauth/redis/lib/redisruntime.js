@@ -417,7 +417,7 @@ function invalidRequestError() {
 }
 
 function genSecureToken() {
-  return crypto.randomBytes(CRYPTO_BYTES).toString('base64');
+  return encodeURIComponent(crypto.randomBytes(CRYPTO_BYTES).toString('base64'));
 }
 
 function hashToken(self, token) {
