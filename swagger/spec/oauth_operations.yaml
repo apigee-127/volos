@@ -223,6 +223,8 @@ definitions:
   OAuthToken:
     required:
       - "access_token"
+      - "token_type"
+      - "expires_in"
     properties:
       access_token:
         type: "string"
@@ -230,18 +232,9 @@ definitions:
         type: "string"
       expires_in:
         type: "integer"
-      refresh_token:
-        type: "string"
-      scope:
-        type: "string"
   OAuthError:
     required:
       - "error"
-      - "error_description"
     properties:
       error:
-        type: "string"
-      error_description:
-        type: "string"
-      state:
         type: "string"
