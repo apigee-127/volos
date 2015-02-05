@@ -227,13 +227,12 @@ Invalidate an existing OAuth access token, as described in RFC 7009.
                           // Check both as described before
                         });
 
-### OAuth.verifyToken(authorizationHeader, verb, path, callback)
+### OAuth.verifyToken(authorizationHeader, requiredScopes, callback)
 
 Verify an OAuth bearer token, as described in section 2.1 of RFC 6750. This validates the HTTP "Authorization"
-header against the database. The "verb" and URI path from the request are required and some implementations
-may choose to use them to check if the client is authorized to invoke a specific API.
+header against the database. requiredScopes is optional and may be either an array or a space-delimited string.
 
-    oauth.verifyToken('Bearer mF_9.B5f-4.1JqM', 'GET', '/foo', function(err, result) {
+    oauth.verifyToken('Bearer mF_9.B5f-4.1JqM', 'scope1 scope2', function(err, result) {
                         function(err, result) {
                           // Check both as described before
                         });
