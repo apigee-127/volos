@@ -311,7 +311,13 @@ RedisRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
   debug('verifyApiKey: %s', apiKey);
   var self = this;
   self.mgmt.getAppForClientId(apiKey, function(err, app) {
-    if (err) { return cb(err); }
+    if (err) {
+      if (err.statusCode === 404) {
+        err = errorWithCode('access_denied');
+        err.message = 'Invalid API Key';
+      }
+      return cb(err);
+    }
     cb(null, !!app);
   });
 };

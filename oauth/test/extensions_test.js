@@ -282,12 +282,23 @@ exports.verifyOauth = function(config) {
       });
     });
 
-    it('verify apiKey', function(done) {
+    it('verify valid apiKey', function(done) {
       var request = null;
       oauth.verifyApiKey(client_id, request, function(err, valid) {
         should.not.exist(err);
         should.exist(valid);
         valid.should.be.true;
+        done();
+      });
+    });
+
+    it('verify invalid apiKey', function(done) {
+      var request = null;
+      oauth.verifyApiKey('xxx', request, function(err, valid) {
+        should.exist(err);
+        should.not.exist(valid);
+        err.code.should.eql('access_denied');
+        err.message.should.eql('Invalid API Key');
         done();
       });
     });

@@ -290,7 +290,14 @@ ApigeeRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
   selectImplementation(this, function(err, impl) {
     if (err) { return cb(err); }
     impl.verifyApiKey(apiKey, request, function(err, reply) {
-      if (err) { return cb(err); }
+      if (err) {
+        if (!err.message) { err.message = err.error_description; }
+        if (err.error === 'oauth.v2.InvalidApiKey') {
+          err.errorCode = 'access_denied';
+          err.message = 'Invalid API Key';
+        }
+        return cb(err);
+      }
       cb(null, reply.status === 'approved');
     });
   });
