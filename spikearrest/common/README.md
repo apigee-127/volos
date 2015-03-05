@@ -53,8 +53,7 @@ Once a Spike Arrest has been created, you "apply" the Spike Arrest by passing th
 This module does not do anything on its own -- it depends on an implementation which stores the Spike Arrest in a 
 particular place. Currently the options are:
 
-* volos-spikearrest-memory: Stores Spike Arrrest in memory on the node where the script is running.
-* volos-spikearrest-apigee: Communicates with Apigee via API to update and check SpikeArrest results.
+* volos-spikearrest-memory: Stores Spike Arrest data in memory on the node where the script is running.
 
 ## Example
 
@@ -66,7 +65,7 @@ particular place. Currently the options are:
     });
 
     spikeArrest.apply({ key: 'Foo', weight: 1 }, function(err, result) {
-      if (err) { throw err; }
+      if (err) { return cb(err); }
       console.log('Status: %s', result.isAllowed);
     });
 
