@@ -74,7 +74,8 @@ function Cache(name, options) {
     cache = apigee.getCache(name, options);
     _.extend(cache, monkeyPatch);
   } else if (options.fallback) {
-    cache = options.fallback.create(name, options);
+    var fallbackModule = require(options.fallback.provider);
+    cache = fallbackModule.create.apply(this, [options.fallback]);
   }
   if (!cache) { throw new Error('Apigee cache not available. Specify options.fallback to avoid error.'); }
 
