@@ -1,6 +1,6 @@
 {
   "name": "volos-cache-apigee",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "main": "lib/cache.js",
   "license": "MIT",
   "description": "Basic in-memory caching library for the Volos system.",
