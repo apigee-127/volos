@@ -76,7 +76,8 @@ function Cache(name, options) {
   } else if (options.fallback) {
     cache = options.fallback.create(name, options);
   }
-  if (!cache) { throw new Error('Apigee cache not available. Specify options.fallback to avoid error.'); }
+  }
+  if (!cache) { throw new Error('Error: Apigee cache not available. Specify "fallback" option to use this cache outside of Apigee.'); }
 
   return cache;
 }
