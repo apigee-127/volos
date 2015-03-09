@@ -45,20 +45,44 @@ describe('Apigee', function() {
   this.timeout(15000);
   var spi = Spi;
 
-  if (apigee.getMode() !== apigee.APIGEE_MODE) { // if we're not in Apigee, fallback to memory (if available)
-    try {
-      var memoryCache = require('volos-cache-memory');
-      spi = {
-        create: function (name, options) {
-          options = options || {};
-          options.fallback = memoryCache;
-          return Spi.create(name, options);
-        }
-      };
-    } catch (err) {
-      spi = null;
-    }
-  }
+  it('should allow a fallback module', function() {
 
-  if (spi) { commonTest.testCache({}, spi); }
+    if (apigee.getMode() === apigee.APIGEE_MODE) { return; }
+
+    var options = {
+      fallback : require('volos-cache-memory')
+    };
+    Spi.create('fallback', options);
+  });
+
+  it('should allow a fallback string', function() {
+
+    if (apigee.getMode() === apigee.APIGEE_MODE) { return; }
+
+    var options = {
+      fallback : 'volos-cache-memory'
+    };
+    Spi.create('fallback', options);
+  });
+
+  it('should still pass tests', function() {
+
+    if (apigee.getMode() !== apigee.APIGEE_MODE) { // if we're not in Apigee, fallback to memory (if available)
+      try {
+        var memoryCache = require('volos-cache-memory');
+        spi = {
+          create: function (name, options) {
+            options = options || {};
+            options.fallback = memoryCache;
+            return Spi.create(name, options);
+          }
+        };
+      } catch (err) {
+        spi = null;
+      }
+    }
+
+    if (spi) { commonTest.testCache({}, spi); }
+  });
+
 });

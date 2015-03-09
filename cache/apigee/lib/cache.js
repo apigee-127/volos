@@ -57,6 +57,7 @@
 var Common = require('volos-cache-common');
 var apigee = require('apigee-access');
 var _ = require('underscore');
+var debug = require('debug')('apigee');
 
 function create(name, options) {
   return new Common(Cache, name, options);
@@ -74,8 +75,13 @@ function Cache(name, options) {
     cache = apigee.getCache(name, options);
     _.extend(cache, monkeyPatch);
   } else if (options.fallback) {
-    cache = options.fallback.create(name, options);
-  }
+    if (typeof options.fallback === 'string') {
+      debug('Apigee cache falling back to %s', options.fallback);
+      cache = require(options.fallback).create(name, options);
+    } else {
+      debug('Apigee cache falling back to specified module');
+      cache = options.fallback.create(name, options);
+    }
   }
   if (!cache) { throw new Error('Error: Apigee cache not available. Specify "fallback" option to use this cache outside of Apigee.'); }
 
