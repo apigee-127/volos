@@ -198,9 +198,14 @@ function createResources() {
           helpers.getHelperFunction(serviceName + ' beforeCreateToken', serviceDefinition.options.beforeCreateToken);
       }
 
-      var service = module.create.apply(this, [serviceDefinition.options]);
+      // fallback only exists on Apigee cache
+      // this is used to defer creation in the case it references a fallback cache yet to be created
+      if (serviceDefinition.options.fallback) {
+        var deferred = { deferredName: serviceDefinition.options.fallback };
+        serviceDefinition.options.fallback = { create: function defer() { return deferred; } }
+      }
 
-      services[serviceName] = service;
+      var service = services[serviceName] = module.create.apply(this, [serviceDefinition.options]);
 
       if (service.validGrantTypes) { // the presence of validGrantTypes identifies the service as oauth
         if (serviceDefinition.options.cache) {
@@ -213,11 +218,17 @@ function createResources() {
     });
   });
 
-   // make 2nd pass to ensure forward oauth cache references will work
-  _.each(services, function(service) {
-    if (service.validGrantTypes && service.cacheName) { // the presence of validGrantTypes identifies the service as oauth
+   // make 2nd pass to ensure forward cache references will work
+  _.each(services, function(service, serviceName) {
+    if (service.validGrantTypes && service.useCache && service.cacheName) {
       var cache = services[service.cacheName];
       service.useCache(cache);
+    }
+    if (service.cache && service.cache.deferredName) {
+      if (!services[service.cache.deferredName]) {
+        throw new Error('Cache fallback option must name a valid cache. Invalid reference: ' + service.cache.deferredName);
+      }
+      service.cache = services[service.cache.deferredName];
     }
   });
 

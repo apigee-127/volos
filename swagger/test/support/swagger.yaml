@@ -21,6 +21,12 @@ produces:
   - application/json
 x-a127-services:
   cache:
+    provider: volos-cache-apigee
+    options:
+      name: name
+      ttl: 10000
+      fallback: fallbackCache
+  fallbackCache:
     provider: volos-cache-memory
     options:
       name: name
