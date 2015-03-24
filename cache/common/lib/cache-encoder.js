@@ -60,17 +60,15 @@ exports.cache = function(statusCode, headers, content, cb) {
     for (i = 0; i < pairs.length; i++) {
       pair = pairs[i];
       buffer.writeUInt16LE(pair[0].length.valueOf(), pos); pos+=2; // key
-      buffer.write(pair[0], pos);
-      pos += Buffer._charsWritten;
+      pos += buffer.write(pair[0], pos, pair[0].length, 'utf8');
       buffer.writeUInt16LE(pair[1].length.valueOf(), pos); pos+=2; // value
-      buffer.write(pair[1], pos);
-      pos += Buffer._charsWritten;
+      pos += buffer.write(pair[1], pos, pair[1].length, 'utf8');
     }
     if (content) {
       if (Buffer.isBuffer(content)) {
         content.copy(buffer, pos, 0);
       } else {
-        buffer.write(content, pos);
+        buffer.write(content, pos, content.length, 'utf8');
       }
     }
   }
