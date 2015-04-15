@@ -287,6 +287,17 @@ ApigeeRuntimeSpi.prototype.verifyToken = function(token, requiredScopes, cb) {
  * Validate an api key.
  */
 ApigeeRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
+  var self = this;
+  selectImplementation(this, function(err, impl) {
+    if (err) { return cb(err); }
+    self.getAPIKeyAttributes(apiKey, request, function(err, reply) {
+      if (err) { return cb(err); }
+      cb(null, reply.status === 'approved');
+    });
+  });
+};
+
+ApigeeRuntimeSpi.prototype.getAPIKeyAttributes = function(apiKey, request, cb) {
   selectImplementation(this, function(err, impl) {
     if (err) { return cb(err); }
     impl.verifyApiKey(apiKey, request, function(err, reply) {
@@ -298,7 +309,7 @@ ApigeeRuntimeSpi.prototype.verifyApiKey = function(apiKey, request, cb) {
         }
         return cb(err);
       }
-      cb(null, reply.status === 'approved');
+      cb(null, reply);
     });
   });
 };

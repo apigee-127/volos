@@ -27,9 +27,46 @@ var config = require('../../../testconfig/testconfig-apigee');
 var expressTest = require('../../test/rfc6749_express_test');
 var argoTest = require('../../test/rfc6749_argo_test');
 var extensionsTest = require('../../test/extensions_test');
+var should = require('should');
 
 describe('Apigee', function() {
   this.timeout(30000);
+
+  describe('exclusive', function() {
+
+    var oauth = config.oauth;
+    var creator = config.fixtureCreator;
+
+    describe('volos extensions', function() {
+
+      var client_id;
+
+      before(function(done) {
+        creator.createFixtures(function(err, apps) {
+          if (err) { return done(err); }
+          client_id = apps[0].credentials[0].key;
+          done();
+        });
+      });
+
+      after(function(done) {
+        creator.destroyFixtures(done);
+      });
+
+      it('verify valid apiKey', function(done) {
+        var request = null;
+        oauth.spi.getAPIKeyAttributes(client_id, request, function(err, response) {
+          should.not.exist(err);
+          should.exist(response);
+          response.should.have.property('client_id', client_id);
+          response.should.have.property('status', 'approved');
+          response.should.have.keys('client_id', 'status', 'apiproduct_name', 'attributes', 'developer_app_id',
+                                    'developer_app_name', 'developer_email', 'developer_id', 'expires_in', 'issued_at');
+          done();
+        });
+      });
+    });
+  });
 
   describe('via Argo', function() {
     argoTest.verifyOauth(config);
