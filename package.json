@@ -4,8 +4,8 @@
   "comments": "This package.json is here so we can get dependencies installed to run tests. Install mocha and istanbul globally.",
   "private": true,
   "dependencies":  {
-    "express": "3.4.x",
-    "argo": "0.4.x",
+    "express": "^4.0.0",
+    "argo": "^0.6.x",
     "supertest" : "0.8.x",
     "redis" : "0.10.x",
     "node-uuid" : "1.4.x",
@@ -25,7 +25,7 @@
     "semver": "3.x.x",
     "superagent": "0.x.x",
     "on-response": "~1.0.1",
-    "connect" : "3.3.3",
+    "connect" : "^3.3.5",
     "body-parser" : "1.9.2"
   },
   "devDependencies": {
