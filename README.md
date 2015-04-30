@@ -88,7 +88,7 @@ so they all run locally instead of pulling from npm. To do this, just run:
 
 and then:
 
-        link.sh
+        bin/link
 
 Testing
 -------
