@@ -57,6 +57,16 @@ exports.testQuota = function(config, Spi) {
 
     describe('options', function() {
 
+      it('invalid timeUnit', function(done) {
+        var options = extend(config, {
+          timeUnit: 'seconds'
+        });
+        assert.throws(function() {
+          Spi.create(options)
+        });
+        done();
+      });
+
       it('interval must be a number', function(done) {
         var options = extend(config, {
           timeUnit: 'minute',
