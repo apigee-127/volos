@@ -83,7 +83,7 @@ Parameters:
 #### Middleware usage examples: 
 
 
-##### Quota.connectMiddleware()
+##### Cache.connectMiddleware()
 
 Returns middleware that may be used in a Connect server.
 
@@ -95,7 +95,7 @@ Returns middleware that may be used in a Connect server.
         ...
 ```
  
-##### Quota.expressMiddleware()
+##### Cache.expressMiddleware()
 
 Returns middleware that may be used in a Express server. 
 
@@ -107,7 +107,7 @@ Returns middleware that may be used in a Express server.
         ...
 ```
 
-##### Quota.argoMiddleware()
+##### Cache.argoMiddleware()
 
 Returns middleware that may be used in an Argo server. 
 
