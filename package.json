@@ -24,7 +24,7 @@
     "swagger-tools": "^0.8.0",
     "semver": "3.x.x",
     "superagent": "0.x.x",
-    "on-response": "~1.0.1",
+    "on-finished": "~2.2.1",
     "connect" : "^3.3.5",
     "body-parser" : "1.9.2"
   },

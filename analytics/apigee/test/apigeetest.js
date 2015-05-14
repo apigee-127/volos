@@ -21,11 +21,11 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-'use strict'
+'use strict';
 
 var Spi = require('..');
 var config = require('../../../testconfig/testconfig-apigee').config;
-var commonTest = require('../../test/analyticsTest');
+var commonTest = require('../../test/analyticstest');
 var assert = require('assert');
 var random = Math.random();
 var _ = require('underscore');
@@ -107,7 +107,7 @@ describe('Apigee', function() {
   it('flush', function(done) {  
     var recordsQueue = [record, record, record];
     analytics.spi.flush(recordsQueue, function(err, retryRecords) {
-      assert(!err);
+      should.not.exist(err);
       if(retryRecords) {
         assert(retryRecords.length <= recordsQueue.length);
       }

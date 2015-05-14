@@ -146,7 +146,6 @@ exports.testAnalytics = function(config, Spi) {
         a.push(record);
         a.push(record);
         a.buffer.should.have.length(2);
-        a.destroy();
         done();
       });
 
@@ -163,7 +162,6 @@ exports.testAnalytics = function(config, Spi) {
         setTimeout(function() {
           console.log(a.buffer.length);
           a.buffer.length.should.be.below(2);
-          a.destroy();
           done();
         }, options.flushInterval + 10);
       });

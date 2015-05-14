@@ -24,7 +24,7 @@
 'use strict';
 
 var Analytics = require('volos-analytics-common');
-var onResponse = require('on-response');
+var onFinished = require('on-finished');
 var superagent = require('superagent');
 
 
@@ -74,13 +74,13 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   record['client_received_start_timestamp'] = Date.now();
   record['recordType']   = 'APIAnalytics';
   record['apiproxy']     = this.proxy;
-  record['request_uri']  = req.protocol + '://' + req.headers.host + req.url;
+  record['request_uri']  = (req.protocol || 'http') + '://' + req.headers.host + req.url;
   record['request_path'] = req.url.split('?')[0];
   record['request_verb'] = req.method;
   record['client_ip']    = req.connection.remoteAddress;
   record['useragent']    = req.headers['user-agent'];
-  
-  onResponse(req, resp, function (err, summary) {
+
+  onFinished(resp, function(err) {
     record['response_status_code'] = resp.statusCode;
     record['client_sent_end_timestamp'] = Date.now();
     cb(undefined, record);
