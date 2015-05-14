@@ -1,6 +1,6 @@
 {
   "name": "volos-analytics-memory",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "lib/memoryanalytics.js",
   "license": "MIT",
   "description": "Memory provider for Analytics in the Volos system.",
