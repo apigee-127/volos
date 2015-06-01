@@ -261,7 +261,6 @@ exports.testQuota = function(config, Spi) {
           pm.apply(hit, function(err, result) {
             assert(!err);
             checkResult(result, 1, 1, true);
-            var exp = ((startTime + 60000) - Date.now()) / 1000;
             result.expiryTime.should.be.approximately(250, 20);
 
             setTimeout(function() {
