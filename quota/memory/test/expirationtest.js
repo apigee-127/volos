@@ -24,7 +24,7 @@
 'use strict';
 
 var Spi = require('..');
-var config = require('../../../testconfig/testconfig').config;
+var config = {};
 var assert = require('assert');
 var _ = require('underscore');
 
