@@ -96,7 +96,7 @@ Analytics.prototype.flush = function() {
       }
       // If some records failed to be pushed, add them back into the queue (up to bufferSize)
       if (retryRecords && retryRecords.length > 0) {
-        var slotsInBuffer = this.bufferSize - this.buffer.length;
+        var slotsInBuffer = self.bufferSize - self.buffer.length;
         if (slotsInBuffer < retryRecords.length) {
           retryRecords = retryRecords.slice(0, slotsInBuffer - 1);
         }
