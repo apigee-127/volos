@@ -45,7 +45,7 @@ function MemoryBuffer(spi, options) {
   this.spi = spi;
   this.options = options;
   this.buckets = {};
-  this.clockOffset;
+  this.clockOffset = undefined;
 
   assert(options.timeInterval);
   if (options.startTime) {
@@ -73,7 +73,6 @@ MemoryBuffer.prototype.destroy = function() {
 MemoryBuffer.prototype.apply = function(options, cb) {
 
   var bucket = this.buckets[options.identifier];
-  var newBucket = !bucket;
   var now = _.now();
 
   if (!bucket) {
@@ -207,6 +206,6 @@ Bucket.prototype.flushBucket = function(cb) {
     // if it wasn't set because offset wasn't available, calc expiration
     if (!self.expires) { self.calculateExpiration(); }
 
-    if (cb) { cb(null); }
+    if (cb) { cb(); }
   });
 };
