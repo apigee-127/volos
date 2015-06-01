@@ -72,12 +72,12 @@ function calcOptions(req, opts) {
 }
 
 function applyQuota(self, options, response, next) {
-  if (debug.enabled) { debug('Quota check: ' + options.identifier); }
+  debug('Quota check: ', options.identifier);
   self.quota.apply(
     options,
     function(err, reply) {
       if (err) {
-        if (debug.enabled) { debug('Quota apply error: ' + err); }
+        debug('Quota apply error: ', err);
         response.statusCode = 500;
         response.body = { error: 'error applying quota' };
         return;
@@ -86,7 +86,7 @@ function applyQuota(self, options, response, next) {
       response.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
       response.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
-        if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
+        debug('Quota exceeded:', options.identifier);
         response.statusCode = 403;
         response.body = { error: 'exceeded quota' };
         response.end();

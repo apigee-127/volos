@@ -63,7 +63,7 @@ QuotaConnect.prototype.applyPerAddress = function(options) {
     var opts = calcOptions(req, options);
     var remoteAddress = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
     opts.identifier = opts.identifier + '/' + remoteAddress;
-    if (debug.enabled) { debug('Quota check: ' + opts.identifier); }
+    debug('Quota check:', opts.identifier);
     applyQuota(self, opts, resp, next);
   };
 };
@@ -78,7 +78,7 @@ function calcOptions(req, opts) {
 }
 
 function applyQuota(self, options, resp, next) {
-  if (debug.enabled) { debug('Quota check: ' + options.identifier); }
+  debug('Quota check:', options.identifier);
   self.quota.apply(
     options,
     function(err, reply) {
@@ -87,7 +87,7 @@ function applyQuota(self, options, resp, next) {
       resp.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
       resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
-        if (debug.enabled) { debug('Quota exceeded: ' + options.identifier); }
+        debug('Quota exceeded:', options.identifier);
         resp.statusCode = 403;
         err = new Error('exceeded quota');
         err.status = 403;

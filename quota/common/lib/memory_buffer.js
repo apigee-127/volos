@@ -26,7 +26,7 @@
 var assert = require('assert');
 var Quota = require('./quota');
 var _ = require('underscore');
-var debug = require('debug')('apigee');
+var debug = require('debug')('quota');
 
 /*
  * options.bufferSize (Number) optional, use a memory buffer up to bufferSize to hold quota elements
@@ -116,7 +116,7 @@ function Bucket(time, options, owner) {
 }
 
 Bucket.prototype.reset = function(time) {
-  if (debug.enabled) { debug('bucket reset'); }
+  debug('bucket reset');
   this.count = 0;
   this.resetAt = time;
   this.expires = undefined;
@@ -186,17 +186,19 @@ Bucket.prototype.flushBucket = function(cb) {
     // sync time with remote if never been synced
     if (self.owner.clockOffset === undefined) {
       if (!reply.timestamp) {
-        console.log('Warning: Quota spi not reporting timestamp. Buffer assuming spi timestamp is identical.');
+        debug('Warning: Quota spi not reporting timestamp. Buffer assuming spi timestamp is identical.');
       }
       var offset = reply.timestamp ? reply.timestamp - _.now() : 0;
       self.owner.clockOffset = offset;
-      if (debug.enabled) { debug('clockOffset: ' + offset); }
+      debug('clockOffset:', offset);
     }
 
     var sameTimeBucket = (self.expires === localExpires) &&                        // same local time bucket?
                          (!remoteExpires || remoteExpires === self.remoteExpires); // same remote time bucket?
-    if (debug.enabled && !sameTimeBucket) { debug('new time bucket'); }
-    if (!sameTimeBucket) { return cb ? cb() : null; }
+    if (!sameTimeBucket) {
+      debug('new time bucket');
+      return cb ? cb() : null;
+    }
 
     self.remoteExpires = reply.expiryTime;
     self.remoteCount = reply.used;
