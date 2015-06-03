@@ -78,14 +78,9 @@ MemoryBuffer.prototype.apply = function(options, cb) {
   if (!bucket) {
     bucket = new Bucket(now, options, this);
     this.buckets[options.identifier] = bucket;
-
-    bucket.flushBucket(function(err) { // sync count (and possibly time) with remote
-      if (err) { return cb(err); }
-      bucket.apply(now, options, cb);
-    });
-  } else {
-    bucket.apply(now, options, cb);
+    bucket.flushBucket();
   }
+  bucket.apply(now, options, cb);
 };
 
 MemoryBuffer.prototype.flushBuffer = function() {
@@ -109,13 +104,14 @@ function trimTokens(self) {
 }
 
 function Bucket(time, options, owner) {
+  debug('new bucket:', options.identifier);
   this.options = options;
   this.owner = owner;
   this.reset(time);
 }
 
 Bucket.prototype.reset = function(time) {
-  debug('bucket reset');
+  debug('bucket reset:', this.options.identifier);
   this.count = 0;
   this.resetAt = time;
   this.expires = undefined;
@@ -142,6 +138,7 @@ Bucket.prototype.calculateExpiration = function() {
 };
 
 Bucket.prototype.apply = function(time, options, cb) {
+  debug('apply: ', options.weight);
   var now = _.now();
   if (time > this.expires) {
     this.reset(now); // Quota bucket has expired. The timer also runs but only periodically
@@ -162,14 +159,15 @@ Bucket.prototype.apply = function(time, options, cb) {
 
   cb(null, result);
 
-  if (this.count > this.options.bufferSize) {
-    this.flushBucket(); // async
+  if (this.count % this.options.bufferSize === 0) {
+    this.flushBucket();
   }
 };
 
 Bucket.prototype.flushBucket = function(cb) {
   if (this.flushing || (!this.count && this.remoteExpires)) { return cb ? cb() : null; }
 
+  debug('flushing bucket: ', this.options.identifier);
   var localExpires = this.expires;
   var remoteExpires = this.remoteExpires;
   var options = {
@@ -180,7 +178,7 @@ Bucket.prototype.flushBucket = function(cb) {
   self.flushing = true;
   self.owner.spi.apply(options, function(err, reply) {
     self.flushing = false;
-    if (err) { return (cb) ? cb(err) : console.log(err); }
+    if (err) { return (cb) ? cb(err) : console.error(err); }
 
     // sync time with remote if never been synced
     if (self.owner.clockOffset === undefined) {
