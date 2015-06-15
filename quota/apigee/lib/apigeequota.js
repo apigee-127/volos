@@ -133,10 +133,10 @@ function selectImplementation(self, cb) {
     cb(undefined, self.quotaImpl);
 
   } else {
-    superagent.agent().
-      get(self.options.uri + '/v2/version').
-      set('x-DNA-Api-Key', self.options.key).
-      end(function(err, resp) {
+    superagent
+      .get(self.options.uri + '/v2/version')
+      .set('x-DNA-Api-Key', self.options.key)
+      .end(function(err, resp) {
         if (err) {
           debug('Error getting version: %s', err);
           if (err.code === 'ENOTFOUND') {
@@ -226,12 +226,11 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
   var r = makeNewQuotaRequest(this.quota, opts, allow);
 
   debug('Remote quota request: %j', r);
-  superagent.agent().
-    post(this.quota.options.uri + '/v2/quotas/apply').
-    set('x-DNA-Api-Key', this.quota.options.key).
-    type('json').
-    send(r).
-    end(function(err, resp) {
+  superagent
+    .post(this.quota.options.uri + '/v2/quotas/apply')
+    .set('x-DNA-Api-Key', this.quota.options.key)
+    .send(r)
+    .end(function(err, resp) {
       if (err) {
         cb(err);
       } else if (resp.ok) {
@@ -267,12 +266,12 @@ ApigeeOldRemoteQuota.prototype.apply = function(opts, cb) {
   };
 
   debug('Old remote quota request: %j', r);
-  superagent.agent().
-    post(this.quota.options.uri + '/quotas/distributed').
-    set('x-DNA-Api-Key', this.quota.options.key).
-    type('form').
-    send(r).
-    end(function(err, resp) {
+  superagent
+    .post(this.quota.options.uri + '/quotas/distributed')
+    .set('x-DNA-Api-Key', this.quota.options.key)
+    .type('form')
+    .send(r)
+    .end(function(err, resp) {
       if (err) {
         cb(err);
       } else if (resp.ok) {

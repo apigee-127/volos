@@ -176,7 +176,7 @@ describe('Apigee', function() {
       pm.apply(hit, function(err, result) {
         assert(!err);
         checkResult(result, 1, 1, true);
-        result.expiryTime.should.be.approximately(1000, 500);
+        result.expiryTime.should.be.approximately(250, 500);
         done();
       });
     });
@@ -199,7 +199,7 @@ describe('Apigee', function() {
       pm.apply(hit, function(err, result) {
         assert(!err);
         checkResult(result, 1, 1, true);
-        result.expiryTime.should.be.approximately(1000, 500);
+        result.expiryTime.should.be.approximately(250, 500);
         done();
       });
     });
@@ -222,7 +222,7 @@ describe('Apigee', function() {
       pm.apply(hit, function(err, result) {
         assert(!err);
         checkResult(result, 1, 1, true);
-        result.expiryTime.should.be.approximately(1000, 500);
+        result.expiryTime.should.be.approximately(250, 500);
         done();
       });
     });
@@ -245,7 +245,7 @@ describe('Apigee', function() {
       pm.apply(hit, function(err, result) {
         assert(!err);
         checkResult(result, 1, 1, true);
-        result.expiryTime.should.be.approximately(1000, 500);
+        result.expiryTime.should.be.approximately(250, 500);
         done();
       });
     });
