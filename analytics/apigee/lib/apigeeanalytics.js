@@ -27,6 +27,8 @@ var Analytics = require('volos-analytics-common');
 var onFinished = require('on-finished');
 var superagent = require('superagent');
 
+var MICROGATEWAY = 'microgateway';
+var REMOTE_PROXY_PATH = '/v2/analytics/accept';
 
 var create = function(options) {
   var spi = new ApigeeAnalyticsSpi(options);
@@ -44,21 +46,39 @@ var ApigeeAnalyticsSpi = function(options) {
   if (!options.proxy) {
     throw new Error('Proxy parameter must be specified');
   }
-  this.uri = options.uri;
+
   this.key = options.key;
   this.proxy = options.proxy;
-  
-  //TODO: Ping /v2/accept to see if analytics is allowed;
+  this.revision = options.revision;
+
+  if (options.source === MICROGATEWAY) {
+    this.microgateway = true;
+    this.uri = options.uri;
+    if (options.secret) {
+      this.secret = options.secret;
+    } else {
+      throw new Error('secret parameter must be specified');
+    }
+  } else {
+    this.uri = options.uri + REMOTE_PROXY_PATH;
+  }
 };
 
 ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
-  var recordsToBeUploaded = {};
-  recordsToBeUploaded.records = recordsQueue;
-  superagent.agent()
-    .post(this.uri + '/v2/analytics/accept')
-    .set('x-DNA-Api-Key', this.key)
-    .set('Content-Type', 'application/json')
-    .send(JSON.stringify(recordsToBeUploaded))
+  var recordsToBeUploaded = {
+    records: recordsQueue
+  };
+
+  var req = superagent.post(this.uri);
+
+  if (this.microgateway) {
+    req.auth(this.key, this.secret);
+  } else {
+    req.set('x-DNA-Api-Key', this.key);
+  }
+
+  req
+    .send(recordsToBeUploaded)
     .end(function(err, resp) {
       if (err || resp.statusCode != 200) {
         cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
@@ -66,7 +86,6 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
         resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
       }
     });
-    
 };
 
 ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
@@ -79,6 +98,7 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   record['request_verb'] = req.method;
   record['client_ip']    = req.connection.remoteAddress;
   record['useragent']    = req.headers['user-agent'];
+  record['apiproxy_revision'] = this.revision;
 
   onFinished(resp, function(err) {
     record['response_status_code'] = resp.statusCode;
