@@ -49,7 +49,7 @@ var ApigeeAnalyticsSpi = function(options) {
 
   this.key = options.key;
   this.proxy = options.proxy;
-  this.revision = options.revision;
+  if (options.proxy_revision) { this.proxy_revision = options.proxy_revision; }
 
   if (options.source === MICROGATEWAY) {
     this.microgateway = true;
@@ -61,6 +61,15 @@ var ApigeeAnalyticsSpi = function(options) {
     }
   } else {
     this.uri = options.uri + REMOTE_PROXY_PATH;
+  }
+
+  if (options.finalizeRecord) {
+    if (typeof options.finalizeRecord !== 'function') {
+      throw new Error('finalizeRecord must be a function');
+    }
+    this.finalizeRecord = options.finalizeRecord;
+  } else {
+    this.finalizeRecord = function(req, res, record, cb) { cb(undefined, record); }
   }
 };
 
@@ -98,11 +107,13 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   record['request_verb'] = req.method;
   record['client_ip']    = req.connection.remoteAddress;
   record['useragent']    = req.headers['user-agent'];
-  record['apiproxy_revision'] = this.revision;
+  record['apiproxy_revision'] = this.proxy_revision;
 
+  var self = this;
   onFinished(resp, function(err) {
     record['response_status_code'] = resp.statusCode;
     record['client_sent_end_timestamp'] = Date.now();
-    cb(undefined, record);
+
+    self.finalizeRecord(req, resp, record, cb);
   });
 };
