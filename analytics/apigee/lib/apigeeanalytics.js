@@ -99,7 +99,9 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
 
 ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   var record = {};
-  record['client_received_start_timestamp'] = Date.now();
+  var now = Date.now();
+  record['client_received_start_timestamp'] = now;
+  record['client_sent_end_timestamp'] = now + 1; // hack to avoid error in server calculations
   record['recordType']   = 'APIAnalytics';
   record['apiproxy']     = this.proxy;
   record['request_uri']  = (req.protocol || 'http') + '://' + req.headers.host + req.url;
