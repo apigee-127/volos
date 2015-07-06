@@ -108,11 +108,34 @@ describe('Apigee', function() {
     var recordsQueue = [record, record, record];
     analytics.spi.flush(recordsQueue, function(err, retryRecords) {
       should.not.exist(err);
-      if(retryRecords) {
+      if (retryRecords) {
         assert(retryRecords.length <= recordsQueue.length);
       }
       done();
     });
+  });
+
+  it('should compress before sending if so configured', function(done) {
+    var options = extend(config, {
+      recordLimit: 10000,
+      proxy: 'testAnalytics',
+      flushInterval: 100,
+      uploadLength : 100,
+      compress: true
+    });
+    var analytics = Spi.create(options);
+    var recordsQueue = [record, record, record];
+
+    analytics.spi.send = function send(compressed) {
+      var zlib = require('zlib');
+      zlib.gunzip(compressed, function(err, uncompressed) {
+        var data = JSON.parse(uncompressed);
+        recordsQueue.should.eql(data.records);
+        done();
+      });
+    };
+
+    analytics.spi.flush(recordsQueue);
   });
   
   describe('Common', function() {

@@ -49,6 +49,7 @@ var ApigeeAnalyticsSpi = function(options) {
 
   this.key = options.key;
   this.proxy = options.proxy;
+  this.compress = !!options.compress;
   if (options.proxy_revision) { this.proxy_revision = options.proxy_revision; }
 
   if (options.source === MICROGATEWAY) {
@@ -74,27 +75,30 @@ var ApigeeAnalyticsSpi = function(options) {
 };
 
 ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
+
   var recordsToBeUploaded = {
     records: recordsQueue
   };
 
-  var req = superagent.post(this.uri);
-
-  if (this.microgateway) {
-    req.auth(this.key, this.secret);
-  } else {
-    req.set('x-DNA-Api-Key', this.key);
+  function sendResponse(err, resp) {
+    if (err || resp.statusCode != 200) {
+      cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
+    } else {
+      resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
+    }
   }
 
-  req
-    .send(recordsToBeUploaded)
-    .end(function(err, resp) {
-      if (err || resp.statusCode != 200) {
-        cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
-      } else {
-        resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
-      }
+  if (this.compress) {
+    var zlib = require('zlib');
+    var uncompressed = JSON.stringify(recordsToBeUploaded);
+    var self = this;
+    zlib.gzip(uncompressed, function(err, compressed) {
+      self.send(compressed, sendResponse);
     });
+  } else {
+    this.send(recordsToBeUploaded, sendResponse);
+  }
+
 };
 
 ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
@@ -118,4 +122,19 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
 
     self.finalizeRecord(req, resp, record, cb);
   });
+};
+
+ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
+
+  var req = superagent.post(this.uri);
+
+  if (this.microgateway) {
+    req.auth(this.key, this.secret);
+  } else {
+    req.set('x-DNA-Api-Key', this.key);
+  }
+
+  req
+    .send(data)
+    .end(cb);
 };
