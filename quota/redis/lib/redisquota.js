@@ -109,7 +109,16 @@ RedisQuotaSpi.prototype.calculateExpiration = function(now) {
     return now + this.options.timeInterval - remaining;
 
   } else {
-    // Default quota type -- start counting from now
-    return now + this.options.timeInterval;
+
+    if ('month' === this.options.timeUnit) {
+
+      var date = new Date(now);
+      return new Date(date.getFullYear(), date.getMonth() + 1, 1) - 1; // last ms of this month
+
+    } else {
+
+      // Default quota type -- start counting from now
+      return now + this.options.timeInterval;
+    }
   }
 };

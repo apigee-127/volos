@@ -93,12 +93,10 @@ SpikeArrest.prototype.expressMiddleware = SpikeArrest.prototype.connectMiddlewar
 
 function checkNumber(val, name) {
   if (!val) { return undefined; }
+  if (typeof val === 'number') { return val; }
   if (typeof val === 'string') {
     var int = parseInt(val, 10);
     if (!isNaN(int)) { return int; }
-  }
-  else if (typeof val === 'number') {
-    return val;
   }
   throw new Error(util.format('%s must be a number', name));
 }

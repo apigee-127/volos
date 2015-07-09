@@ -117,7 +117,7 @@ exports.testSpikeArrest = function(config, Spi) {
       it('should succeed when no spikes', function(done) {
         ps.apply({ key: 'x' }, function(err, reply) {
           should.not.exist(err);
-          reply.allowed.should.equal(1);
+          reply.allowed.should.equal(100);
           reply.used.should.equal(1);
           reply.isAllowed.should.be.true;
           reply.expiryTime.should.be.approximately(10, 2);
@@ -128,7 +128,7 @@ exports.testSpikeArrest = function(config, Spi) {
       it('should fail on a spike', function(done) {
         ps.apply({ key: 'y' }, function(err, reply) {
           should.not.exist(err);
-          reply.allowed.should.equal(1);
+          reply.allowed.should.equal(100);
           reply.used.should.equal(1);
           reply.isAllowed.should.be.true;
           reply.expiryTime.should.be.approximately(10, 2);
@@ -137,7 +137,7 @@ exports.testSpikeArrest = function(config, Spi) {
 
             ps.apply({ key: 'y' }, function(err, reply) {
               should.not.exist(err);
-              reply.allowed.should.equal(1);
+              reply.allowed.should.equal(100);
               reply.used.should.equal(2);
               reply.isAllowed.should.be.false;
               reply.expiryTime.should.be.approximately(5, 2);
@@ -146,7 +146,7 @@ exports.testSpikeArrest = function(config, Spi) {
 
                 ps.apply({ key: 'y' }, function(err, reply) {
                   should.not.exist(err);
-                  reply.allowed.should.equal(1);
+                  reply.allowed.should.equal(100);
                   reply.used.should.equal(1);
                   reply.isAllowed.should.be.true;
                   reply.expiryTime.should.be.approximately(10, 2);
@@ -163,7 +163,6 @@ exports.testSpikeArrest = function(config, Spi) {
     describe('smoothed minutes', function() {
 
       var ps;
-      var window = 60000 / 6000;
       before(function() {
         var options = extend(config, {
           timeUnit: 'minute',
@@ -176,7 +175,7 @@ exports.testSpikeArrest = function(config, Spi) {
       it('should succeed when no spikes', function(done) {
         ps.apply({ key: 'x' }, function(err, reply) {
           should.not.exist(err);
-          reply.allowed.should.equal(1);
+          reply.allowed.should.equal(6000);
           reply.used.should.equal(1);
           reply.isAllowed.should.be.true;
           reply.expiryTime.should.be.approximately(10, 2);
@@ -187,14 +186,14 @@ exports.testSpikeArrest = function(config, Spi) {
       it('should smooth a spike', function(done) {
         ps.apply({ key: 'y' }, function(err, reply) {
           should.not.exist(err);
-          reply.allowed.should.equal(1);
+          reply.allowed.should.equal(6000);
           reply.used.should.equal(1);
           reply.isAllowed.should.be.true;
           reply.expiryTime.should.be.approximately(10, 2);
 
           ps.apply({ key: 'y' }, function(err, reply) {
             should.not.exist(err);
-            reply.allowed.should.equal(1);
+            reply.allowed.should.equal(6000);
             reply.used.should.equal(1);
             reply.isAllowed.should.be.true;
             reply.expiryTime.should.be.approximately(10, 2);
@@ -203,7 +202,7 @@ exports.testSpikeArrest = function(config, Spi) {
 
               ps.apply({ key: 'y' }, function(err, reply) {
                 should.not.exist(err);
-                reply.allowed.should.equal(1);
+                reply.allowed.should.equal(6000);
                 reply.used.should.equal(1);
                 reply.isAllowed.should.be.true;
                 reply.expiryTime.should.be.approximately(10, 2);
@@ -221,8 +220,8 @@ exports.testSpikeArrest = function(config, Spi) {
         }
         ps.apply({ key: 'z' }, function(err, reply) {
           should.not.exist(err);
-          reply.allowed.should.equal(1);
-          reply.used.should.equal(2);
+          reply.allowed.should.equal(6000);
+          reply.used.should.equal(5);
           reply.isAllowed.should.be.false;
           done();
         });

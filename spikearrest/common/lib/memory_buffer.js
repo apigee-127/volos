@@ -51,13 +51,16 @@ MemoryBuffer.prototype.apply = function(options, cb) {
   var now = Date.now();
 
   var bucket = this.keys[options.key];
-  if (!bucket) { bucket = { buffer: [] }; this.keys[options.key] = bucket; }
+  if (!bucket) {
+    bucket = { buffer: [] };
+    this.keys[options.key] = bucket;
+  }
   debug('applying: %j to bucket: %j', options, bucket);
 
   if (bucket.buffer.length >= this.options.bufferSize) { // just fail
     var result = {
-      allowed: 1,
-      used: 2, // todo: hmmm...
+      allowed: options.allow || this.options.allow,
+      used: bucket.buffer.length,
       isAllowed: false,
       expiryTime: (now - bucket.nextWindow) + (options.timeInterval * this.buffer.length) // kinda
     };

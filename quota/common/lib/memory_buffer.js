@@ -95,7 +95,7 @@ MemoryBuffer.prototype.flushBuffer = function() {
  * issues. This job runs once per time interval (minute, hour, day, or week) and removes expired tokens.
  */
 function trimTokens(self) {
-  var now = new Date().getTime();
+  var now = _.now();
   for (var b in Object.keys(self.buckets)) {
     if (now > b.expires) {
       delete self.buckets.b;
@@ -132,8 +132,17 @@ Bucket.prototype.calculateExpiration = function() {
     this.expires = time + timeInterval - remaining;
 
   } else {
-    // Default quota type -- start counting from now
-    this.expires = time + timeInterval;
+
+    if ('month' === this.options.timeUnit) {
+
+      var date = new Date(time);
+      return new Date(date.getFullYear(), date.getMonth() + 1, 1) - 1 + this.owner.clockOffset; // last ms of this month
+
+    } else {
+
+      // Default quota type -- start counting from now
+      this.expires = time + timeInterval;
+    }
   }
 };
 

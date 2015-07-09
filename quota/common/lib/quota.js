@@ -26,18 +26,19 @@
 var util = require('util');
 var _ = require('underscore');
 
-var TimeUnits = [ 'hour', 'minute', 'day', 'week' ];
+var TimeUnits = [ 'hour', 'minute', 'day', 'week', 'month' ];
 
 var MINUTE = 60000;
 var HOUR = MINUTE * 60;
 var DAY = HOUR * 24;
 var WEEK = DAY * 7;
+var MONTH = DAY * 31;
 
 // options.startTime (Date, Number, or String date) default = now
 //    If set, quota starts at the start time, modulated by what time it is now
 // options.rollingWindow (boolean) default = false
 //    If set, then quota is rolled over the last period, not reset periodically
-// options.timeUnit ("hours", "minutes", or "days") default = minutes
+// options.timeUnit ("hour", "minute", or "day") default = minute
 // options.interval (Number) default = 1
 // options.allow (Number) default = 1
 // options.consistency (string) A hint to some SPIs about how to distribute quota around
@@ -64,10 +65,14 @@ function Quota(Spi, o) {
     options.timeInterval = DAY;
   } else if ('week' === options.timeUnit) {
     options.timeInterval = WEEK;
+  } else if ('month' === options.timeUnit) {
+    options.timeInterval = MONTH;
   }
 
   if (options.startTime) {
-    var time;
+    if (options.timeInterval === MONTH) {
+      throw new Error('start time not allowed for month time units');
+    }
     if (typeof options.startTime === 'string') {
       options.startTime = new Date(options.startTime).getTime();
     } else if (options.startTime instanceof Date) {
@@ -86,8 +91,7 @@ function Quota(Spi, o) {
   var spi = new Spi(options);
   if (options.bufferSize > 0) {
     var Buffer = require('./memory_buffer');
-    var buffer = Buffer.create(spi, options);
-    this.quota = buffer;
+    this.quota = Buffer.create(spi, options);
   } else {
     this.quota = spi;
   }
