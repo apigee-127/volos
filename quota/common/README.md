@@ -12,11 +12,13 @@ to make only 100 API calls per hour, while others might have a much higher limit
 
 This module may be used to do that. Using it, you create a "quota," and each quota has the following attributes:
 
-* timeUnit: How often the quota resets -- may be "minute", "hour", "day", or "week"
+* timeUnit: How often the quota resets -- may be "minute", "hour", "day", "week", or "month"
 * interval: Works with the timeUnit to determine how often the quota resets. For instance, every 5 days or 2 weeks.
 * startTime: A time at which the quota calculations should begin. For instance, if there is no start time then a
 quota set to reset in "one day" will reset 24 hours after the first message is receiver, but if the start time
-is set to the top of the hour on some day, then the quota will always reset at the top of the hour.
+is set to the top of the hour on some day, then the quota will always reset at the top of the hour. Start time
+is not allowed for "month" timeUnit as it always uses Gregorian month boundaries.
+* allow: How many requests to allow.
 
 Once a quota has been created, you "apply" the quota, which involves setting some additional attributes:
 

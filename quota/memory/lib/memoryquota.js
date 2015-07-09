@@ -92,9 +92,6 @@ MemoryQuotaSpi.prototype.apply = function(options, cb) {
 
 MemoryQuotaSpi.prototype.calculateExpiration = function(now) {
   assert.equal(typeof now, 'number');
-  var bucket = {
-    count: 0
-  };
 
   if (this.options.startTime) {
     // "calendar" start quota -- calculate time until the end of the bucket
@@ -102,8 +99,17 @@ MemoryQuotaSpi.prototype.calculateExpiration = function(now) {
     return now + this.options.timeInterval - remaining;
 
   } else {
-    // Default quota type -- start counting from now
-    return now + this.options.timeInterval;
+
+    if ('month' === this.options.timeUnit) {
+
+      var date = new Date(now);
+      return new Date(date.getFullYear(), date.getMonth() + 1, 1) - 1; // last ms of this month
+
+    } else {
+
+      // Default quota type -- start counting from now
+      return now + this.options.timeInterval;
+    }
   }
 };
 
@@ -113,7 +119,7 @@ MemoryQuotaSpi.prototype.calculateExpiration = function(now) {
  * issues. This job runs once per time interval (minute, hour, day, or week) and removes expired tokens.
  */
 function trimTokens(self) {
-  var now = new Date().getTime();
+  var now = Date.now();
   for (var b in Object.keys(self.buckets)) {
     if (now > b.expires) {
       delete self.buckets.b;

@@ -34,7 +34,7 @@ describe('Apigee', function() {
 
   var implementationName;
 
-  this.timeout(120000);
+  this.timeout(5000);
 
   function id(_id) {
     return 'test:' + random + ":" + _id;
@@ -72,6 +72,7 @@ describe('Apigee', function() {
     // Verify that quota is reset within the expiration time,
     // plus a fudge factor for distributed quota sync
     it('Minute', function(done) {
+      this.timeout(120000);
       var hit = { identifier: id('TimeOne'), weight: 1 };
       pm.apply(hit, function(err, result) {
         assert(!err);
@@ -154,6 +155,7 @@ describe('Apigee', function() {
   });
 
   describe('Calendar', function() {
+
     // For each of these, verify that the parameters work and that we can
     // calculate the right expiration time. Do not wait for expiration
     // as we can't seem to get consistent results there yet.
@@ -162,7 +164,6 @@ describe('Apigee', function() {
         console.log('Skipping calendar tests because old implementation doesn\'t support them');
         done();
       }
-      this.timeout(2000);
       var startTime = Date.now() - 59000; // start almost a minute ago
       var options = extend(config, {
         timeUnit: 'minute',
@@ -185,7 +186,6 @@ describe('Apigee', function() {
       if (implementationName === 'OldRemote') {
         done();
       }
-      this.timeout(2000);
       var startTime = Date.now() - (60000 * 60 - 1000); // start almost an hour ago
       var options = extend(config, {
         timeUnit: 'hour',
@@ -208,7 +208,6 @@ describe('Apigee', function() {
       if (implementationName === 'OldRemote') {
         done();
       }
-      this.timeout(2000);
       var startTime = Date.now() - (60000 * 60 * 24 - 1000); // start almost a day ago
       var options = extend(config, {
         timeUnit: 'day',
@@ -231,7 +230,6 @@ describe('Apigee', function() {
       if (implementationName === 'OldRemote') {
         done();
       }
-      this.timeout(2000);
       var startTime = Date.now() - (60000 * 60 * 24 * 7 - 1000); // start almost a week ago
       var options = extend(config, {
         timeUnit: 'week',

@@ -188,5 +188,33 @@ describe('Quota', function() {
 
       q.destroy();
     });
+
+    it('Month calendar', function() {
+      var options = extend(config, {
+        timeUnit: 'month'
+      });
+      var q = Spi.create(options).quota;
+
+      var now = new Date('March 1, 2013 12:00:00');
+      var end = new Date('March 31, 2013 23:59:59.9999');
+      var expires = new Date(q.calculateExpiration(now.getTime()));
+      assert.deepEqual(end, expires);
+
+      now = new Date('March 31, 2013 23:59:59');
+      expires = new Date(q.calculateExpiration(now.getTime()));
+      assert.deepEqual(end, expires);
+
+      now = new Date('Feb 1, 2013 12:00:00');
+      end = new Date('Feb 28, 2013 23:59:59.9999');
+      expires = new Date(q.calculateExpiration(now.getTime()));
+      assert.deepEqual(end, expires);
+
+      now = new Date('Feb 1, 2012 12:00:00');
+      end = new Date('Feb 29, 2012 23:59:59.9999');
+      expires = new Date(q.calculateExpiration(now.getTime()));
+      assert.deepEqual(end, expires);
+
+      q.destroy();
+    });
   });
 });

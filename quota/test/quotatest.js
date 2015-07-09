@@ -247,7 +247,6 @@ exports.testQuota = function(config, Spi) {
       describe('Calendar', function() {
 
         it('Minute', function(done) {
-          this.timeout(2000);
           var startTime = Date.now() - 59750; // start almost a minute ago
           var options = extend(config, {
             timeUnit: 'minute',
@@ -256,31 +255,10 @@ exports.testQuota = function(config, Spi) {
             startTime: startTime
           });
           var pm = Spi.create(options);
-
-          var hit = { identifier: id('TimeTwo'), weight: 1 };
-          pm.apply(hit, function(err, result) {
-            assert(!err);
-            checkResult(result, 1, 1, true);
-            result.expiryTime.should.be.approximately(250, 20);
-
-            setTimeout(function() {
-              pm.apply(hit, function(err, result) {
-                assert(!err);
-                checkResult(result, 1, 1, true);
-
-                pm.apply(hit, function(err, result) {
-                  assert(!err);
-                  checkResult(result, 1, 2, false);
-
-                  done();
-                });
-              });
-            }, 251);
-          });
+          testBeforeAndAfter(id('cal_minute'), pm, done);
         });
 
         it('Hour', function(done) {
-          this.timeout(2000);
           var startTime = Date.now() - (60000 * 60 - 250); // start almost an hour ago
           var options = extend(config, {
             timeUnit: 'hour',
@@ -289,30 +267,10 @@ exports.testQuota = function(config, Spi) {
             startTime: startTime
           });
           var pm = Spi.create(options);
-
-          var hit = { identifier: id('TimeThree'), weight: 1 };
-          pm.apply(hit, function(err, result) {
-            assert(!err);
-            checkResult(result, 1, 1, true);
-
-            setTimeout(function() {
-              pm.apply(hit, function(err, result) {
-                assert(!err);
-                checkResult(result, 1, 1, true);
-
-                pm.apply(hit, function(err, result) {
-                  assert(!err);
-                  checkResult(result, 1, 2, false);
-
-                  done();
-                });
-              });
-            }, 251);
-          });
+          testBeforeAndAfter(id('cal_hour'), pm, done);
         });
 
         it('Day', function(done) {
-          this.timeout(2000);
           var startTime = Date.now() - (60000 * 60 * 24 - 250); // start almost a day ago
           var options = extend(config, {
             timeUnit: 'day',
@@ -321,30 +279,10 @@ exports.testQuota = function(config, Spi) {
             startTime: startTime
           });
           var pm = Spi.create(options);
-
-          var hit = { identifier: id('TimeFour'), weight: 1 };
-          pm.apply(hit, function(err, result) {
-            assert(!err);
-            checkResult(result, 1, 1, true);
-
-            setTimeout(function() {
-              pm.apply(hit, function(err, result) {
-                assert(!err);
-                checkResult(result, 1, 1, true);
-
-                pm.apply(hit, function(err, result) {
-                  assert(!err);
-                  checkResult(result, 1, 2, false);
-
-                  done();
-                });
-              });
-            }, 251);
-          });
+          testBeforeAndAfter(id('cal_day'), pm, done);
         });
 
         it('Week', function(done) {
-          this.timeout(2000);
           var startTime = Date.now() - (60000 * 60 * 24 * 7 - 250); // start almost a week ago
           var options = extend(config, {
             timeUnit: 'week',
@@ -353,8 +291,28 @@ exports.testQuota = function(config, Spi) {
             startTime: startTime
           });
           var pm = Spi.create(options);
+          testBeforeAndAfter(id('cal_week'), pm, done);
+        });
 
-          var hit = { identifier: id('TimeFive'), weight: 1 };
+        it('Month', function(done) {
+          var date = new Date();
+          var startTime = new Date(date.getFullYear(), date.getMonth() + 1, 1) - 1; // start near end of this month
+          var options = extend(config, {
+            timeUnit: 'month',
+            interval: 1,
+            allow: 1,
+            startTime: startTime
+          });
+          (function() { Spi.create(options); }).should.throw();
+          delete(options.startTime);
+          var pm = Spi.create(options);
+          //testBeforeAndAfter(id('cal_month'), pm, done);
+          done(); //todo:  I don't have a good way to actually test this right now
+        });
+
+        function testBeforeAndAfter(id, pm, cb) {
+
+          var hit = { identifier: id, weight: 1 };
           pm.apply(hit, function(err, result) {
             assert(!err);
             checkResult(result, 1, 1, true);
@@ -368,12 +326,12 @@ exports.testQuota = function(config, Spi) {
                   assert(!err);
                   checkResult(result, 1, 2, false);
 
-                  done();
+                  cb();
                 });
               });
             }, 251);
           });
-        });
+        }
 
       });
     });
