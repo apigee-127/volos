@@ -20,6 +20,9 @@ is set to the top of the hour on some day, then the quota will always reset at t
 is not allowed for "month" timeUnit as it always uses Gregorian month boundaries.
 * allow: How many requests to allow.
 
+* bufferSize (Number) optional, use a memory buffer up to bufferSize to hold quota elements before flushing
+* bufferTimeout (Number) optional, flush the buffer every Number ms (default: 5000ms for minute, 60000ms for others)
+
 Once a quota has been created, you "apply" the quota, which involves setting some additional attributes:
 
 * weight: How much to add to the quota -- the default is 1, but in some advanced cases, API providers will

@@ -38,12 +38,13 @@ var MONTH = DAY * 31;
 //    If set, quota starts at the start time, modulated by what time it is now
 // options.rollingWindow (boolean) default = false
 //    If set, then quota is rolled over the last period, not reset periodically
-// options.timeUnit ("hour", "minute", or "day") default = minute
+// options.timeUnit ("minute", "hour", "day", "month") default = minute
 // options.interval (Number) default = 1
 // options.allow (Number) default = 1
 // options.consistency (string) A hint to some SPIs about how to distribute quota around
 // options.bufferSize (Number) optional, use a memory buffer up to bufferSize to hold quota elements
-// options.bufferTimeout (Number) optional, flush the buffer every Number ms (default: 300)
+// options.bufferTimeout (Number) optional, flush the buffer every Number ms
+//    (default: 5000ms for minute, 60000ms for others)
 
 function Quota(Spi, o) {
   var options = _.extend({}, o) || {};
@@ -57,8 +58,13 @@ function Quota(Spi, o) {
     throw new Error(util.format('Invalid timeUnit %s', options.timeUnit));
   }
 
+  if (options.bufferSize) {
+    options.bufferTimeout = checkNumber(o.bufferTimeout, 'bufferTimeout');
+  }
+
   if ('minute' === options.timeUnit) {
     options.timeInterval = MINUTE;
+    if (options.bufferSize && !options.bufferTimeout) { options.bufferTimeout = 5000; }
   } else if ('hour' === options.timeUnit) {
     options.timeInterval = HOUR;
   } else if ('day' === options.timeUnit) {
@@ -68,6 +74,8 @@ function Quota(Spi, o) {
   } else if ('month' === options.timeUnit) {
     options.timeInterval = MONTH;
   }
+
+  if (options.bufferSize && !options.bufferTimeout) { options.bufferTimeout = MINUTE; }
 
   if (options.startTime) {
     if (options.timeInterval === MONTH) {
@@ -81,10 +89,6 @@ function Quota(Spi, o) {
     if (isNaN(options.startTime) || typeof options.startTime !== 'number') {
       throw new Error(util.format('Invalid start time %s', options.startTime));
     }
-  }
-
-  if (options.bufferSize > 0) {
-    options.bufferTimeout = checkNumber(o.bufferTimeout, 'bufferTimeout') || 300;
   }
 
   this.options = options;
