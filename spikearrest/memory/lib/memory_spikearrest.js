@@ -64,7 +64,7 @@ MemorySpikeArrestSpi.prototype.apply = function(options, cb) {
   }
 
   var result = {
-    allowed: 1,
+    allowed: options.allow || this.options.allow,
     used: bucket.used,
     isAllowed: allowed,
     expiryTime: bucket.windowExpires - now
