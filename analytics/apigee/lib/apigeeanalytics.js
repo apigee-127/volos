@@ -93,6 +93,7 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
     var uncompressed = JSON.stringify(recordsToBeUploaded);
     var self = this;
     zlib.gzip(uncompressed, function(err, compressed) {
+      if (err) { return cb(err); }
       self.send(compressed, sendResponse);
     });
   } else {
