@@ -54,7 +54,7 @@ function Quota(Spi, o) {
   options.rollingWindow = o.rollingWindow || false;
   options.bufferSize = checkNumber(o.bufferSize, 'bufferSize') || 0;
 
-  if (TimeUnits.indexOf(o.timeUnit) < 0) {
+  if (TimeUnits.indexOf(options.timeUnit) < 0) {
     throw new Error(util.format('Invalid timeUnit %s', options.timeUnit));
   }
 
