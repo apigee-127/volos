@@ -102,23 +102,41 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
 };
 
 ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
-  var record = {};
+
   var now = Date.now();
-  record['client_received_start_timestamp'] = now;
-  record['client_sent_end_timestamp'] = now + 1; // hack to avoid error in server calculations
-  record['recordType']   = 'APIAnalytics';
-  record['apiproxy']     = this.proxy;
-  record['request_uri']  = (req.protocol || 'http') + '://' + req.headers.host + req.url;
-  record['request_path'] = req.url.split('?')[0];
-  record['request_verb'] = req.method;
-  record['client_ip']    = req.connection.remoteAddress;
-  record['useragent']    = req.headers['user-agent'];
-  record['apiproxy_revision'] = this.proxy_revision;
+  var record = {
+    client_received_start_timestamp:  now,
+    client_sent_end_timestamp:        now + 1, // hack to avoid error in server calculations
+    recordType:                       'APIAnalytics',
+    apiproxy:                         this.proxy,
+    request_uri:                      (req.protocol || 'http') + '://' + req.headers.host + req.url,
+    request_path:                     req.url.split('?')[0],
+    request_verb:                     req.method,
+    client_ip:                        req.connection.remoteAddress,
+    useragent:                        req.headers['user-agent'],
+    apiproxy_revision:                this.proxy_revision
+  };
 
   var self = this;
-  onFinished(resp, function(err) {
-    record['response_status_code'] = resp.statusCode;
-    record['client_sent_end_timestamp'] = Date.now();
+  onFinished(resp, function() {
+    record.response_status_code      = resp.statusCode;
+    record.client_sent_end_timestamp = Date.now();
+
+    // oauth
+    var token = req.token;
+    if (token) {
+      record.developer_email = token.developer_email;
+      record.developer_app   = token.application_name;
+      record.access_token    = token.access_token;
+      record.client_id       = token.client_id;
+
+      var prodList = token.api_product_list;
+      if (prodList && prodList.length) {
+        if (typeof prodList === 'string') { prodList = prodList.slice(1, -1).split(','); }
+        // hack: analytics server only accepts a single product
+        record.api_product = prodList[0];
+      }
+    }
 
     self.finalizeRecord(req, resp, record, cb);
   });
