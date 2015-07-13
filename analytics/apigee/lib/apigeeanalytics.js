@@ -133,6 +133,9 @@ ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
   } else {
     req.set('x-DNA-Api-Key', this.key);
   }
+  if (this.compress) {
+    req.set('Content-Encoding', 'gzip');
+  }
 
   req
     .send(data)
