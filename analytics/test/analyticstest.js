@@ -160,7 +160,6 @@ exports.testAnalytics = function(config, Spi) {
         a.push(record);
         a.push(record);
         setTimeout(function() {
-          console.log(a.buffer.length);
           a.buffer.length.should.be.below(2);
           done();
         }, options.flushInterval + 10);
