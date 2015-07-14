@@ -107,7 +107,7 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   var now = Date.now();
   var record = {
     client_received_start_timestamp:  now,
-    client_sent_end_timestamp:        now + 1, // hack to avoid error in server calculations
+    client_received_end_timestamp:    now + 1, // hack to avoid error in server calculations    
     recordType:                       'APIAnalytics',
     apiproxy:                         this.proxy,
     request_uri:                      (req.protocol || 'http') + '://' + req.headers.host + req.url,
@@ -120,8 +120,10 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
 
   var self = this;
   onFinished(resp, function() {
+    var now = Date.now();
     record.response_status_code      = resp.statusCode;
-    record.client_sent_end_timestamp = Date.now();
+    record.client_sent_start_timestamp = now;
+    record.client_sent_end_timestamp = now+1;
 
     // oauth
     var token = req.token;
