@@ -198,6 +198,11 @@ function createResources() {
           helpers.getHelperFunction(serviceName + ' beforeCreateToken', serviceDefinition.options.beforeCreateToken);
       }
 
+      if (serviceDefinition.options.finalizeRecord) { // only exists on analytics
+        serviceDefinition.options.finalizeRecord =
+          helpers.getHelperFunction(serviceName + ' finalizeRecord', serviceDefinition.options.finalizeRecord);
+      }
+
       // fallback only exists on Apigee cache
       // this is used to defer creation in the case it references a fallback cache yet to be created
       if (serviceDefinition.options.fallback) {

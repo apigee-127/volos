@@ -553,7 +553,8 @@ function verifyMiddleware(server) {
 
         server.volos.resources['analytics'].spi.once('flush', function(records) {
           records.length.should.equal(1);
-          makeRecordCalled.should.ok;
+          makeRecordCalled.should.be.true;
+          should(records[0].finalized).be.true;
           done();
         });
 

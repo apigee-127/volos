@@ -5,7 +5,8 @@ module.exports = {
   cacheId: cacheId,
   passwordCheck: passwordCheck,
   spikeArrestId: spikeArrestId,
-  beforeCreateToken: beforeCreateToken
+  beforeCreateToken: beforeCreateToken,
+  finalizeRecord: finalizeRecord
 };
 
 function quotaId(req) {
@@ -28,4 +29,9 @@ function beforeCreateToken(parsedBody, options, next) {
   options.attributes = options.attributes || {};
   options.attributes['beforeCreateTokenCalled'] = true;
   next();
+}
+
+function finalizeRecord(req, res, record, cb) {
+  record.finalized = true;
+  cb(null, record);
 }

@@ -47,7 +47,10 @@ x-a127-services:
     options:
       bufferSize: 100,
       flushInterval: 5,
-      batchSize: 2
+      batchSize: 2,
+      finalizeRecord:
+        helper: helper
+        function: finalizeRecord
   oauth2:
     provider: volos-oauth-redis
     options:
