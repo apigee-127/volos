@@ -25,7 +25,7 @@
 
 var Analytics = require('volos-analytics-common');
 var onFinished = require('on-finished');
-var superagent = require('superagent');
+var request = require('request');
 
 var MICROGATEWAY = 'microgateway';
 var REMOTE_PROXY_PATH = '/v2/analytics/accept';
@@ -81,7 +81,7 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
   };
 
   function sendResponse(err, resp) {
-    if (err || resp.statusCode != 200) {
+    if (err || resp.statusCode !== 200) {
       cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
     } else {
       resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
@@ -147,18 +147,25 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
 
 ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
 
-  var req = superagent.post(this.uri);
+  var options = {
+    url: this.uri,
+    headers: {},
+    json: data
+  };
 
   if (this.microgateway) {
-    req.auth(this.key, this.secret);
+    options.auth = {
+      user: this.key,
+      pass: this.secret,
+      sendImmediately: false
+    }
   } else {
-    req.set('x-DNA-Api-Key', this.key);
-  }
-  if (this.compress) {
-    req.set('Content-Encoding', 'gzip');
+    options.headers['x-DNA-Api-Key'] = this.key;
   }
 
-  req
-    .send(data)
-    .end(cb);
+  if (this.compress) {
+    options.headers['Content-Encoding'] = 'gzip';
+  }
+
+  request.post(options, cb);
 };

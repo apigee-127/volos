@@ -10,9 +10,9 @@
     "apigee"
   ],
   "dependencies": {
-    "on-finished": "~2.2.1",
     "debug": "1.0.x",
-    "superagent": "0.x.x",
+    "on-finished": "~2.2.1",
+    "request": "^2.6.0",
     "volos-analytics-common": "0.2.x"
   },
   "devDependencies": {},
