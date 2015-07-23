@@ -12,8 +12,8 @@
   "dependencies": {
     "apigee-access": ">=1.2.x",
     "debug": "1.0.x",
+    "request": "^2.6.0",
     "semver": "3.x.x",
-    "superagent": "0.x.x",
     "volos-quota-common": "0.11.x"
   },
   "devDependencies": {},

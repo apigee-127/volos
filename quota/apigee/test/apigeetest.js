@@ -30,27 +30,28 @@ var random = Math.random();
 var _ = require('underscore');
 var should = require('should');
 
+// clone & extend hash
+function extend(a, b) {
+  return _.extend({}, a, b);
+}
+
+function id(_id) {
+  return 'test:' + random + ":" + _id;
+}
+
+function checkResult(result, allowed, used, isAllowed) {
+  assert(result);
+  assert.equal(result.allowed, allowed);
+  assert.equal(result.used, used);
+  assert.equal(result.isAllowed, isAllowed);
+}
+
 describe('Apigee', function() {
 
   var implementationName;
 
   this.timeout(5000);
 
-  function id(_id) {
-    return 'test:' + random + ":" + _id;
-  }
-
-  function checkResult(result, allowed, used, isAllowed) {
-    assert(result);
-    assert.equal(result.allowed, allowed);
-    assert.equal(result.used, used);
-    assert.equal(result.isAllowed, isAllowed);
-  }
-
-// clone & extend hash
-  function extend(a, b) {
-    return _.extend({}, a, b);
-  }
   var pm;
 
   before(function(done) {
@@ -162,7 +163,7 @@ describe('Apigee', function() {
     it('Minute', function(done) {
       if (implementationName === 'OldRemote') {
         console.log('Skipping calendar tests because old implementation doesn\'t support them');
-        done();
+        return done();
       }
       var startTime = Date.now() - 59000; // start almost a minute ago
       var options = extend(config, {
@@ -184,7 +185,7 @@ describe('Apigee', function() {
 
     it('Hour', function(done) {
       if (implementationName === 'OldRemote') {
-        done();
+        return done();
       }
       var startTime = Date.now() - (60000 * 60 - 1000); // start almost an hour ago
       var options = extend(config, {
@@ -206,7 +207,7 @@ describe('Apigee', function() {
 
     it('Day', function(done) {
       if (implementationName === 'OldRemote') {
-        done();
+        return done();
       }
       var startTime = Date.now() - (60000 * 60 * 24 - 1000); // start almost a day ago
       var options = extend(config, {
@@ -228,7 +229,7 @@ describe('Apigee', function() {
 
     it('Week', function(done) {
       if (implementationName === 'OldRemote') {
-        done();
+        return done();
       }
       var startTime = Date.now() - (60000 * 60 * 24 * 7 - 1000); // start almost a week ago
       var options = extend(config, {
@@ -247,5 +248,62 @@ describe('Apigee', function() {
         done();
       });
     });
- });
+  });
+
+  describe('via proxy', function() {
+
+    var http = require('http');
+    var Proxy = require('proxy');
+
+    var implementationName;
+    var pm;
+    var proxy;
+    var proxyCalled;
+
+    before(function(done) {
+
+      var server = http.createServer();
+      server.authenticate = function(req, cb) {
+        proxyCalled = true;
+        cb(null, true);
+      };
+
+      proxy = Proxy(server);
+      proxy.listen(0, function() {
+        var options = extend(config, {
+          timeUnit: 'minute',
+          interval: 1,
+          allow: 2
+        });
+        pm = Spi.create(options);
+
+        process.env.https_proxy = 'http://localhost:' + proxy.address().port;
+
+        pm.quota.getImplementationName(function(err, implName) {
+          implementationName = implName;
+          done(err);
+        });
+      });
+    });
+
+    after(function() {
+      delete process.env.https_proxy;
+      proxy.close();
+    });
+
+    it('works', function(done) {
+      if (implementationName === 'OldRemote') {
+        return done();
+      }
+      pm.apply({
+        identifier: id('Proxy'),
+        weight: 1
+      }, function(err, result) {
+        assert(!err);
+        checkResult(result, 2, 1, true);
+        assert(proxyCalled);
+        done();
+      });
+    });
+  });
 });

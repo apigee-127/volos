@@ -36,7 +36,7 @@ var https = require('https');
 var Quota = require('volos-quota-common');
 var querystring = require('querystring');
 var semver = require('semver');
-var superagent = require('superagent');
+var request = require('request');
 var util = require('util');
 var url = require('url');
 
@@ -127,39 +127,41 @@ function selectImplementation(self, cb) {
     return;
   }
 
-  var impl;
   if (self.apigeeQuota) {
     self.quotaImpl = new ApigeeAccessQuota(self);
     cb(undefined, self.quotaImpl);
 
   } else {
-    superagent
-      .get(self.options.uri + '/v2/version')
-      .set('x-DNA-Api-Key', self.options.key)
-      .end(function(err, resp) {
-        if (err) {
-          debug('Error getting version: %s', err);
-          if (err.code === 'ENOTFOUND') {
-            err.message = 'Apigee Remote Proxy not found at: ' + self.uri + '. Check your configuration.';
-          }
-          cb(err);
-        } else {
-          if (resp.notFound || (resp.ok && !semver.satisfies(resp.text, '>=1.1.0'))) {
-            if (self.options.startTime) {
-              cb(new Error('Quotas with a fixed starting time are not supported'));
-            } else {
-              self.quotaImpl = new ApigeeOldRemoteQuota(self);
-              cb(undefined, self.quotaImpl);
-            }
-          } else if (resp.ok) {
-            self.quotaImpl = new ApigeeRemoteQuota(self);
-            cb(undefined, self.quotaImpl);
-          } else if (resp.unauthorized) {
-            cb(new Error('Not authorized to call the remote proxy. Check the "key" parameter.'));
-          } else {
-            cb(new Error(util.format('HTTP error getting proxy version: %d. Check the "uri" parameter.', resp.statusCode)));
-          }
+    var options = {
+      url: self.options.uri + '/v2/version',
+      headers: { 'x-DNA-Api-Key': self.options.key },
+      json: true
+    };
+    request.get(options, function(err, resp, body) {
+      if (err) {
+        debug('Error getting version: %s', err);
+        if (err.code === 'ENOTFOUND') {
+          err.message = 'Apigee Remote Proxy not found at: ' + self.uri + '. Check your configuration.';
         }
+        return cb(err);
+      }
+
+      var ok = resp.statusCode / 100 === 2;
+      if (resp.statusCode === 404 || (ok && !semver.satisfies(body, '>=1.1.0'))) {
+        if (self.options.startTime) {
+          cb(new Error('Quotas with a fixed starting time are not supported'));
+        } else {
+          self.quotaImpl = new ApigeeOldRemoteQuota(self);
+          cb(undefined, self.quotaImpl);
+        }
+      } else if (ok) {
+        self.quotaImpl = new ApigeeRemoteQuota(self);
+        cb(undefined, self.quotaImpl);
+      } else if (resp.statusCode === 401) {
+        cb(new Error('Not authorized to call the remote proxy. Check the "key" parameter.'));
+      } else {
+        cb(new Error(util.format('HTTP error getting proxy version: %d. Check the "uri" parameter.', resp.statusCode)));
+      }
     });
   }
 }
@@ -226,23 +228,24 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
   var r = makeNewQuotaRequest(this.quota, opts, allow);
 
   debug('Remote quota request: %j', r);
-  superagent
-    .post(this.quota.options.uri + '/v2/quotas/apply')
-    .set('x-DNA-Api-Key', this.quota.options.key)
-    .send(r)
-    .end(function(err, resp) {
-      if (err) {
-        cb(err);
-      } else if (resp.ok) {
-        // result from apigee is almost what the module expects
-        var result = resp.body;
-        result.expiryTime = result.expiryTime - result.timestamp;
-        cb(undefined, resp.body);
-      } else {
-        cb(new Error(util.format('Error updating remote quota: %d %s',
-           resp.statusCode, resp.text)));
-      }
-    });
+  var options = {
+    url: this.quota.options.uri + '/v2/quotas/apply',
+    headers: {
+      'x-DNA-Api-Key': this.quota.options.key
+    },
+    json: r
+  };
+  request.post(options, function(err, resp, body) {
+    if (err) { return cb(err); }
+
+    if (resp.statusCode / 100 === 2) { // 2xx
+      // result from apigee is not quite what the module expects
+      body.expiryTime = body.expiryTime - body.timestamp;
+      cb(undefined, body);
+    } else {
+      cb(new Error(util.format('Error updating remote quota: %d %s', resp.statusCode, body)));
+    }
+  });
 };
 
 function ApigeeOldRemoteQuota(quota) {
@@ -266,26 +269,27 @@ ApigeeOldRemoteQuota.prototype.apply = function(opts, cb) {
   };
 
   debug('Old remote quota request: %j', r);
-  superagent
-    .post(this.quota.options.uri + '/quotas/distributed')
-    .set('x-DNA-Api-Key', this.quota.options.key)
-    .type('form')
-    .send(r)
-    .end(function(err, resp) {
-      if (err) {
-        cb(err);
-      } else if (resp.ok) {
-        debug('result: %s', resp.text);
-        var result = {
-          allowed: resp.body.allowed,
-          used: resp.body.used,
-          isAllowed: !resp.body.failed,
-          expiryTime: resp.body.expiry_time - resp.body.ts
-        };
-        cb(undefined, result);
-      } else {
-        cb(new Error(util.format('Error updating remote quota: %d %s',
-           resp.statusCode, resp.text)));
-      }
-    });
+  var options = {
+    url: this.quota.options.uri + '/quotas/distributed',
+    headers: {
+      'x-DNA-Api-Key': this.quota.options.key
+    },
+    form: r
+  };
+  request.post(options, function(err, resp, body) {
+    if (err) { return cb(err); }
+
+    if (resp.statusCode / 100 === 2) { // 2xx
+      debug('result: %s', resp.text);
+      var result = {
+        allowed: body.allowed,
+        used: body.used,
+        isAllowed: !body.failed,
+        expiryTime: body.expiry_time - body.ts
+      };
+      cb(undefined, result);
+    } else {
+      cb(new Error(util.format('Error updating remote quota: %d %s', resp.statusCode, body)));
+    }
+  });
 };
