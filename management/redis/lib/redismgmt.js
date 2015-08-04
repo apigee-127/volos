@@ -416,23 +416,34 @@ function deleteDeveloper(self, developer, cb) {
 function saveApplication(self, application, developer, cb) {
   var client = self.client;
   var multi = client.multi();
+  var oldAppName = undefined;
 
-  // application_id -> application
-  var storedApp = _.extend({}, application);
-  storedApp.credentials = encrypt(self, application.credentials);
-  multi.set(_key(application.uuid), JSON.stringify(storedApp));
+  client.get(_key(application.uuid), function(err, reply) {
+    if (err) { return cb(err); }
+    if (reply) {
+      oldAppName = JSON.parse(reply).name;
+    }
 
-  // developer_email:application_name -> application_id
-  multi.set(_key(developer.email, application.name), application.id);
+    // application_id -> application
+    var storedApp = _.extend({}, application);
+    storedApp.credentials = encrypt(self, application.credentials);
+    multi.set(_key(application.uuid), JSON.stringify(storedApp));
 
-  // credentials[i].key -> application_id
-  // credentials[i].key:credentials[i].secret -> application_id
-  for (var i = 0; i < application.credentials.length; i++) {
-    multi.set(_key(application.credentials[i].key), application.id);
-    multi.set(_key(application.credentials[i].key, hashToken(self, application.credentials[i].secret)), application.id);
-  }
+    // developer_email:application_name -> application_id
+    if (oldAppName) {
+      multi.del(_key(developer.email, oldAppName));
+    }
+    multi.set(_key(developer.email, application.name), application.id);
 
-  multi.exec(cb);
+    // credentials[i].key -> application_id
+    // credentials[i].key:credentials[i].secret -> application_id
+    for (var i = 0; i < application.credentials.length; i++) {
+      multi.set(_key(application.credentials[i].key), application.id);
+      multi.set(_key(application.credentials[i].key, hashToken(self, application.credentials[i].secret)), application.id);
+    }
+
+    multi.exec(cb);
+  });
 }
 
 // must match saveApplication for deleting created keys
