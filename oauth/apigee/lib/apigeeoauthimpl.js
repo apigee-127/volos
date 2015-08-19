@@ -36,11 +36,9 @@ var qs = require('querystring');
 var http = require('http');
 var https = require('https');
 var querystring = require('querystring');
-var OAuthCommon = require('volos-oauth-common');
 var apigee = require('apigee-access');
 var debug = require('debug')('apigee');
-var semver = require('semver');
-var superagent = require('superagent');
+var request = require('request');
 var util = require('util');
 var _ = require('underscore');
 
@@ -57,6 +55,7 @@ var OAuthImpl = function(spi, hasApigeeAccess) {
     this.uri = spi.uri;
     this.key = spi.key;
   }
+  this.request = (this.options && this.options.request) ? request.defaults(this.options.request) : request;
 };
 module.exports.OAuthImpl = OAuthImpl;
 
@@ -159,25 +158,24 @@ OAuthImpl.prototype.generateAuthorizationCode = function(options, cb) {
       }
     });
   } else {
-    superagent.agent().
-      post(self.uri + '/v2/oauth/generateAuthorizationCode').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(r).
-      end(function(err, resp) {
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/generateAuthorizationCode',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: r
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) { return cb(err); }
+      debug('generate result: %j', resp.body);
+      checkResultError(resp.body, function(err, response) {
         if (err) {
           cb(err);
         } else {
-          debug('generate result: %j', resp.body);
-          checkResultError(resp.body, function(err, response) {
-            if (err) {
-              cb(err);
-            } else {
-              cb(undefined, makeLocationHeader(r.redirectUri, response));
-            }
-          });
+          cb(undefined, makeLocationHeader(r.redirectUri, response));
         }
       });
+    });
   }
 };
 
@@ -226,24 +224,24 @@ OAuthImpl.prototype.createTokenImplicitGrant = function(options, cb) {
     }
     });
   } else {
-    superagent.agent().
-      post(self.uri + '/v2/oauth/generateAccessToken').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(r).
-      end(function(err, resp) {
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/generateAccessToken',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: r
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) { return cb(err); }
+      debug('generate result: %j', resp.body);
+      checkResultError(resp.body, function(err, response) {
         if (err) {
           cb(err);
         } else {
-          checkResultError(resp.body, function(err, response) {
-            if (err) {
-              cb(err);
-            } else {
-              cb(undefined, makeImplicitLocationHeader(r.redirectUri, response));
-            }
-          });
+          cb(undefined, makeImplicitLocationHeader(r.redirectUri, response));
         }
       });
+    });
   }
 };
 
@@ -313,12 +311,17 @@ OAuthImpl.prototype.invalidateToken = function(options, cb) {
       }
     });
   } else {
-    superagent.agent().
-      post(self.uri + '/v2/oauth/revokeToken').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(r).
-      end(function(err, resp) {
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/revokeToken',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: r
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) { return cb(err); }
+      debug('generate result: %j', resp.body);
+      checkResultError(resp.body, function(err, response) {
         if (err) {
           debug('invalidate error: %s', err);
           cb(err);
@@ -327,6 +330,7 @@ OAuthImpl.prototype.invalidateToken = function(options, cb) {
           checkResultError(resp.body, cb);
         }
       });
+    });
   }
 };
 
@@ -362,34 +366,36 @@ OAuthImpl.prototype.verifyToken = function(token, requiredScopes, cb) {
       }
     });
   } else {
-    superagent.agent().
-      post(self.uri + '/v2/oauth/verifyAccessToken').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(r).
-      end(function(err, resp) {
-        if (err) {
-          debug('Verify error: %s', err);
-          // Need to fix the error code because Apigee doesn't set it right
-          err.errorCode = 'invalid_token';
-          cb(err);
-        } else {
-          debug('Verify response: %j', resp.body);
-          checkResultError(resp.body, function(err, result) {
-            if (err) {
-              err.errorCode = 'invalid_token';
-            }
-            cb(err, result);
-          });
-        }
-      });
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/verifyAccessToken',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: r
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) {
+        debug('Verify error: %s', err);
+        // Need to fix the error code because Apigee doesn't set it right
+        err.errorCode = 'invalid_token';
+        cb(err);
+      } else {
+        debug('Verify response: %j', resp.body);
+        checkResultError(resp.body, function(err, result) {
+          if (err) {
+            err.errorCode = 'invalid_token';
+          }
+          cb(err, result);
+        });
+      }
+    });
   }
 };
 
 /*
  * Validate an access token.
  */
-OAuthImpl.prototype.verifyApiKey = function(apiKey, request, cb) {
+OAuthImpl.prototype.verifyApiKey = function(apiKey, req, cb) {
   var r = {
     apiKey: apiKey
   };
@@ -407,28 +413,28 @@ OAuthImpl.prototype.verifyApiKey = function(apiKey, request, cb) {
       }
     });
   } else {
-    superagent.agent().
-      post(self.uri + '/v2/oauth/verifyApiKey').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(r).
-      end(function(err, resp) {
-        if (err) {
-          cb(err);
-        } else {
-          debug('Verify response: %j', resp.body);
-          checkResultError(resp.body, function(err, result) {
-            cb(err, result);
-          });
-        }
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/verifyApiKey',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: r
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) { return cb(err); }
+      debug('Verify response: %j', resp.body);
+      checkResultError(resp.body, function(err, result) {
+        cb(err, result);
       });
+    });
   }
 };
 
-function createCredentials(self, request, options, cb) {
+
+function createCredentials(self, req, options, cb) {
   if (self.hasApigeeAccess) {
-    debug('Local generateAccessToken %s', request.grantType);
-    self.apigee.generateAccessToken(request, function(err, result) {
+    debug('Local generateAccessToken %s', req.grantType);
+    self.apigee.generateAccessToken(req, function(err, result) {
       if (err) {
         cb(err);
       } else {
@@ -436,21 +442,23 @@ function createCredentials(self, request, options, cb) {
       }
     });
   } else {
-    debug('Remote generateAccessToken %j', request);
-    superagent.agent().
-      post(self.uri + '/v2/oauth/generateAccessToken').
-      set('x-DNA-Api-Key', self.key).
-      type('json').
-      send(request).
-      end(function(err, resp) {
-        if (err) {
-          debug('createCredentials error: %s', err);
-          cb(err);
-        } else {
-          debug('Create credentials response: %j', resp.body);
-          checkResultError(resp.body, cb);
-        }
-      });
+    debug('Remote generateAccessToken %j', req);
+    var reqOpts = {
+      url: self.uri + '/v2/oauth/generateAccessToken',
+      headers: {
+        'x-DNA-Api-Key': self.key
+      },
+      json: req
+    };
+    self.request.post(reqOpts, function(err, resp, body) {
+      if (err) {
+        debug('createCredentials error: %s', err);
+        cb(err);
+      } else {
+        debug('Create credentials response: %j', resp.body);
+        checkResultError(resp.body, cb);
+      }
+    });
   }
 }
 
