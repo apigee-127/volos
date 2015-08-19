@@ -46,7 +46,7 @@ function checkResult(result, allowed, used, isAllowed) {
   assert.equal(result.isAllowed, isAllowed);
 }
 
-describe('Apigee', function() {
+describe('Apigee Quota', function() {
 
   var implementationName;
 
@@ -250,7 +250,7 @@ describe('Apigee', function() {
     });
   });
 
-  describe('via proxy', function() {
+  describe('via proxy using request options', function() {
 
     var http = require('http');
     var Proxy = require('proxy');
@@ -273,11 +273,12 @@ describe('Apigee', function() {
         var options = extend(config, {
           timeUnit: 'minute',
           interval: 1,
-          allow: 2
+          allow: 2,
+          request: {
+            proxy: 'http://localhost:' + proxy.address().port
+          }
         });
         pm = Spi.create(options);
-
-        process.env.https_proxy = 'http://localhost:' + proxy.address().port;
 
         pm.quota.getImplementationName(function(err, implName) {
           implementationName = implName;
@@ -287,7 +288,6 @@ describe('Apigee', function() {
     });
 
     after(function() {
-      delete process.env.https_proxy;
       proxy.close();
     });
 

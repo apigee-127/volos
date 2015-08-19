@@ -72,6 +72,7 @@ var ApigeeAnalyticsSpi = function(options) {
   } else {
     this.finalizeRecord = function(req, res, record, cb) { cb(undefined, record); }
   }
+  this.request = options.request ? request.defaults(options.request) : request;
 };
 
 ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
@@ -167,5 +168,5 @@ ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
     options.headers['Content-Encoding'] = 'gzip';
   }
 
-  request.post(options, cb);
+  this.request.post(options, cb);
 };

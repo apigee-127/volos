@@ -86,6 +86,7 @@ var ApigeeQuotaSpi = function(options) {
     this.uri = options.uri;
     this.key = options.key;
   }
+  this.request = options.request ? request.defaults(options.request) : request;
 };
 
 ApigeeQuotaSpi.prototype.getImplementationName = function(cb) {
@@ -137,7 +138,7 @@ function selectImplementation(self, cb) {
       headers: { 'x-DNA-Api-Key': self.options.key },
       json: true
     };
-    request.get(options, function(err, resp, body) {
+    self.request.get(options, function(err, resp, body) {
       if (err) {
         debug('Error getting version: %s', err);
         if (err.code === 'ENOTFOUND') {
@@ -235,7 +236,7 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
     },
     json: r
   };
-  request.post(options, function(err, resp, body) {
+  this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
 
     if (resp.statusCode / 100 === 2) { // 2xx
@@ -276,7 +277,7 @@ ApigeeOldRemoteQuota.prototype.apply = function(opts, cb) {
     },
     form: r
   };
-  request.post(options, function(err, resp, body) {
+  this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
 
     if (resp.statusCode / 100 === 2) { // 2xx
