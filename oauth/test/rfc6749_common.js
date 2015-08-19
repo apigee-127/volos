@@ -38,7 +38,7 @@ var client_secret;
 var REDIRECT_URL = 'http://example.org';
 var STATE = 'xyz';
 var DOGS_SCOPE = 'scope2';
-var TEST_TIMEOUT = 10000;
+var TEST_TIMEOUT = 20000;
 var LONG_TIMEOUT = 60000;
 
 exports.verifyOauth = function(config, server) {

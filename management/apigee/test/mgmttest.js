@@ -62,12 +62,14 @@ describe('Apigee', function() {
   });
 
   it('Delete API Product', function(done) {
-    mgmt.deleteApiProduct(API_PROD_NAME, function(err) {
-      if (err) { console.error('%j', err); }
-      should.not.exist(err);
+    setTimeout(function() { // give the create a little time to settle
+      mgmt.deleteApiProduct(API_PROD_NAME, function(err) {
+        if (err) { console.error('%j', err); }
+        should.not.exist(err);
 
-      done();
-    });
+        done();
+      });
+    }, 1000);
   });
 
   commonTest.testManagement(config);

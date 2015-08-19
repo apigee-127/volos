@@ -50,7 +50,7 @@ describe('Apigee', function() {
 
   var implementationName;
 
-  this.timeout(5000);
+  this.timeout(10000);
 
   var pm;
 
