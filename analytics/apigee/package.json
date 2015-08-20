@@ -1,6 +1,6 @@
 {
   "name": "volos-analytics-apigee",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "lib/apigeeanalytics.js",
   "license": "MIT",
   "description": "Apigee provider for Analytics in the Volos system.",
