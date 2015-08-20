@@ -157,8 +157,7 @@ ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
   if (this.microgateway) {
     options.auth = {
       user: this.key,
-      pass: this.secret,
-      sendImmediately: false
+      pass: this.secret
     }
   } else {
     options.headers['x-DNA-Api-Key'] = this.key;
