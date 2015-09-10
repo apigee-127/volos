@@ -30,6 +30,7 @@ var debug = require('debug')('swagger');
 var VOLOS_APPLY = 'x-volos-apply';
 var A127_APPLY = 'x-a127-apply';
 
+var resourcesMap;  // name -> volos resource
 var helpers = require('./helpers');
 
 module.exports = middleware;
@@ -44,28 +45,37 @@ function middleware(req, res, next) {
   if (!mwChain) {
     if (debug.enabled) { debug('creating volos chain for: ' + operation.operationId); }
 
+    var resources = req.volos ? req.volos.resources : null;
+    if (!resources) { // not already assigned by auth module
+      if (!resourcesMap) {
+        resourcesMap = helpers.createResources(req.swagger.swaggerObject);
+      }
+      resources = resourcesMap;
+    }
+
     var middlewares = [
-      createMiddlewareChain(operation[A127_APPLY], req),
-      createMiddlewareChain(req.swagger.path[A127_APPLY], req),
-      createMiddlewareChain(operation[VOLOS_APPLY], req),
-      createMiddlewareChain(req.swagger.path[VOLOS_APPLY], req)
+      createMiddlewareChain(operation[A127_APPLY], resources),
+      createMiddlewareChain(req.swagger.path[A127_APPLY], resources),
+      createMiddlewareChain(operation[VOLOS_APPLY], resources),
+      createMiddlewareChain(req.swagger.path[VOLOS_APPLY], resources)
     ].filter(function(ea) { return !!ea; });
 
     mwChain = helpers.chain(middlewares);
 
     if (!req.swagger.volos) { req.swagger.volos = {}; }
+    if (!operation.volos) { operation.volos = {}; }
     operation.volos.mwChain = mwChain;
   }
 
   mwChain(req, res, next);
 }
 
-function createMiddlewareChain(applications, req) {
+function createMiddlewareChain(applications, resources) {
   if (!applications) { return undefined; }
   var middlewares = [];
   _.each(applications, function(options, resourceName) {
     if (debug.enabled) { debug('chaining: ' + resourceName); }
-    var resource = req.volos.resources[resourceName];
+    var resource = resources[resourceName];
     if (!resource) { throw new Error('attempt to reference unknown resource: ' + resourceName); }
     var mwDef = resource.connectMiddleware();
     var mwFactory = mwDef.cache || mwDef.apply;  // quota is apply(), cache is cache()

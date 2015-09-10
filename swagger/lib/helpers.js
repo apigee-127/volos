@@ -27,11 +27,15 @@ var _ = require('underscore');
 var path = require('path');
 var debug = require('debug')('swagger');
 var helpersDir = 'api/helpers';
+var SERVICES = ['x-a127-services', 'x-volos-resources'];
+var OAUTH_PROP = 'x-volos-oauth-service';
+var oauthSwagger = require('../spec/oauth_operations.yaml');
 
 module.exports = {
   init: init,
   chain: chain,
-  getHelperFunction: getHelperFunction
+  getHelperFunction: getHelperFunction,
+  createResources: createResources
 };
 
 function init(config) {
@@ -71,4 +75,109 @@ function getHelperFunction(resourceName, options) {
   } else {
     throw new Error('illegal options for: ' + resourceName);
   }
+}
+
+function createResources(swagger) {
+
+  var services = {};
+
+  SERVICES.forEach(function(serviceDefNameTuple) {
+    _.each(swagger[serviceDefNameTuple], function(serviceDefinition, serviceName) {
+      var module = require(serviceDefinition.provider);
+
+      if (debug.enabled) {
+        debug('creating service: ' + serviceName);
+        debug('module: ' + serviceDefinition.provider);
+        debug('options: ' + JSON.stringify(serviceDefinition.options));
+      }
+
+      if (serviceDefinition.options.passwordCheck) { // only exists on oauth
+        serviceDefinition.options.passwordCheck =
+          getHelperFunction(serviceName + ' passwordCheck', serviceDefinition.options.passwordCheck);
+      }
+
+      if (serviceDefinition.options.beforeCreateToken) { // only exists on oauth
+        serviceDefinition.options.beforeCreateToken =
+          getHelperFunction(serviceName + ' beforeCreateToken', serviceDefinition.options.beforeCreateToken);
+      }
+
+      if (serviceDefinition.options.finalizeRecord) { // only exists on analytics
+        serviceDefinition.options.finalizeRecord =
+          getHelperFunction(serviceName + ' finalizeRecord', serviceDefinition.options.finalizeRecord);
+      }
+
+      // fallback only exists on Apigee cache
+      // this is used to defer creation in the case it references a fallback cache yet to be created
+      if (serviceDefinition.options.fallback) {
+        var deferred = { deferredName: serviceDefinition.options.fallback };
+        serviceDefinition.options.fallback = { create: function defer() { return deferred; } }
+      }
+
+      var service = services[serviceName] = module.create.apply(this, [serviceDefinition.options]);
+
+      if (service.validGrantTypes) { // the presence of validGrantTypes identifies the service as oauth
+        if (serviceDefinition.options.cache) {
+          service.cacheName = serviceDefinition.options.cache;
+        }
+        if (serviceDefinition.options.tokenPaths) {
+          importOAuthTokenPaths(swagger, serviceName, serviceDefinition.options.tokenPaths);
+        }
+      }
+    });
+  });
+
+  // make 2nd pass to ensure forward cache references will work
+  _.each(services, function(service, serviceName) {
+    if (service.validGrantTypes && service.useCache && service.cacheName) {
+      var cache = services[service.cacheName];
+      service.useCache(cache);
+    }
+    if (service.cache && service.cache.deferredName) {
+      if (!services[service.cache.deferredName]) {
+        throw new Error('Cache fallback option must name a valid cache. Invalid reference: ' + service.cache.deferredName);
+      }
+      service.cache = services[service.cache.deferredName];
+    }
+  });
+
+  return services;
+}
+
+function importOAuthTokenPaths(swagger, resourceName, paths) {
+
+  if (paths.length === 0) { return; }
+
+  var allPaths = swagger.paths || (swagger.paths = {});
+  var allDefinitions = swagger.definitions || (swagger.definitions = {});
+
+  // err if would overwrite any paths
+  var allPathNames = Object.keys(allPaths);
+  var existingPaths = _.filter(paths, function(path) { return _.contains(allPathNames, path); });
+  if (existingPaths.length > 0) {
+    throw new Error('Paths ' + existingPaths + ' already exist. Cannot insert OAuth.');
+  }
+
+  // err if would overwrite any definitions
+  var existingDefinitions = _.filter(allDefinitions, function(key) {
+    return _.contains(Object.keys(oauthSwagger.definitions), key);
+  });
+  if (existingDefinitions.length > 0) {
+    throw new Error('Definitions ' + existingDefinitions + ' already exist. Cannot insert OAuth.');
+  }
+
+  // add the token paths
+  _.each(paths, function(path, name) {
+    var keyPath = '/' + name;
+    allPaths[path] = oauthSwagger.paths[keyPath];
+    if (!allPaths[path]) {
+      var keys = Object.keys(oauthSwagger.paths).map(function(key) { return key.substring(1); });
+      throw new Error('Invalid tokenPath key: ' + name + '. Must be one of: ' + keys);
+    }
+    allPaths[path][OAUTH_PROP] = resourceName;
+  });
+
+  // add the definitions
+  _.each(oauthSwagger.definitions, function(value, key) {
+    allDefinitions[key] = value;
+  });
 }
