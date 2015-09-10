@@ -29,6 +29,8 @@ var debug = require('debug')('swagger');
 var helpersDir = 'api/helpers';
 var SERVICES = ['x-a127-services', 'x-volos-resources'];
 var OAUTH_PROP = 'x-volos-oauth-service';
+
+require('yamljs'); // required for yaml require below...
 var oauthSwagger = require('../spec/oauth_operations.yaml');
 
 module.exports = {
