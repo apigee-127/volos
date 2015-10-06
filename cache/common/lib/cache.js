@@ -141,7 +141,11 @@ Cache.prototype.set = function(key, v, o, c) {
   try {
     var value = convertValue(v, options.encoding);
   } catch (err) {
-    return callback(err);
+    if (callback) {
+      return callback(err);
+    } else {
+      throw err;
+    }
   }
   options.ttl = options.ttl ? convertNumber(options.ttl, 'ttl') : this.options.ttl;
 
