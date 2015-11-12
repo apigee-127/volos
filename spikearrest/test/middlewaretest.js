@@ -25,7 +25,7 @@
 
 var SpikeArrest = require('../memory');
 var expressServer = require('./expressserver');
-var verifySpikeArrest = require('./verifySpikeArrest');
+var verifySpikeArrest = require('./verifyspikearrest');
 
 describe('SpikeArrest Middleware', function() {
 
