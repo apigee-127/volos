@@ -25,6 +25,7 @@
 
 var random = Math.random();
 var _ = require('underscore');
+var async = require('async');
 var assert = require('assert');
 var should = require('should');
 
@@ -184,34 +185,17 @@ exports.testSpikeArrest = function(config, Spi) {
       });
 
       it('should smooth a spike', function(done) {
-        ps.apply({ key: 'y' }, function(err, reply) {
-          should.not.exist(err);
-          reply.allowed.should.equal(6000);
-          reply.used.should.equal(1);
-          reply.isAllowed.should.be.true;
-          reply.expiryTime.should.be.approximately(10, 2);
-
+        var runRequest = function(cb) {
+          console.log(cb);
           ps.apply({ key: 'y' }, function(err, reply) {
             should.not.exist(err);
             reply.allowed.should.equal(6000);
-            reply.used.should.equal(1);
             reply.isAllowed.should.be.true;
             reply.expiryTime.should.be.approximately(10, 2);
-
-            setTimeout(function() {
-
-              ps.apply({ key: 'y' }, function(err, reply) {
-                should.not.exist(err);
-                reply.allowed.should.equal(6000);
-                reply.used.should.equal(1);
-                reply.isAllowed.should.be.true;
-                reply.expiryTime.should.be.approximately(10, 2);
-
-                done();
-              });
-            }, 10);
+            cb(null, true);
           });
-        });
+        }
+        async.parallel([runRequest, runRequest, runRequest], done);
       });
 
       it('should fail when buffer exceeded', function(done) {
