@@ -98,7 +98,7 @@ Test scripts are written using "mocha." Install mocha if you haven't already lik
 
 To test Apigee providers:
 
-1. Install the "proxy" module on an Apigee application. See the instructions [here](proxy/README.md).
+1. Install the "proxy" module on an Apigee application. See the instructions [here](https://github.com/apigee-127/apigee-remote-proxy).
 2. In the "testconfig" directory, copy "testconfig-apigee-sample.js" to "testconfig-apigee.js" and edit the values. 
    You will need to specify the location of your proxy as well as the key and secret for the application.
 3. Run `mocha` in each apigee/test directory you wish you test.
