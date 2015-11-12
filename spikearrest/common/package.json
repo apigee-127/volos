@@ -1,6 +1,6 @@
 {
   "name": "volos-spikearrest-common",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "main": "lib/spikearrest.js",
   "license": "MIT",
   "description": "Common library for Spike Arrest enforcement in the Volos system.",
