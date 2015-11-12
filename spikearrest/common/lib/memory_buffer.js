@@ -98,7 +98,11 @@ MemoryBuffer.prototype.internalApply = function(bucket, item) {
     bucket.applying = undefined;
     bucket.nextWindow = now + result.expiryTime;
     self.scheduleBuffer(bucket, now);
-    item.cb(err, result);
+    if (result.isAllowed) {
+      item.cb(err, result);
+    } else {
+      self.buffer(bucket, item.options, now, item.cb);
+    }
   });
 };
 
