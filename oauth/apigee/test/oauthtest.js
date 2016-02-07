@@ -39,12 +39,13 @@ describe('Apigee', function() {
 
     describe('volos extensions', function() {
 
-      var client_id;
+      var client_id, client_secret;
 
       before(function(done) {
         creator.createFixtures(function(err, apps) {
           if (err) { return done(err); }
           client_id = apps[0].credentials[0].key;
+          client_secret = apps[0].credentials[0].secret;
           done();
         });
       });
@@ -61,10 +62,29 @@ describe('Apigee', function() {
           response.should.have.property('client_id', client_id);
           response.should.have.property('status', 'approved');
           response.should.have.keys('client_id', 'status', 'apiproduct_name', 'attributes', 'developer_app_id',
-                                    'developer_app_name', 'developer_email', 'developer_id', 'expires_in', 'issued_at');
+                                    'developer_app_name', 'developer_email', 'developer_id', 'expires_in', 'issued_at', 'developer', 'app');
           done();
         });
       });
+
+      it('should allow specification of refresh token lifetime', function(done) {
+        var options = {
+          clientId: client_id,
+          clientSecret: client_secret,
+          username: config.validUserCreds.username,
+          password: config.validUserCreds.password,
+          refreshTokenLifetime: 60000
+        };
+        oauth.spi.createTokenPasswordCredentials(options, function(err, token) {
+          should.not.exist(err);
+          token.should.have.property('refresh_token');
+          token.should.have.property('refresh_token_expires_in');
+          token.refresh_token_expires_in.should.be.approximately(55, 5);
+
+          done();
+        });
+      });
+
     });
   });
 

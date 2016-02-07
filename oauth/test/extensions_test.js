@@ -24,7 +24,6 @@
 'use strict';
 
 var should = require('should');
-var _ = require('underscore');
 var querystring = require('querystring');
 var Url = require('url');
 var MemCache = require('volos-cache-memory');
@@ -163,6 +162,8 @@ exports.verifyOauth = function(config) {
           should.not.exist(err);
           should.exist(token.attributes.foo);
           should.exist(token.refresh_token);
+          should.exist(token.refresh_token_expires_in);
+          token.refresh_token_expires_in.should.be.above(0);
           token.attributes.foo.should.equal(options.attributes.foo);
 
           var body = {
@@ -175,7 +176,15 @@ exports.verifyOauth = function(config) {
             should.not.exist(err);
             should.exist(reply.attributes);
             reply.attributes.foo.should.equal(options.attributes.foo);
-            done();
+
+            setTimeout(function() {
+              body.refresh_token = reply.refresh_token;
+              oauth.refreshToken(querystring.stringify(body), {}, function(err, reply) {
+                should.exist(err);
+                err.statusCode.should.eql(400);
+                done();
+              });
+            }, config.config.refreshTokenLifetime);
           });
         });
       });

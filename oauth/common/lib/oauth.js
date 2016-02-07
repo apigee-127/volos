@@ -42,6 +42,8 @@ var GrantTypeFunctions = {
  *      "authorization_code" will be supported.
  *   tokenLifetime: The default length of time, in milliseconds, that a token will survive until being
  *      expired. Optional.
+ *   refreshTokenLifetime: The default length of time, in milliseconds, that a refreshToken (if issued)
+ *      will survive until being expired. Optional.
  *   beforeCreateToken: An optional function that can customize the parameters passed to the token generation
  *      function. This is intended mostly to add a custom attributes field to the options hash, but could
  *      be used for other reasons. The callback must be called with no arguments to continue. If the callback
@@ -55,6 +57,7 @@ function OAuth(spi, options) {
   this.spi = spi;
   this.validGrantTypes = options.validGrantTypes;
   this.tokenLifetime = options.tokenLifetime;
+  this.refreshTokenLifetime = options.refreshTokenLifetime;
   this.passwordCheck = options.passwordCheck;
   this.beforeCreateToken = options.beforeCreateToken;
 }
@@ -176,6 +179,8 @@ OAuth.prototype.authorize = function(queryString, request, cb) {
  *   authorizeHeader: if an Authorize header was on the request, include it here
  *   tokenLifetime: The time, in milliseconds, when the token should expire. If not specified,
  *     taken from the parent, otherwise it uses a system-level default
+ *   refreshTokenLifetime: The time, in milliseconds, when the refreshToken (if appropriate) should expire.
+ *     If not specified, taken from the parent, otherwise it uses a system-level default
  *   attributes: An array of custom attributes to store with the token. [{}]
  */
 OAuth.prototype.generateToken = function(body, options, cb) {
@@ -253,6 +258,9 @@ function applyTokenDefaults(self, o) {
   if (!o.tokenLifetime) {
     o.tokenLifetime = self.tokenLifetime;
   }
+  if (!o.refreshTokenLifetime) {
+    o.refreshTokenLifetime = self.refreshTokenLifetime;
+  }
   return o;
 }
 
@@ -267,6 +275,7 @@ function clientCredentialsGrant(self, parsedBody, clientId, clientSecret, option
   if (parsedBody.scope) {
     gr.scope = parsedBody.scope;
   }
+  applyTokenDefaults(self, options);
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
   }
@@ -297,8 +306,12 @@ function passwordCredentialsGrant(self, parsedBody, clientId, clientSecret, opti
   if (parsedBody.scope) {
     gr.scope = parsedBody.scope;
   }
+  applyTokenDefaults(self, options);
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
+  }
+  if (options.refreshTokenLifetime) {
+    gr.refreshTokenLifetime = options.refreshTokenLifetime;
   }
   if (options.attributes) {
     gr.attributes = options.attributes;
@@ -334,6 +347,7 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
   if (parsedBody.scope) {
     gr.scope = parsedBody.scope;
   }
+  applyTokenDefaults(self, options);
   if (options.tokenLifetime) {
     gr.tokenLifetime = options.tokenLifetime;
   }
@@ -391,6 +405,13 @@ OAuth.prototype.refreshToken = function(body, options, cb) {
   };
   if (parsedBody.scope) {
     gr.scope = parsedBody.scope;
+  }
+  applyTokenDefaults(this, options);
+  if (options.tokenLifetime) {
+    gr.tokenLifetime = options.tokenLifetime;
+  }
+  if (options.refreshTokenLifetime) {
+    gr.refreshTokenLifetime = options.refreshTokenLifetime;
   }
 
   this.spi.refreshToken(gr, function(err, result) {

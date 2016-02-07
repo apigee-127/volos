@@ -446,6 +446,9 @@ function verifyMiddleware(server) {
             should.not.exist(err);
             res.status.should.eql(200);
             should.exist(res.body.access_token);
+            should.exist(res.body.refresh_token);
+            should.exist(res.body.refresh_token_expires_in);
+            res.body.refresh_token_expires_in.should.be.approximately(7, 3);
 
             q.password = 'somethingelse';
             var qs = querystring.stringify(q);

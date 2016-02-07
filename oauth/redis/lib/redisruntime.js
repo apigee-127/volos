@@ -56,6 +56,7 @@ schema:
 var KEY_PREFIX = 'volos:oauth';
 var CRYPTO_BYTES = 256 / 8;
 var DEFAULT_TOKEN_LIFETIME = 60 * 60 * 24; // 1 day
+var DEFAULT_REFRESH_TOKEN_LIFETIME = null; // never
 var REFRESH_TYPE = 'refresh';
 var AUTH_TTL = 60 * 5; // 5 minutes
 
@@ -234,6 +235,8 @@ RedisRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  *   clientId: required
  *   clientSecret: required
  *   refreshToken: required, from the original token grant
+ *   tokenLifetime: lifetime in milliseconds, optional
+ *   refreshTokenLifetime: lifetime in milliseconds, optional
  */
 RedisRuntimeSpi.prototype.refreshToken = function(options, cb) {
   var self = this;
@@ -364,6 +367,7 @@ function consumeAuthCode(client, clientId, code, cb) {
  *   clientSecret: required, unless type === 'authorization_code' || type == 'password'
  *   scope: optional
  *   tokenLifetime: lifetime in milliseconds, optional
+ *   refreshTokenLifetime: lifetime in milliseconds, optional
  *   type: required
  *   refresh: optional (default: false)
  *   attributes: hash of custom attributes to store and retrieve with token
@@ -383,9 +387,11 @@ function createAndStoreToken(self, options, cb) {
         if (err) { return cb(err); }
         if (options.refresh) {
           var refreshToken = genSecureToken();
-          storeRefreshToken(self, app, refreshToken, options.clientId, grantedScope, options.attributes, function(err) {
+          var refreshTtl = options.refreshTokenLifetime ? (options.refreshTokenLifetime / 1000) : DEFAULT_REFRESH_TOKEN_LIFETIME;
+          storeToken(self, app, refreshToken, REFRESH_TYPE, options.clientId, refreshTtl, grantedScope, options.attributes, function(err) {
             if (err) { return cb(err); }
             tokenResponse.refresh_token = refreshToken;
+            tokenResponse.refresh_token_expires_in = refreshTtl ? refreshTtl : 0;
             return cb(null, tokenResponse);
           });
         } else {
@@ -457,10 +463,6 @@ function storeToken(self, app, token, type, clientId, ttl, scope, attributes, cb
       return cb(err, response);
     });
   }
-}
-
-function storeRefreshToken(self, app, token, clientId, scope, attributes, cb) {
-  storeToken(self, app, token, REFRESH_TYPE, clientId, null, scope, attributes, cb);
 }
 
 function _key() {

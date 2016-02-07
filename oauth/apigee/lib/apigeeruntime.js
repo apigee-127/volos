@@ -163,6 +163,7 @@ ApigeeRuntimeSpi.prototype.createTokenClientCredentials = function(options, cb) 
  *   clientSecret: required
  *   scope: optional
  *   tokenLifetime: lifetime in milliseconds, optional
+ *   refreshTokenLifetime: lifetime in refresh token in milliseconds, optional, defaults to -1 (no expiration)
  *   username: required but not checked (must be checked outside this module)
  *   password: required by not checked (must be checked outside this module)
  *
@@ -241,6 +242,8 @@ ApigeeRuntimeSpi.prototype.createTokenImplicitGrant = function(options, cb) {
  *   clientId: required
  *   clientSecret: required
  *   refreshToken: required, from the original token grant
+ *   tokenLifetime: lifetime in milliseconds, optional
+ *   refreshTokenLifetime: lifetime in refresh token in milliseconds, optional, defaults to -1 (no expiration)
  *   scope: optional
  */
 ApigeeRuntimeSpi.prototype.refreshToken = function(options, cb) {

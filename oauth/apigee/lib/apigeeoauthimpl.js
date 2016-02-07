@@ -87,6 +87,7 @@ OAuthImpl.prototype.createTokenClientCredentials = function(options, cb) {
  *   clientSecret: required
  *   scope: optional
  *   tokenLifetime: lifetime in milliseconds, optional
+ *   refreshTokenLifetime: lifetime in refresh token in milliseconds, optional, defaults to -1 (no expiration)
  *   username: required but not checked (must be checked outside this module)
  *   password: required by not checked (must be checked outside this module)
  *
@@ -99,6 +100,9 @@ OAuthImpl.prototype.createTokenPasswordCredentials = function(options, cb) {
   r.grantType = 'password';
   if (options.tokenLifetime) {
     r.expiresIn = options.tokenLifetime;
+  }
+  if (options.refreshTokenLifetime) {
+    r.refreshTokenExpiresIn = options.refreshTokenLifetime;
   }
 
   createCredentials(this, r, options, cb);
@@ -265,6 +269,7 @@ function makeImplicitLocationHeader(redirectUri, resp) {
  *   refreshToken: required, from the original token grant
  *   scope: optional
  *   tokenLifetime: optional, time in milliseconds for the new token to live
+ *   refreshTokenLifetime: lifetime in refresh token in milliseconds, optional, defaults to -1 (no expiration)
  */
 OAuthImpl.prototype.refreshToken = function(options, cb) {
   var r = _.pick(options,
@@ -273,6 +278,9 @@ OAuthImpl.prototype.refreshToken = function(options, cb) {
   r.grantType = 'refresh_token';
   if (options.tokenLifetime) {
     r.expiresIn = options.tokenLifetime;
+  }
+  if (options.refreshTokenLifetime) {
+    r.refreshTokenExpiresIn = options.refreshTokenLifetime;
   }
 
   createCredentials(this, r, options, function(err, result) {

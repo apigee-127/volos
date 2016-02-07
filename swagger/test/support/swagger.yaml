@@ -54,6 +54,7 @@ x-a127-services:
   oauth2:
     provider: volos-oauth-redis
     options:
+      refreshTokenLifetime: 10000
       encryptionKey: "This is the key to encrypt/decrypt stored credentials"
       validGrantTypes:
         - client_credentials
@@ -71,6 +72,7 @@ x-a127-services:
   cachedOauth:
     provider: volos-oauth-redis
     options:
+      refreshTokenLifetime: 10000
       cache: cache
       encryptionKey: "This is the key to encrypt/decrypt stored credentials"
       validGrantTypes:
