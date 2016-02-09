@@ -1,6 +1,6 @@
 {
   "name": "volos-oauth-common",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "license": "MIT",
   "main": "lib/oauth.js",
   "description": "Support for OAuth providers in the Volos system.",

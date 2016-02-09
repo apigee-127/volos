@@ -354,6 +354,9 @@ function authorizationCodeGrant(self, parsedBody, clientId, clientSecret, option
   if (options.attributes) {
     gr.attributes = options.attributes;
   }
+  if (options.refreshTokenLifetime) {
+    gr.refreshTokenLifetime = options.refreshTokenLifetime;
+  }
 
   self.spi.createTokenAuthorizationCode(gr, function(err, result) {
     if (err) {

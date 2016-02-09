@@ -138,6 +138,10 @@ exports.verifyOauth = function(config) {
             should.not.exist(err);
             should.exist(token.attributes.foo);
             token.attributes.foo.should.equal(options.attributes.foo);
+            should.exist(token.refresh_token);
+            should.exist(token.refresh_token_expires_in);
+            token.refresh_token_expires_in.should.be.above(0);
+            token.attributes.foo.should.equal(options.attributes.foo);
 
             var header = 'Bearer ' + token.access_token;
             oauth.verifyToken(header, function(err, reply) {
