@@ -1,6 +1,6 @@
 {
   "name": "volos-analytics-memory",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "lib/memoryanalytics.js",
   "license": "MIT",
   "description": "Memory provider for Analytics in the Volos system.",
@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "on-finished": "~2.2.1",
-    "debug": "1.0.x",
+    "debug": "^2.2.0",
     "volos-analytics-common": "0.2.x"
   },
   "devDependencies": {},

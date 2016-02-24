@@ -1,13 +1,13 @@
 {
   "name": "volos-management-common",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "main": "lib/management.js",
   "license": "MIT",
   "description": "Management library for the Volos system.",
   "homepage": "https://github.com/apigee/volos",
   "keywords": [],
   "dependencies": {
-    "debug": "1.0.x"
+    "debug": "^2.2.0"
   },
   "devDependencies": {},
   "repository": {
