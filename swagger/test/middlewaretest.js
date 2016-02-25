@@ -30,6 +30,9 @@ var connectServer = require('./support/connectserver');
 var async = require('async');
 var _ = require('underscore');
 var querystring = require('querystring');
+var fs = require('fs');
+var path = require('path');
+var yaml = require('js-yaml');
 
 var redisConfig = require('../../testconfig/testconfig-redis');
 var oauth = redisConfig.oauth;
@@ -40,14 +43,16 @@ describe('Swagger Middleware', function() {
   // test, just uncomment it and comment out the new a127 one.
 
   //describe('volos', function() {
-  //  var swaggerObject = require('./support/swagger-old.yaml');
+  //var file = path.resolve(__dirname, './support/swagger-old.yaml');
+  //var swaggerObject = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
   //  connectServer(swaggerObject, function(server) {
   //    verifyMiddleware(server);
   //  });
   //});
 
   describe('a127', function() {
-    var swaggerObject = require('./support/swagger.yaml');
+    var file = path.resolve(__dirname, './support/swagger.yaml');
+    var swaggerObject = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
     connectServer(swaggerObject, function(server) {
       verifyMiddleware(server);
     });

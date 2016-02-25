@@ -26,7 +26,6 @@
 var assert = require('assert');
 var initializeSwagger = require('swagger-tools').initializeMiddleware;
 var path = require('path');
-var yaml = require('yamljs');
 var qs = require('querystring');
 var Url = require('url');
 var connect = require('connect');

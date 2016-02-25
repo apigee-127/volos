@@ -14,11 +14,10 @@
   "dependencies": {
     "debug": "^2.2.0",
     "underscore": "1.6.x",
-    "yamljs": "0.1.x",
+    "js-yaml": "^3.5.3",
     "async": "0.8.x"
   },
   "devDependencies": {
-    "mocha": "1.19.x",
     "should": "3.1.x",
     "express": "3.4.x",
     "swagger-tools": "^0.8.0",
