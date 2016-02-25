@@ -12,18 +12,18 @@
   "author": "Scott Ganyo <sganyo@apigee.com>",
   "main": "lib/index.js",
   "dependencies": {
+    "async": "^1.5.2",
     "debug": "^2.2.0",
-    "underscore": "1.6.x",
     "js-yaml": "^3.5.3",
-    "async": "0.8.x"
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "should": "3.1.x",
-    "express": "3.4.x",
-    "swagger-tools": "^0.8.0",
+    "express": "^4.13.4",
+    "should": "^8.2.2",
+    "swagger-tools": "^0.10.1",
     "volos-cache-memory": "",
-    "volos-quota-memory": "",
-    "volos-oauth-redis": ""
+    "volos-oauth-redis": "",
+    "volos-quota-memory": ""
   },
   "repository": {
     "type": "git",

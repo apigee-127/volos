@@ -39,238 +39,53 @@ var oauth = redisConfig.oauth;
 
 describe('Swagger Middleware', function() {
 
-  // I can't get these to run sequentially. If you need to run the old volos
-  // test, just uncomment it and comment out the new a127 one.
-
-  //describe('volos', function() {
-  //var file = path.resolve(__dirname, './support/swagger-old.yaml');
-  //var swaggerObject = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
-  //  connectServer(swaggerObject, function(server) {
-  //    verifyMiddleware(server);
-  //  });
-  //});
-
   describe('a127', function() {
+
     var file = path.resolve(__dirname, './support/swagger.yaml');
     var swaggerObject = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
-    connectServer(swaggerObject, function(server) {
-      verifyMiddleware(server);
-    });
-  });
-});
 
-function verifyMiddleware(server) {
+    var count = 0;
+    var client_id, client_secret, defaultScope, scopes;
 
-  var count = 0;
-  var client_id, client_secret, defaultScope, scopes;
-
-  before(function(done) {
-    redisConfig.fixtureCreator.createFixtures(function(err, result) {
-      should.not.exist(err);
-      var app = result[0];
-      client_id = app.credentials[0].key;
-      client_secret = app.credentials[0].secret;
-      defaultScope = app.defaultScope;
-      scopes = app.scopes;
-      done();
-    });
-  });
-
-  after(function(done) {
-    redisConfig.fixtureCreator.destroyFixtures(done);
-  });
-
-  function getToken(scope, cb) {
-    var tokenRequest = {
-      clientId: client_id,
-      clientSecret: client_secret
-    };
-
-    if (scope) { tokenRequest.scope = scope; }
-
-    oauth.spi.createTokenClientCredentials(tokenRequest, function(err, result) {
-      if (err) { cb(err); }
-      cb(null, result.access_token);
-    });
-  }
-
-  describe('Operations', function() {
-
-    it('must access clean', function(done) {
-      request(server)
-        .get('/clean')
-        .end(function(err, res) {
+    before(function(done) {
+      var self = this;
+      connectServer(swaggerObject, function(server) {
+        self.server = server;
+        redisConfig.fixtureCreator.createFixtures(function(err, result) {
           should.not.exist(err);
-          res.status.should.eql(200);
-          res.body.count.should.equal(++count);
-
+          var app = result[0];
+          client_id = app.credentials[0].key;
+          client_secret = app.credentials[0].secret;
+          defaultScope = app.defaultScope;
+          scopes = app.scopes;
           done();
         });
-    });
-
-    describe('Cache', function() {
-
-      var headers;
-      before(function(done) {
-        request(server)
-          .get('/cached')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            should.exist(res.header['cache-control']);
-            res.body.count.should.equal(++count);
-            headers = res.headers;
-            done();
-          });
-      });
-
-      it('must hit with default', function(done) {
-        request(server)
-          .get('/cached')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(count);
-            _.keys(headers).length.should.equal(_.keys(res.headers).length);
-
-            done();
-          });
-      });
-
-      it('must accept key', function(done) {
-        request(server)
-          .get('/cachedWithKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(count);
-
-            done();
-          });
-      });
-
-      it('must accept function key', function(done) {
-        request(server)
-          .get('/cachedWithFunctionKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(count);
-
-            done();
-          });
-      });
-
-      it('must accept ttl override', function(done) {
-        request(server)
-          .get('/cachedWithLowTtl')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            should.exist(res.header['cache-control']);
-            res.body.count.should.equal(++count);
-
-            setTimeout(function() {
-              request(server)
-                .get('/cachedWithLowTtl')
-                .end(function(err, res) {
-                  should.not.exist(err);
-                  res.status.should.eql(200);
-                  should.exist(res.header['cache-control']);
-                  res.body.count.should.equal(++count);
-
-                  done();
-                });
-            }, 20);
-          });
       });
     });
 
-    describe('Quota', function() {
-
-      before(function(done) {
-        request(server)
-          .get('/quota')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-
-            request(server)
-              .get('/quota')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(200);
-                res.body.count.should.equal(++count);
-
-                done();
-              });
-          });
-      });
-
-      it('must hit with default', function(done) {
-
-        request(server)
-          .get('/quota')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(403);
-
-            done();
-          });
-      });
-
-      it('must hit with key', function(done) {
-
-        request(server)
-          .get('/quotaWithKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(403);
-
-            done();
-          });
-      });
-
-      it('must hit with weight', function(done) {
-
-        request(server)
-          .get('/quotaWithWeight')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-
-            request(server)
-              .get('/quotaWithWeight')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(403);
-
-                done();
-              });
-          });
-      });
-
-      it('must hit with function key', function(done) {
-
-        request(server)
-          .get('/quotaWithFunctionKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(403);
-
-            done();
-          });
-      });
-
+    after(function(done) {
+      redisConfig.fixtureCreator.destroyFixtures(done);
     });
 
-    describe('SpikeArrest', function() {
+    function getToken(scope, cb) {
+      var tokenRequest = {
+        clientId: client_id,
+        clientSecret: client_secret
+      };
 
-      before(function(done) {
-        request(server)
-          .get('/spikeArrestWithKey')
+      if (scope) { tokenRequest.scope = scope; }
+
+      oauth.spi.createTokenClientCredentials(tokenRequest, function(err, result) {
+        if (err) { cb(err); }
+        cb(null, result.access_token);
+      });
+    }
+
+    describe('Operations', function() {
+
+      it('must access clean', function(done) {
+        request(this.server)
+          .get('/clean')
           .end(function(err, res) {
             should.not.exist(err);
             res.status.should.eql(200);
@@ -280,109 +95,256 @@ function verifyMiddleware(server) {
           });
       });
 
-      it('must hit with default', function(done) {
+      describe('Cache', function() {
 
-        request(server)
-          .get('/spikeArrest')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-
-            request(server)
-              .get('/spikeArrest')
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(503);
-
-                done();
-              });
-          });
-      });
-
-      it('must hit with key', function(done) {
-
-        request(server)
-          .get('/spikeArrestWithKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(503);
-
-            done();
-          });
-      });
-
-      it('must hit with weight', function(done) {
-
-        request(server)
-          .get('/spikeArrestWithWeight')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(503);
-
-            done();
-          });
-      });
-
-      it('must hit with function key', function(done) {
-
-        request(server)
-          .get('/spikeArrestWithFunctionKey')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(503);
-
-            done();
-          });
-      });
-
-    });
-
-    describe('A127 Oauth', function() {
-
-      it('must handle auth', function(done) {
-
-        request(server)
-          .get('/secured')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(401);
-
-            getToken(null, function(err, token) {
-              if (err) { return done(err); }
-
-              request(server)
-                .get('/secured')
-                .set('Authorization', 'Bearer ' + token)
-                .end(function(err, res) {
-                  should.not.exist(err);
-                  res.status.should.eql(200);
-                  res.body.count.should.equal(++count);
-
-                  done();
-                });
-
-            });
-          });
-      });
-
-      it('must handle scopes', function(done) {
-
-        getToken(null, function(err, token) {
-          if (err) { return done(err); }
-
-          request(server)
-            .get('/securedScope2')
-            .set('Authorization', 'Bearer ' + token)
+        var headers;
+        before(function(done) {
+          request(this.server)
+            .get('/cached')
             .end(function(err, res) {
               should.not.exist(err);
-              res.status.should.eql(400);
+              res.status.should.eql(200);
+              should.exist(res.header['cache-control']);
+              res.body.count.should.equal(++count);
+              headers = res.headers;
+              done();
+            });
+        });
 
-              getToken('scope2', function(err, token) {
+        it('must hit with default', function(done) {
+          request(this.server)
+            .get('/cached')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(count);
+              _.keys(headers).length.should.equal(_.keys(res.headers).length);
+
+              done();
+            });
+        });
+
+        it('must accept key', function(done) {
+          request(this.server)
+            .get('/cachedWithKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(count);
+
+              done();
+            });
+        });
+
+        it('must accept function key', function(done) {
+          request(this.server)
+            .get('/cachedWithFunctionKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(count);
+
+              done();
+            });
+        });
+
+        it('must accept ttl override', function(done) {
+          var server = this.server;
+          request(this.server)
+            .get('/cachedWithLowTtl')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              should.exist(res.header['cache-control']);
+              res.body.count.should.equal(++count);
+
+              setTimeout(function() {
+                request(server)
+                  .get('/cachedWithLowTtl')
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    should.exist(res.header['cache-control']);
+                    res.body.count.should.equal(++count);
+
+                    done();
+                  });
+              }, 20);
+            });
+        });
+      });
+
+      describe('Quota', function() {
+
+        before(function(done) {
+          var server = this.server;
+          request(this.server)
+            .get('/quota')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              request(server)
+                .get('/quota')
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(200);
+                  res.body.count.should.equal(++count);
+
+                  done();
+                });
+            });
+        });
+
+        it('must hit with default', function(done) {
+
+          request(this.server)
+            .get('/quota')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(403);
+
+              done();
+            });
+        });
+
+        it('must hit with key', function(done) {
+
+          request(this.server)
+            .get('/quotaWithKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(403);
+
+              done();
+            });
+        });
+
+        it('must hit with weight', function(done) {
+
+          var server = this.server;
+          request(this.server)
+            .get('/quotaWithWeight')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              request(server)
+                .get('/quotaWithWeight')
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(403);
+
+                  done();
+                });
+            });
+        });
+
+        it('must hit with function key', function(done) {
+
+          request(this.server)
+            .get('/quotaWithFunctionKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(403);
+
+              done();
+            });
+        });
+
+      });
+
+      describe('SpikeArrest', function() {
+
+        before(function(done) {
+          request(this.server)
+            .get('/spikeArrestWithKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              done();
+            });
+        });
+
+        it('must hit with default', function(done) {
+
+          var server = this.server;
+          request(this.server)
+            .get('/spikeArrest')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+
+              request(server)
+                .get('/spikeArrest')
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(503);
+
+                  done();
+                });
+            });
+        });
+
+        it('must hit with key', function(done) {
+
+          request(this.server)
+            .get('/spikeArrestWithKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(503);
+
+              done();
+            });
+        });
+
+        it('must hit with weight', function(done) {
+
+          request(this.server)
+            .get('/spikeArrestWithWeight')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(503);
+
+              done();
+            });
+        });
+
+        it('must hit with function key', function(done) {
+
+          request(this.server)
+            .get('/spikeArrestWithFunctionKey')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(503);
+
+              done();
+            });
+        });
+
+      });
+
+      describe('A127 Oauth', function() {
+
+        it('must handle auth', function(done) {
+
+          var server = this.server;
+          request(this.server)
+            .get('/secured')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(401);
+
+              getToken(null, function(err, token) {
                 if (err) { return done(err); }
 
                 request(server)
-                  .get('/securedScope2')
+                  .get('/secured')
                   .set('Authorization', 'Bearer ' + token)
                   .end(function(err, res) {
                     should.not.exist(err);
@@ -395,315 +357,328 @@ function verifyMiddleware(server) {
               });
             });
         });
-      });
 
-      it('must work with cache', function(done) {
+        it('must handle scopes', function(done) {
 
-        getToken(null, function(err, token) {
-          if (err) { return done(err); }
+          var server = this.server;
+          getToken(null, function(err, token) {
+            if (err) { return done(err); }
 
-          request(server)
-            .get('/securedCache')
-            .set('Authorization', 'Bearer ' + token)
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(400);
+            request(server)
+              .get('/securedScope2')
+              .set('Authorization', 'Bearer ' + token)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(400);
 
-              getToken('scope2', function(err, token) {
-                if (err) { return done(err); }
+                getToken('scope2', function(err, token) {
+                  if (err) { return done(err); }
 
-                request(server)
-                  .get('/securedCache')
-                  .set('Authorization', 'Bearer ' + token)
-                  .end(function(err, res) {
-                    should.not.exist(err);
-                    res.status.should.eql(200);
-                    res.body.count.should.equal(++count);
-
-                    var cache = server.volos.resources.cache;
-                    cache.get(token, function(err, reply) {
+                  request(server)
+                    .get('/securedScope2')
+                    .set('Authorization', 'Bearer ' + token)
+                    .end(function(err, res) {
                       should.not.exist(err);
-                      should.exist(reply);
-
-                      var cachedToken = JSON.parse(reply.toString());
-                      cachedToken.access_token.should.eql(token);
+                      res.status.should.eql(200);
+                      res.body.count.should.equal(++count);
 
                       done();
                     });
-                  });
+
+                });
               });
+          });
+        });
+
+        it('must work with cache', function(done) {
+
+          var server = this.server;
+          getToken(null, function(err, token) {
+            if (err) { return done(err); }
+
+            request(server)
+              .get('/securedCache')
+              .set('Authorization', 'Bearer ' + token)
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(400);
+
+                getToken('scope2', function(err, token) {
+                  if (err) { return done(err); }
+
+                  request(server)
+                    .get('/securedCache')
+                    .set('Authorization', 'Bearer ' + token)
+                    .end(function(err, res) {
+                      should.not.exist(err);
+                      res.status.should.eql(200);
+                      res.body.count.should.equal(++count);
+
+                      var cache = server.volos.resources.cache;
+                      cache.get(token, function(err, reply) {
+                        should.not.exist(err);
+                        should.exist(reply);
+
+                        var cachedToken = JSON.parse(reply.toString());
+                        cachedToken.access_token.should.eql(token);
+
+                        done();
+                      });
+                    });
+                });
+              });
+          });
+        });
+
+        it('must allow passwordCheck', function(done) {
+          var q = {
+            grant_type: 'password',
+            username: 'jimmy',
+            password: 'jimmy'
+          };
+          var qs = querystring.stringify(q);
+          var server = this.server;
+          request(this.server)
+            .post('/accesstoken')
+            .auth(client_id, client_secret)
+            .send(qs)
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              should.exist(res.body.access_token);
+              should.exist(res.body.refresh_token);
+              should.exist(res.body.refresh_token_expires_in);
+              res.body.refresh_token_expires_in.should.be.approximately(7, 3);
+
+              q.password = 'somethingelse';
+              var qs = querystring.stringify(q);
+              request(server)
+                .post('/accesstoken')
+                .auth(client_id, client_secret)
+                .send(qs)
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(401);
+                  should.not.exist(res.body.access_token);
+
+                  done();
+                });
             });
         });
-      });
 
-      it('must allow passwordCheck', function(done) {
-        var q = {
-          grant_type: 'password',
-          username: 'jimmy',
-          password: 'jimmy'
-        };
-        var qs = querystring.stringify(q);
-        request(server)
-          .post('/accesstoken')
-          .auth(client_id, client_secret)
-          .send(qs)
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            should.exist(res.body.access_token);
-            should.exist(res.body.refresh_token);
-            should.exist(res.body.refresh_token_expires_in);
-            res.body.refresh_token_expires_in.should.be.approximately(7, 3);
+        it('must allow beforeCreateToken', function(done) {
+          var q = {
+            grant_type: 'password',
+            username: 'jimmy',
+            password: 'jimmy'
+          };
+          var qs = querystring.stringify(q);
+          request(this.server)
+            .post('/accesstoken')
+            .auth(client_id, client_secret)
+            .send(qs)
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              should.exist(res.body.access_token);
 
-            q.password = 'somethingelse';
+              should.exist(res.body.attributes);
+              res.body.attributes['beforeCreateTokenCalled'].should.eql(true);
+
+              done();
+            });
+        });
+
+        it('must allow invalidate', function(done) {
+
+          var server = this.server;
+          getToken(null, function(err, token) {
+            if (err) { return done(err); }
+
+            var q = { token: token };
             var qs = querystring.stringify(q);
             request(server)
-              .post('/accesstoken')
+              .post('/invalidate')
               .auth(client_id, client_secret)
               .send(qs)
               .end(function(err, res) {
                 should.not.exist(err);
-                res.status.should.eql(401);
+
+                res.status.should.eql(200);
                 should.not.exist(res.body.access_token);
 
                 done();
               });
           });
-      });
+        });
 
-      it('must allow beforeCreateToken', function(done) {
-        var q = {
-          grant_type: 'password',
-          username: 'jimmy',
-          password: 'jimmy'
-        };
-        var qs = querystring.stringify(q);
-        request(server)
-          .post('/accesstoken')
-          .auth(client_id, client_secret)
-          .send(qs)
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            should.exist(res.body.access_token);
-
-            should.exist(res.body.attributes);
-            res.body.attributes['beforeCreateTokenCalled'].should.eql(true);
-
-            done();
-          });
-      });
-
-      it('must allow invalidate', function(done) {
-        getToken(null, function(err, token) {
-          if (err) { return done(err); }
-
-          var q = { token: token };
+        it('must allow refresh', function(done) {
+          var q = {
+            grant_type: 'password',
+            username: 'jimmy',
+            password: 'jimmy'
+          };
           var qs = querystring.stringify(q);
-          request(server)
-            .post('/invalidate')
+          var server = this.server;
+          request(this.server)
+            .post('/accesstoken')
             .auth(client_id, client_secret)
             .send(qs)
             .end(function(err, res) {
               should.not.exist(err);
 
               res.status.should.eql(200);
-              should.not.exist(res.body.access_token);
+              should.exist(res.body.access_token);
+              should.exist(res.body.refresh_token);
 
-              done();
-            });
-        });
-      });
-
-      it('must allow refresh', function(done) {
-        var q = {
-          grant_type: 'password',
-          username: 'jimmy',
-          password: 'jimmy'
-        };
-        var qs = querystring.stringify(q);
-        request(server)
-          .post('/accesstoken')
-          .auth(client_id, client_secret)
-          .send(qs)
-          .end(function(err, res) {
-            should.not.exist(err);
-
-            res.status.should.eql(200);
-            should.exist(res.body.access_token);
-            should.exist(res.body.refresh_token);
-
-            q = { refresh_token: res.body.refresh_token, grant_type: 'refresh_token' };
-            var qs = querystring.stringify(q);
-            request(server)
-              .post('/refresh')
-              .auth(client_id, client_secret)
-              .send(qs)
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(200);
-                should.exist(res.body.access_token);
-
-                done();
-              });
-          });
-      });
-    });
-
-    describe('Analytics', function() {
-
-      it('must apply and flush', function(done) {
-
-        var makeRecordCalled = false;
-        server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
-          makeRecordCalled = true;
-        });
-
-        server.volos.resources['analytics'].spi.once('flush', function(records) {
-          records.length.should.equal(1);
-          makeRecordCalled.should.be.true;
-          should(records[0].finalized).be.true;
-          done();
-        });
-
-        request(server)
-          .get('/analyzedPath')
-          .end(function(err, res) {
-            should.not.exist(err);
-            res.status.should.eql(200);
-            res.body.count.should.equal(++count);
-          });
-      });
-    });
-
-  });
-
-  describe('Path', function() {
-
-    it('must hit cache', function(done) {
-
-      request(server)
-        .get('/cachedPath')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          should.exist(res.header['cache-control']);
-          res.body.count.should.equal(++count);
-          var headers = res.headers;
-
-          request(server)
-            .get('/cachedPath')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(count);
-              _.keys(headers).length.should.equal(_.keys(res.headers).length);
-
-              done();
-            });
-        });
-    });
-
-    it('must hit quota', function(done) {
-
-      request(server)
-        .get('/quotaPath')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(200);
-          res.body.count.should.equal(++count);
-
-          request(server)
-            .get('/quotaPath')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(++count);
-
+              q = { refresh_token: res.body.refresh_token, grant_type: 'refresh_token' };
+              var qs = querystring.stringify(q);
               request(server)
-                .get('/quotaPath')
+                .post('/refresh')
+                .auth(client_id, client_secret)
+                .send(qs)
                 .end(function(err, res) {
                   should.not.exist(err);
-                  res.status.should.eql(403);
+                  res.status.should.eql(200);
+                  should.exist(res.body.access_token);
 
                   done();
                 });
             });
         });
-    });
+      });
 
-    it('must handle auth', function(done) {
+      describe('Analytics', function() {
 
-      request(server)
-        .get('/securedPath')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
+        it('must apply and flush', function(done) {
 
-          getToken(null, function(err, token) {
-            if (err) { return done(err); }
+          var server = this.server;
 
-            request(server)
-              .get('/securedPath')
-              .set('Authorization', 'Bearer ' + token)
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(200);
-                res.body.count.should.equal(++count);
-
-                done();
-              });
-
+          var makeRecordCalled = false;
+          server.volos.resources['analytics'].spi.once('makeRecord', function(event) {
+            makeRecordCalled = true;
           });
-        });
-    });
 
-  });
-
-  describe('Swagger Oauth', function() {
-
-    it('must handle auth', function(done) {
-
-      request(server)
-        .get('/swaggerSecured')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
-
-          getToken(null, function(err, token) {
-            if (err) { return done(err); }
-
-            request(server)
-              .get('/swaggerSecured')
-              .set('Authorization', 'Bearer ' + token)
-              .end(function(err, res) {
-                should.not.exist(err);
-                res.status.should.eql(200);
-                res.body.count.should.equal(++count);
-
-                done();
-              });
+          server.volos.resources['analytics'].spi.once('flush', function(records) {
+            records.length.should.equal(1);
+            makeRecordCalled.should.be.true;
+            should(records[0].finalized).be.true;
+            done();
           });
+
+          request(server)
+            .get('/analyzedPath')
+            .end(function(err, res) {
+              should.not.exist(err);
+              res.status.should.eql(200);
+              res.body.count.should.equal(++count);
+            });
         });
+      });
+
     });
 
-    it('must handle scopes', function(done) {
+    describe('Path', function() {
 
-      getToken(null, function(err, token) {
-        if (err) { return done(err); }
+      it('must hit cache', function(done) {
 
-        request(server)
-          .get('/swaggerSecuredScope2')
-          .set('Authorization', 'Bearer ' + token)
+        var server = this.server;
+        request(this.server)
+          .get('/cachedPath')
           .end(function(err, res) {
             should.not.exist(err);
-            res.status.should.eql(400);
+            res.status.should.eql(200);
+            should.exist(res.header['cache-control']);
+            res.body.count.should.equal(++count);
+            var headers = res.headers;
 
-            getToken('scope2', function(err, token) {
+            request(server)
+              .get('/cachedPath')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(count);
+                _.keys(headers).length.should.equal(_.keys(res.headers).length);
+
+                done();
+              });
+          });
+      });
+
+      it('must hit quota', function(done) {
+
+        var server = this.server;
+        request(this.server)
+          .get('/quotaPath')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(200);
+            res.body.count.should.equal(++count);
+
+            request(server)
+              .get('/quotaPath')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(++count);
+
+                request(server)
+                  .get('/quotaPath')
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(403);
+
+                    done();
+                  });
+              });
+          });
+      });
+
+      it('must handle auth', function(done) {
+
+        var server = this.server;
+        request(this.server)
+          .get('/securedPath')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
+
+            getToken(null, function(err, token) {
               if (err) { return done(err); }
 
               request(server)
-                .get('/swaggerSecuredScope2')
+                .get('/securedPath')
+                .set('Authorization', 'Bearer ' + token)
+                .end(function(err, res) {
+                  should.not.exist(err);
+                  res.status.should.eql(200);
+                  res.body.count.should.equal(++count);
+
+                  done();
+                });
+
+            });
+          });
+      });
+
+    });
+
+    describe('Swagger Oauth', function() {
+
+      it('must handle auth', function(done) {
+
+        var server = this.server;
+        request(this.server)
+          .get('/swaggerSecured')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
+
+            getToken(null, function(err, token) {
+              if (err) { return done(err); }
+
+              request(server)
+                .get('/swaggerSecured')
                 .set('Authorization', 'Bearer ' + token)
                 .end(function(err, res) {
                   should.not.exist(err);
@@ -715,83 +690,117 @@ function verifyMiddleware(server) {
             });
           });
       });
-    });
-  });
 
-  describe('Swagger ApiKey', function() {
+      it('must handle scopes', function(done) {
 
-    it('must handle auth in header', function(done) {
-
-      request(server)
-        .get('/swaggerApiKeySecuredHeader')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
+        var server = this.server;
+        getToken(null, function(err, token) {
+          if (err) { return done(err); }
 
           request(server)
-            .get('/swaggerApiKeySecuredHeader')
-            .set({ 'X-API-KEY': client_id })
+            .get('/swaggerSecuredScope2')
+            .set('Authorization', 'Bearer ' + token)
             .end(function(err, res) {
               should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(++count);
+              res.status.should.eql(400);
 
-              done();
+              getToken('scope2', function(err, token) {
+                if (err) { return done(err); }
+
+                request(server)
+                  .get('/swaggerSecuredScope2')
+                  .set('Authorization', 'Bearer ' + token)
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    res.body.count.should.equal(++count);
+
+                    done();
+                  });
+              });
             });
         });
+      });
     });
 
-    it('must handle auth in query', function(done) {
+    describe('Swagger ApiKey', function() {
 
-      request(server)
-        .get('/swaggerApiKeySecuredQuery')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
+      it('must handle auth in header', function(done) {
 
-          request(server)
-            .get('/swaggerApiKeySecuredQuery')
-            .query({ apiKey: client_id })
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(200);
-              res.body.count.should.equal(++count);
+        var server = this.server;
+        request(this.server)
+          .get('/swaggerApiKeySecuredHeader')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
 
-              done();
-            });
-        });
+            request(server)
+              .get('/swaggerApiKeySecuredHeader')
+              .set({ 'X-API-KEY': client_id })
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(++count);
+
+                done();
+              });
+          });
+      });
+
+      it('must handle auth in query', function(done) {
+
+        var server = this.server;
+        request(this.server)
+          .get('/swaggerApiKeySecuredQuery')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
+
+            request(server)
+              .get('/swaggerApiKeySecuredQuery')
+              .query({ apiKey: client_id })
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(200);
+                res.body.count.should.equal(++count);
+
+                done();
+              });
+          });
+      });
+    });
+
+    describe('Swagger Basic Auth', function() {
+
+      it('must handle', function(done) {
+
+        var server = this.server;
+        request(this.server)
+          .get('/swaggerBasicAuth')
+          .end(function(err, res) {
+            should.not.exist(err);
+            res.status.should.eql(401);
+
+            request(server)
+              .get('/swaggerBasicAuth')
+              .auth('wrong', 'password')
+              .end(function(err, res) {
+                should.not.exist(err);
+                res.status.should.eql(401);
+
+                request(server)
+                  .get('/swaggerBasicAuth')
+                  .auth('scott', 'scott')
+                  .end(function(err, res) {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    res.body.count.should.equal(++count);
+
+                    done();
+                  });
+              });
+          });
+      });
     });
   });
-
-  describe('Swagger Basic Auth', function() {
-
-    it('must handle', function(done) {
-
-      request(server)
-        .get('/swaggerBasicAuth')
-        .end(function(err, res) {
-          should.not.exist(err);
-          res.status.should.eql(401);
-
-          request(server)
-            .get('/swaggerBasicAuth')
-            .auth('wrong', 'password')
-            .end(function(err, res) {
-              should.not.exist(err);
-              res.status.should.eql(401);
-
-              request(server)
-                .get('/swaggerBasicAuth')
-                .auth('scott', 'scott')
-                .end(function(err, res) {
-                  should.not.exist(err);
-                  res.status.should.eql(200);
-                  res.body.count.should.equal(++count);
-
-                  done();
-                });
-            });
-        });
-    });
-  });
-}
+});
