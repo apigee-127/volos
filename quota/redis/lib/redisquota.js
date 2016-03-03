@@ -74,8 +74,10 @@ RedisQuotaSpi.prototype.apply = function(options, cb) {
   self.client.ttl(key, function(err, ttl) {
     if (err) { return cb(err, null); }
 
-    if (ttl === -2) {
+    if (ttl < 0) {
       // -2 means the key does not exist.
+      // -1 means the key exists but is set never to expire.
+      // In either case, we need to create a new, expiring key.
       var now = Date.now();
       ttl = self.calculateExpiration(now) - now;
       if (ttl < 1000) {
@@ -91,6 +93,9 @@ RedisQuotaSpi.prototype.apply = function(options, cb) {
       }
     } else {
       // The key exists - increment it
+      // In theory, Redis may have deleted the key in the meantime. In that case,
+      // this creates a new key with no expiry date. Fortunately, the ttl check
+      // above will ignore the new entry.
       self.client.incrby(key, options.weight, function(err, count) {
         if (err) { return cb(err, null); }
 
