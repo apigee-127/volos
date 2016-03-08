@@ -69,33 +69,53 @@ RedisQuotaSpi.prototype.destroy = function() {
 RedisQuotaSpi.prototype.apply = function(options, cb) {
   var self = this;
   var key = KEY_PREFIX + options.identifier;
-  self.client.incrby(key, options.weight, function(err, count) {
+
+  // Atomic check for (a) if the key exists, and (b) how long until it expires.
+  self.client.ttl(key, function(err, ttl) {
     if (err) { return cb(err, null); }
 
-    var now = Date.now();
-    if (count === options.weight) {
-      var ttl = self.calculateExpiration(now) - now;
-      self.client.expire(key, (ttl / 1000) >> 0);
-      returnResult(ttl);
+    if (ttl < 0) {
+      // -2 means the key does not exist.
+      // -1 means the key exists but is set never to expire.
+      // In either case, we need to create a new, expiring key.
+      var now = Date.now();
+      ttl = self.calculateExpiration(now) - now;
+      if (ttl < 1000) {
+        // Any created record would immediately expire, so skip that step.
+        returnResult(ttl, options.weight);
+      } else {
+        // Atomically set the key and its expiry time.
+        self.client.setex(key, (ttl / 1000) >> 0, options.weight, function(err) {
+          if (err) { return cb(err, null); }
+
+          returnResult(ttl, options.weight);
+        });
+      }
     } else {
-      self.client.ttl(key, function(err, ttl) {
-        if (err) { return cb(err); }
-        returnResult(ttl * 1000);
+      // The key exists - increment it
+      // In theory, Redis may have deleted the key in the meantime. In that case,
+      // this creates a new key with no expiry date. Fortunately, the ttl check
+      // above will ignore the new entry.
+      self.client.incrby(key, options.weight, function(err, count) {
+        if (err) { return cb(err, null); }
+
+        returnResult(ttl * 1000, count);
       });
     }
-
-    function returnResult(ttl) {
-      var allow = options.allow || self.options.allow;
-
-      var result = {
-        allowed: allow,
-        used: count,
-        isAllowed: (count <= allow),
-        expiryTime: ttl
-      };
-      cb(undefined, result);
-    }
   });
+
+  function returnResult(ttl, count) {
+    var allow = options.allow || self.options.allow;
+
+    var result = {
+      allowed: allow,
+      used: count,
+      isAllowed: (count <= allow),
+      expiryTime: ttl
+    };
+    cb(undefined, result);
+  }
+
 };
 
 // Separate this out for white-box unit testing
