@@ -588,9 +588,10 @@ function isSupportedGrantType(self, gt) {
 
 function getIdAndSecret(authorizeHeader, parsedBody) {
   // 2.3.1: Client id and secret may be in Basic format, or in the request body
-  var clientId;
-  var clientSecret;
-  if (authorizeHeader) {
+  var clientId = parsedBody.client_id;
+  var clientSecret = parsedBody.client_secret;
+
+  if (!(clientId && clientSecret) && authorizeHeader) {
     var parsedHeader = /Basic (.+)/.exec(authorizeHeader);
     if (!parsedHeader) {
       return null;
@@ -607,9 +608,6 @@ function getIdAndSecret(authorizeHeader, parsedBody) {
 
     clientId = decoded[1];
     clientSecret = decoded[2];
-  } else {
-    clientId = parsedBody.client_id;
-    clientSecret = parsedBody.client_secret;
   }
   if (clientId && clientSecret) {
     return [clientId, clientSecret];

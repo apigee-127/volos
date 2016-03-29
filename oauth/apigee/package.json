@@ -1,6 +1,6 @@
 {
   "name": "volos-oauth-apigee",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "main": "lib/apigeeruntime.js",
   "description": "Apigee-backed OAuth library in the Volos system.",
   "homepage": "https://github.com/apigee/volos",
@@ -10,7 +10,7 @@
     "node.js"
   ],
   "dependencies": {
-    "volos-oauth-common": "^0.12.1",
+    "volos-oauth-common": "^0.13.0",
     "debug": "^2.2.0",
     "apigee-access": ">=1.2.x",
     "request": "^2.60.0",
