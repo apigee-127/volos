@@ -205,7 +205,10 @@ OAuthCache.prototype.verifyToken = function(token, requiredScopes, cb) {
         if (!Array.isArray(requiredScopes)) {
           requiredScopes = requiredScopes ? requiredScopes.split(' ') : [];
         }
-        var grantedScopes = reply.scope ? reply.scope.split(' ') : [];
+        var grantedScopes = reply.scope || [];
+        if (!Array.isArray(grantedScopes)) {
+          grantedScopes = grantedScopes.split(' ');
+        }
         if (_.difference(requiredScopes, grantedScopes).length > 0) {
           return cb(errorWithCode('invalid_scope'));
         }
