@@ -68,7 +68,7 @@ exports.cache = function(statusCode, headers, content, cb) {
       if (Buffer.isBuffer(content)) {
         content.copy(buffer, pos, 0);
       } else {
-        buffer.write(content, pos, content.length, 'utf8');
+        buffer.write(content, pos, size, 'utf8');
       }
     }
   }
