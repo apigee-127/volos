@@ -72,7 +72,7 @@ var CRYPTO_BYTES = 256 / 8;
 
 var debug = require('debug')('apigee');
 var crypto = require('crypto');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var redis = require("redis");
 var _ = require('underscore');
 var Common = require('volos-management-common');
