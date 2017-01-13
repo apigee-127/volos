@@ -17,7 +17,6 @@
     "js-yaml": "^3.5.3",
     "longjohn": "0.2.x",
     "lru-cache-plus": "2.5.x",
-    "node-uuid": "1.4.x",
     "on-finished": "~2.2.1",
     "proxy": "^0.2.4",
     "redis": "0.10.x",
@@ -29,6 +28,7 @@
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
     "underscore": "1.6.x",
+    "uuid": "^3.0.0",
     "yamljs": "0.1.x"
   },
   "devDependencies": {
