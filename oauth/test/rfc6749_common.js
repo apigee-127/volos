@@ -41,6 +41,15 @@ var DOGS_SCOPE = 'scope2';
 var TEST_TIMEOUT = 20000;
 var LONG_TIMEOUT = 60000;
 
+// hack to fix issue with queryparser and should, see: https://github.com/shouldjs/should.js/issues/146
+querystring.parse = _.wrap(querystring.parse, function(qs, args) {
+	var parsed = qs(args);
+	if (!parsed.should) {
+		parsed = _.clone(parsed)
+	}
+	return parsed;
+});
+
 exports.verifyOauth = function(config, server) {
 
   var creator = config.fixtureCreator;

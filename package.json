@@ -22,14 +22,14 @@
     "redis": "0.10.x",
     "request": "^2.60.0",
     "semver": "3.x.x",
-    "should": "3.1.x",
+    "should": "^3.1.0",
     "superagent": "^1.7.2",
     "supertest": "^1.2.0",
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
     "underscore": "1.6.x",
     "uuid": "^3.0.0",
-    "yamljs": "0.1.x"
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "mocha": "x.x.x"
