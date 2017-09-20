@@ -121,7 +121,7 @@ Bucket.prototype.reset = function(time) {
 };
 
 Bucket.prototype.calculateExpiration = function() {
-  var time = this.resetAt + this.owner.clockOffset;
+  var time = this.resetAt + (this.owner.clockOffset || 0);
 
   var startTime = this.owner.options.startTime;
   var timeInterval = this.owner.options.timeInterval;
