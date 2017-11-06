@@ -258,7 +258,19 @@ exports.testQuota = function(config, Spi) {
           testBeforeAndAfter(id('cal_minute'), pm, done);
         });
 
-        it('Hour', function(done) {
+          it('Minute, Interval: 2', function(done) {
+              var startTime = Date.now() - (60000 * 2 - 250); // start almost 2 minutes ago
+              var options = extend(config, {
+                  timeUnit: 'minute',
+                  interval: 2,
+                  allow: 1,
+                  startTime: startTime
+              });
+              var pm = Spi.create(options);
+              testBeforeAndAfter(id('cal_minute_interval_2'), pm, done);
+          });
+
+          it('Hour', function(done) {
           var startTime = Date.now() - (60000 * 60 - 250); // start almost an hour ago
           var options = extend(config, {
             timeUnit: 'hour',
@@ -329,7 +341,7 @@ exports.testQuota = function(config, Spi) {
                   cb();
                 });
               });
-            }, 251);
+            }, 255);
           });
         }
 
