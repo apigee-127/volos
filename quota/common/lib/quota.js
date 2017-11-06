@@ -74,6 +74,7 @@ function Quota(Spi, o) {
   } else if ('month' === options.timeUnit) {
     options.timeInterval = MONTH;
   }
+  options.timeInterval *= options.interval;
 
   if (options.bufferSize && !options.bufferTimeout) { options.bufferTimeout = MINUTE; }
 
