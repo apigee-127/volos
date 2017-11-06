@@ -74,7 +74,6 @@ function Quota(Spi, o) {
   } else if ('month' === options.timeUnit) {
     options.timeInterval = MONTH;
   }
-  options.timeInterval *= options.interval;
 
   if (options.bufferSize && !options.bufferTimeout) { options.bufferTimeout = MINUTE; }
 
@@ -91,6 +90,8 @@ function Quota(Spi, o) {
       throw new Error(util.format('Invalid start time %s', options.startTime));
     }
   }
+
+  options.timeInterval *= options.interval;
 
   this.options = options;
   var spi = new Spi(options);
