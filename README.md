@@ -113,10 +113,8 @@ To test Redis providers:
 Support
 =======
 
-The support model for Volos is 'community support' for non-paying Apigee customers.  This means that you can use 
-publicly-available resources to solicit assistance from the Volos developer community as well as employees of Apigee 
-that help support Volos.  If you are a paying Apigee customer we can offer support through the stated channels in your 
-support agreement.
+The support model for Volos is 'community support' only.  This means that you can use publicly-available resources
+to solicit assistance from the Volos developer community. Apigee does not offer official support for this product.
 
 Having Problems?
 ----------------
