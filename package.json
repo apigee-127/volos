@@ -32,7 +32,8 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "mocha": "x.x.x"
+    "mocha": "^5.2.0",
+    "nock": "^10.0.6"
   },
   "scripts": {
     "test": "mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",

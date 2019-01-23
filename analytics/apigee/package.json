@@ -1,6 +1,6 @@
 {
-  "name": "volos-analytics-apigee",
-  "version": "0.4.2",
+  "name": "@bbc/volos-analytics-apigee",
+  "version": "0.5.0",
   "main": "lib/apigeeanalytics.js",
   "license": "MIT",
   "description": "Apigee provider for Analytics in the Volos system.",
@@ -13,11 +13,14 @@
     "debug": "^2.2.0",
     "on-finished": "~2.2.1",
     "request": "^2.6.0",
-    "volos-analytics-common": "0.2.x"
+    "volos-analytics-common": "0.2.4"
   },
   "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"
+  },
+  "scripts": {
+    "test": "npx mocha"
   }
 }
