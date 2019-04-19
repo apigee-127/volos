@@ -73,6 +73,9 @@ function Quota(Spi, o) {
     options.timeInterval = WEEK;
   } else if ('month' === options.timeUnit) {
     options.timeInterval = MONTH;
+  } else if ('30days' === options.timeUnit) {
+    options.timeInterval = DAY;
+    options.interval*=30;
   }
 
   if (options.bufferSize && !options.bufferTimeout) { options.bufferTimeout = MINUTE; }
@@ -91,7 +94,9 @@ function Quota(Spi, o) {
     }
   }
 
-  options.timeInterval *= options.interval;
+  if(options.timeUnit !== '30days') {
+    options.timeInterval *= options.interval;
+  }
 
   this.options = options;
   var spi = new Spi(options);
