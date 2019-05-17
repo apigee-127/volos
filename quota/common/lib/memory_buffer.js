@@ -53,9 +53,16 @@ function MemoryBuffer(spi, options) {
   }
 
   var self = this;
+  let intervalCount = 0;
   self.bucketTimer = setInterval(function() {
-    trimTokens(self);
-  }, options.timeInterval);
+    if(options.timeUnit === '30days'){
+      if(++intervalCount === options.interval){
+        intervalCount=0;
+        trimTokens(self);
+      }
+    } else {
+      trimTokens(self);
+    }  }, options.timeInterval);
 
   if (options.bufferTimeout) {
     self.flushTimer = setInterval(function() {
