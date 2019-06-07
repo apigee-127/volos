@@ -39,10 +39,9 @@ module.exports.create = create;
 function MemorySpikeArrestSpi(options) {
   this.options = options;
   this.keys = {};
-  setInterval(function cleanup() {
-
-  }, 10000);
-
+  // setInterval(function cleanup() {
+  // todo: add a periodic cleanup
+  // }, 10000);
 }
 
 // options.key (Non-object)
@@ -71,5 +70,3 @@ MemorySpikeArrestSpi.prototype.apply = function(options, cb) {
   };
   cb(undefined, result);
 };
-
-// todo: add a periodic cleanup
