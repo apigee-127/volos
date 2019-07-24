@@ -85,7 +85,6 @@ MemoryBuffer.prototype.apply = function(options, cb) {
   if (!bucket) {
     bucket = new Bucket(now, options, this);
     this.buckets[options.identifier] = bucket;
-    bucket.flushBucket();
   }
   bucket.apply(now, options, cb);
 };
@@ -175,13 +174,14 @@ Bucket.prototype.apply = function(time, options, cb) {
 
   cb(null, result);
 
-  if (this.count % this.options.bufferSize === 0) {
+  if (!this.remoteExpires || (this.count % this.owner.options.bufferSize === 0)) {
     this.flushBucket();
   }
 };
 
 Bucket.prototype.flushBucket = function(cb) {
   if (this.flushing || (!this.count && this.remoteExpires)) { return cb ? cb() : null; }
+  this.flushing = true
 
   debug('flushing bucket: ', this.options.identifier);
   var localExpires = this.expires;
@@ -191,7 +191,6 @@ Bucket.prototype.flushBucket = function(cb) {
     weight: this.count
   };
   var self = this;
-  self.flushing = true;
   self.owner.spi.apply(options, function(err, reply) {
     self.flushing = false;
     if (err) { return (cb) ? cb(err) : console.error(err); }
