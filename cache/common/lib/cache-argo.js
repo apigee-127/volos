@@ -123,7 +123,7 @@ CacheArgo.prototype.cache = function(id) {
           encoder.cache(resp.statusCode, headers, content, cb);
         };
 
-        return next();
+        return next(env);
       };
 
       resp.setHeader('Cache-Control', "public, max-age=" + Math.floor(options.ttl / 1000) + ", must-revalidate");
