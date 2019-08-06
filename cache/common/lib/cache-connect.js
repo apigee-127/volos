@@ -121,9 +121,7 @@ CacheConnect.prototype.cache = function(options) {
             addChunk(chunk, content);
           } else {
             resp.on('finish', function() {
-              doCache = true;
-              headers = resp._headers;
-              content = chunk;
+              encoder.cache(resp.statusCode, resp._headers, chunk, cb);
             });
           }
         }
