@@ -75,16 +75,69 @@ describe('Apigee', function() {
           password: config.validUserCreds.password,
           refreshTokenLifetime: 60000
         };
-        oauth.spi.createTokenPasswordCredentials(options, function(err, token) {
+        oauth.spi.createTokenPasswordCredentials(options, function(err, response) {
           should.not.exist(err);
-          token.should.have.property('refresh_token');
-          token.should.have.property('refresh_token_expires_in');
-          token.refresh_token_expires_in.should.be.approximately(55, 5);
+          response.should.have.property('refresh_token');
+          response.should.have.property('refresh_token_expires_in');
+          response.refresh_token_expires_in.should.be.approximately(55, 5);
 
           done();
         });
       });
 
+      it('should invalidateToken with proper credentials', function(done) {
+        var options = {
+          clientId: client_id,
+          clientSecret: client_secret,
+        };
+        oauth.spi.createTokenClientCredentials(options, function(err, response) {
+          should.not.exist(err);
+          response.should.have.property('access_token');
+          var access_token = response.access_token
+
+          oauth.spi.verifyToken(access_token, null, function(err, response) {
+            should.not.exist(err);
+            options.clientSecret = "invalid"
+            options.token = access_token
+
+            oauth.spi.invalidateToken(options, function(err, response) {
+              should.not.exist(err);
+              response.should.not.have.property('clientId')
+              response.should.not.have.property('clientSecret')
+  
+              oauth.spi.verifyToken(access_token, null, function(err, response) {
+                should.exist(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      // verifies known bug: https://github.com/apigee-127/volos/issues/112
+      // TODO: enable when bug is fixed on server
+      it.skip('should not invalidateToken with invalid credentials', function(done) {
+        var options = {
+          clientId: client_id,
+          clientSecret: client_secret,
+        };
+        
+        oauth.spi.createTokenClientCredentials(options, function(err, response) {
+          should.not.exist(err);
+          response.should.have.property('access_token');
+          var access_token = response.access_token
+
+          oauth.spi.invalidateToken(options, function(err, response) {
+            should.exist(err);
+
+            oauth.spi.verifyToken(access_token, null, function(err, response) {
+              should.not.exist(err);
+              options.clientSecret = client_secret
+                done();
+            });
+          });
+        });
+      });
     });
   });
 
