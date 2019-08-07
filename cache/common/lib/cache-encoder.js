@@ -53,7 +53,7 @@ exports.cache = function(statusCode, headers, content, cb) {
     }
     if (content) { size += Buffer.isBuffer(content) ? content.length : Buffer.byteLength(content); }
 
-    buffer = new Buffer(size);
+    buffer = new Buffer.allocUnsafe(size);
     var pos = 0;
     buffer.writeUInt16LE(statusCode, pos); pos+=2;
     buffer.writeUInt16LE(pairs.length.valueOf(), pos); pos+=2; // # pairs

@@ -307,7 +307,7 @@ function makeRequest(self, verb, uriPath, body, options, cb) {
 
   var r = url.parse(finalUri);
   r.headers = {
-    Authorization: 'Basic ' + new Buffer(options.clientId + ':' + options.clientSecret).toString('base64')
+    Authorization: 'Basic ' + Buffer.from(options.clientId + ':' + options.clientSecret).toString('base64')
   };
   r.headers['x-DNA-Api-Key'] = self.key;
   if (options.tokenLifetime) {

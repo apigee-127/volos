@@ -92,7 +92,7 @@ function ApigeeManagementSpi(config) {
   }
 
   this.organization = config.organization;
-  this.auth = 'Basic ' + (new Buffer(config.user + ':' + config.password).toString('base64'));
+  this.auth = 'Basic ' + (Buffer.from(config.user + ':' + config.password).toString('base64'));
   this.uri = (config.managementUri ? config.managementUri : DEFAULT_APIGEE_URI);
 }
 

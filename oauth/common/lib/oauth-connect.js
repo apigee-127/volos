@@ -115,7 +115,7 @@ OAuthConnect.prototype.authenticateBasicAuth = function() {
     debug('Connect authenticate BasicAuth');
     var header = request.headers['authorization'] || '';
     var token = header.split(/\s+/).pop() || '';
-    var auth = new Buffer(token, 'base64').toString();
+    var auth = Buffer.from(token, 'base64').toString();
     var usernamePassword = auth.split(/:/);
     self.oauth.verifyPassword(
       usernamePassword[0],

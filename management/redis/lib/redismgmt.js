@@ -495,7 +495,7 @@ function hashToken(self, token) {
 function encrypt(self, object) {
   var cipher = crypto.createCipher(self.cypherAlgo, self.encryptionKey);
   var json = JSON.stringify(object);
-  var buffers = [cipher.update(new Buffer(json))];
+  var buffers = [cipher.update(Buffer.from(json))];
   buffers.push(cipher.final());
   var encrypted = Buffer.concat(buffers);
   return encrypted;
@@ -503,7 +503,7 @@ function encrypt(self, object) {
 
 function decrypt(self, data) {
   var decipher = crypto.createDecipher(self.cypherAlgo, self.encryptionKey);
-  var buffers = [decipher.update(new Buffer(data))];
+  var buffers = [decipher.update(Buffer.from(data))];
   buffers.push(decipher.final());
   var decrypted = Buffer.concat(buffers).toString();
   return JSON.parse(decrypted);

@@ -66,7 +66,7 @@ exports.testCache = function(config, Spi) {
 
       it('Buffer', function(done) {
         var tb = 'TestString2';
-        tc.set('1b', new Buffer(tb, 'utf8'), function(err) {
+        tc.set('1b', new Buffer.from(tb, 'utf8'), function(err) {
           should.not.exist(err);
           tc.get('1b', function(err, val) {
             should.not.exist(err);
@@ -225,7 +225,7 @@ exports.testCache = function(config, Spi) {
 
         it('should return a Buffer when setting a Buffer', function(done) {
           var tc = Spi.create(CACHE_NAME, config);
-          var ts = new Buffer('TestString1');
+          var ts = new Buffer.from('TestString1');
           tc.set('B1', ts, function(err) {
             should.not.exist(err);
             tc.get('B1', function(err, val) {
@@ -240,7 +240,7 @@ exports.testCache = function(config, Spi) {
       it('base64', function(done) {
         var tc = Spi.create(CACHE_NAME, config);
         tc.setEncoding('base64');
-        var tb = new Buffer('TestInBase64Yay').toString('base64');
+        var tb = new Buffer.from('TestInBase64Yay').toString('base64');
         tc.set('b641', tb, { encoding: 'base64' }, function(err) {
           should.not.exist(err);
           tc.get('b641', function(err, val) {
@@ -263,7 +263,7 @@ exports.testCache = function(config, Spi) {
       });
 
       it('Two Buffers', function(done) {
-        var tb = new Buffer('TestTwo1');
+        var tb = new Buffer.from('TestTwo1');
         tc1.set('21', tb, function(err) {
           should.not.exist(err);
           tc2.get('21', function(err, val) {

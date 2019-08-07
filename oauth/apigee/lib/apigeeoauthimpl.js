@@ -300,8 +300,7 @@ OAuthImpl.prototype.refreshToken = function(options, cb) {
  * Invalidate an existing token. Parameters:
  *   clientId: required
  *   clientSecret: required
- *   refreshToken: either this or accessToken must be specified
- *   accessToken: same
+ *   token: required
  */
 OAuthImpl.prototype.invalidateToken = function(options, cb) {
   var r = _.pick(options,

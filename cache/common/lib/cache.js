@@ -188,7 +188,7 @@ function validateKey(key) {
 
 function convertValue(value, encoding) {
   if (typeof value === 'string') {
-    return new Buffer(value, encoding);
+    return new Buffer.from(value, encoding);
   } else if (value instanceof Buffer) {
     return value;
   } else {

@@ -600,7 +600,7 @@ function getIdAndSecret(authorizeHeader, parsedBody) {
       return null;
     }
 
-    var decodedHeader = new Buffer(parsedHeader[1], 'base64').toString();
+    var decodedHeader = Buffer.from(parsedHeader[1], 'base64').toString();
     var decoded = /([^:]+):([^:]+)/.exec(decodedHeader);
     if (!decoded || decoded.length < 3) {
       return null;

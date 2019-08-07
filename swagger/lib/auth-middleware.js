@@ -108,7 +108,7 @@ function SwaggerSecurityHandler(oauth) {
       debug('authenticate basic auth');
       var header = request.headers['authorization'] || '';
       var token = header.split(/\s+/).pop() || '';
-      var auth = new Buffer(token, 'base64').toString();
+      var auth = Buffer.from(token, 'base64').toString();
       var usernamePassword = auth.split(/:/);
       oauth.verifyPassword(usernamePassword[0], usernamePassword[1], done);
 
