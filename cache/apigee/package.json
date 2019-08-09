@@ -21,10 +21,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"
-  },
-  "scripts": {
-    "test": "bin/link;node_modules/mocha/bin/_mocha -u exports -R spec test/*",
-    "coverage": "bin/link;node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/*",
-    "coveralls": "bin/link;node node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec test/* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js --verbose"
   }
 }
