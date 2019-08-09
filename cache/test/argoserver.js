@@ -24,12 +24,11 @@
 'use strict';
 
 var argo = require('argo');
-var port = 10010;
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-module.exports = function(cache) {
+module.exports = function(port, cache) {
   var counter = 1;
   var app = argo();
   app
