@@ -22,9 +22,6 @@
     "redis": "0.10.x",
     "request": "^2.60.0",
     "semver": "3.x.x",
-    "should": "^3.1.0",
-    "superagent": "^1.7.2",
-    "supertest": "^1.2.0",
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
     "underscore": "1.6.x",
@@ -32,8 +29,11 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "should": "^3.1.0",
+    "supertest": "^1.2.0",
     "istanbul": "^0.4.5",
-    "mocha": "x.x.x"
+    "mocha": "x.x.x",
+    "superagent": "^3.2.1"
   },
   "scripts": {
     "test": "bin/link;mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",
