@@ -4,9 +4,6 @@ node_js:
   - "10"
   - "node"
 sudo: false
-
-after_success:
-  npm run coveralls
-
+script: npm run coveralls
 services:
 - redis-server
