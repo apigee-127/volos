@@ -37,14 +37,18 @@ describe('Middleware', function() {
   };
 
   describe('Express', function() {
-    var cache = memoryCache.create('express', options);
-    var server = expressServer(cache);
-    verifyCache.verify(server);
+    var createServer = function() {
+      var cache = memoryCache.create('express', options);
+      return expressServer(cache);
+    }
+    verifyCache.verify(createServer);
   });
 
   describe('Argo', function() {
-    var cache = memoryCache.create('argo', options);
-    var server = argoServer(10010, cache);
-    verifyCache.verify(server);
+    var createServer = function() {
+      var cache = memoryCache.create('argo', options);
+      return argoServer(10010, cache);
+    }
+    verifyCache.verify(createServer);
   });
 });

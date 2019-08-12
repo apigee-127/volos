@@ -29,14 +29,14 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "should": "^3.1.0",
-    "supertest": "^1.2.0",
     "istanbul": "^0.4.5",
-    "mocha": "x.x.x",
-    "superagent": "^3.2.1"
+    "mocha": "^3.5.3",
+    "should": "^3.1.0",
+    "superagent": "^3.2.1",
+    "supertest": "^1.2.0"
   },
   "scripts": {
-    "test": "bin/link;mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",
+    "test": "bin/link;node_modules/mocha/bin/mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",
     "test-apigee": "bin/link;mocha -u exports -R spec cache/apigee/test/apigeetest.js management/apigee/test oauth/apigee/test quota/apigee/test analytics/apigee/test",
     "coveralls": "bin/link;DEBUG=cache,quota,oauth,swagger,analytics,spikearrest ROLLING_TESTS=true node node_modules/istanbul/lib/cli.js cover _mocha -- -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js"
   }

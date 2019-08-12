@@ -36,11 +36,19 @@ var testdata = fs.readFileSync(path.join(__dirname, 'testdata.txt'), { encoding:
 
 var ttl = 50;
 
-module.exports.verify = function(server) {
-  if (typeof server === 'string') {
-    debug('verify target: %s', server);
-  }
-  var count = 0;
+module.exports.verify = function(createServer) {
+  var server
+  var count
+
+  before(function() {
+    if (typeof createServer === 'string') {
+      debug('verify target: %s', createServer);
+      server = createServer
+    } else {
+      server = createServer()
+    }
+    count = 0
+  })
 
   it('must cache string', function(done) {
     debug('GET /count');
