@@ -2,7 +2,6 @@
 node_modules
 config.js
 testconfig-apigee.js
-testconfig-redis.js
 .*.swo
 .*.swp
 npm-debug.log

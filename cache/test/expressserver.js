@@ -53,13 +53,13 @@ module.exports = function(cache) {
   app.get('/emit500',
     cache.expressMiddleware().cache(),
     function(req, resp) {
-      resp.json(500, { count: counter++ });
+      resp.status(500).json({ count: counter++ });
     });
 
   app.get('/emit201',
     cache.expressMiddleware().cache(),
     function(req, resp) {
-      resp.json(201, { count: counter++ });
+      resp.status(201).json({ count: counter++ });
     });
 
   app.post('/count',

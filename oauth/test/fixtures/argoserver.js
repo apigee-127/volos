@@ -24,10 +24,12 @@
 "use strict";
 
 var argo = require('argo');
-var port = 10012;
+
+var usePort = 10020
 
 module.exports = function(oauth) {
   var app = argo();
+  var port = usePort++
   app
     .get('/dogs', function(handle) {
       handle('request', function(env, next) {

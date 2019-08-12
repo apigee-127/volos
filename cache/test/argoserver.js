@@ -24,13 +24,15 @@
 'use strict';
 
 var argo = require('argo');
-var port = 10010;
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
+var usePort = 10030
+
 module.exports = function(cache) {
   var counter = 1;
+  var port = usePort++
   var app = argo();
   app
 //    .use(cache.argoMiddleware().cache())

@@ -31,25 +31,29 @@ var verifyQuota = require('./verifyquota');
 describe('Quota Middleware', function() {
 
   describe('Express', function() {
-    var options = {
-      timeUnit: 'minute',
-      interval: 1,
-      allow: 2
-    };
-    var quota = memoryQuota.create(options);
-    var server = expressServer(quota);
-    verifyQuota.verify(server);
+    var createServer = function() {
+      var options = {
+        timeUnit: 'minute',
+        interval: 1,
+        allow: 2
+      };
+      var quota = memoryQuota.create(options);
+      return expressServer(quota);
+    }
+    verifyQuota.verify(createServer);
   });
 
   describe('Argo', function() {
-    var options = {
-      timeUnit: 'minute',
-      interval: 1,
-      allow: 2
-    };
-    var quota = memoryQuota.create(options);
-    var server = argoServer(quota);
-    verifyQuota.verify(server);
+    var createServer = function() {
+      var options = {
+        timeUnit: 'minute',
+        interval: 1,
+        allow: 2
+      };
+      var quota = memoryQuota.create(options);
+      return argoServer(quota);
+    }
+    verifyQuota.verify(createServer);
   });
 
 });

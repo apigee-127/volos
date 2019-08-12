@@ -25,11 +25,13 @@
 
 var argo = require('argo');
 var assert = require('assert');
-var port = 10011;
+
+var usePort = 10015
 
 module.exports = function(oauth) {
   var app = argo();
   var counter = 1;
+  var port = usePort++
 
   app
     .get('/count', function(handle) {

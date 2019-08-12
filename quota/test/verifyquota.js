@@ -27,11 +27,19 @@ var should = require('should');
 var request = require('supertest');
 var debug = require('debug')('quotatest');
 
-module.exports.verify = function(server) {
+module.exports.verify = function(createServer) {
 
-  if (typeof server === 'string') {
-    debug('verify target: %s', server);
-  }
+  var server
+
+  before(function() {
+    if (typeof createServer === 'string') {
+      debug('verify target: %s', createServer);
+      server = createServer
+    } else {
+      server = createServer()
+    }
+  })
+
   describe('count', function() {
     it('must count correctly', function(done) {
       debug('GET /count');
