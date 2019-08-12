@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/apigee-127/volos.svg?branch=travis-ci)](https://travis-ci.org/apigee-127/volos)  [![Coverage Status](https://coveralls.io/repos/github/apigee-127/volos/badge.svg?branch=master)](https://coveralls.io/github/apigee-127/volos?branch=master)
+
+
 Apigee Volos
 ============
 
