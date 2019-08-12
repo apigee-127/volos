@@ -47,7 +47,7 @@ describe('Middleware', function() {
   describe('Argo', function() {
     var createServer = function() {
       var cache = memoryCache.create('argo', options);
-      return argoServer(10010, cache);
+      return argoServer(cache);
     }
     verifyCache.verify(createServer);
   });

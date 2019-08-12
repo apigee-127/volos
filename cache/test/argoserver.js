@@ -28,8 +28,11 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-module.exports = function(port, cache) {
+var usePort = 10010
+
+module.exports = function(cache) {
   var counter = 1;
+  var port = usePort++
   var app = argo();
   app
 //    .use(cache.argoMiddleware().cache())

@@ -51,7 +51,7 @@ describe('Quota Middleware', function() {
         allow: 2
       };
       var quota = memoryQuota.create(options);
-      return argoServer(10011, quota);
+      return argoServer(quota);
     }
     verifyQuota.verify(createServer);
   });
