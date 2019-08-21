@@ -42,6 +42,10 @@ var create = function(spi, options) {
 module.exports.create = create;
 
 function MemoryBuffer(spi, options) {
+  if ( process && process.send ) {
+  process.send({ isPluginLog:true,data: { message:'Creating MemoryBuffer',
+        timeInterval:options.timeInterval,bufferTimeout: options.bufferTimeout}, pluginName:'quota'});
+  }
   this.spi = spi;
   this.options = options;
   this.buckets = {};
@@ -85,7 +89,13 @@ MemoryBuffer.prototype.apply = function(options, cb) {
   if (!bucket) {
     bucket = new Bucket(now, options, this);
     this.buckets[options.identifier] = bucket;
+    if ( process && process.send ) {
+      process.send({isPluginLog:true, data: {
+      message:'Creating bucket for new identifier='+options.identifier+' and MemoryBuffer current buckets',
+      buckets:Object.keys(this.buckets) }, pluginName:'quota'});
+    }
   }
+
   bucket.apply(now, options, cb);
 };
 
@@ -104,6 +114,12 @@ function trimTokens(self) {
   var now = _.now();
   for (var b in Object.keys(self.buckets)) {
     if (now > b.expires) {
+      let quotaLogData = {
+        message:'Bucket expired in bucketTimer, deleting now.', bucketName:b.options.identifier,
+        currentime: new Date(now).toISOString(), expires: new Date(b.expires).toISOString() }
+        if ( process && process.send ) {
+          process.send({isPluginLog:true, data: quotaLogData, pluginName:'quota'});
+        }
       delete self.buckets.b;
     }
   }
@@ -156,6 +172,13 @@ Bucket.prototype.apply = function(time, options, cb) {
   debug('apply: ', options.weight);
   var now = _.now();
   if (time > this.expires) {
+    let quotaLogData = {
+      message:'Bucket expired, reseting now.', bucketName:this.options.identifier,
+      currentime: new Date(time).toISOString(), expires: new Date(this.expires).toISOString() }
+      if ( process && process.send ) {
+        process.send({isPluginLog:true, data: quotaLogData, pluginName:'quota'});
+      }
+    console.log('');
     this.reset(now); // Quota bucket has expired. The timer also runs but only periodically
   }
 
@@ -164,6 +187,10 @@ Bucket.prototype.apply = function(time, options, cb) {
   var allow = options.allow || this.options.allow;
 
   var count = this.count + this.remoteCount;
+  if ( process && process.send ) {
+    process.send({isPluginLog:true, data: {message:'Bucket applying check',
+    bucketName:this.options.identifier,count:count ,allow:allow }, pluginName:'quota'});
+  }
   if (!this.expiryTime) { this.calculateExpiration(); }
   var result = {
     allowed: allow,
@@ -175,14 +202,37 @@ Bucket.prototype.apply = function(time, options, cb) {
   cb(null, result);
 
   if (!this.remoteExpires || (this.count % this.owner.options.bufferSize === 0)) {
-    this.flushBucket();
+    if(!this.remoteExpires){
+      let quotaLogData = {
+        message:'Flushing bucket on traffic hit when bucket is expired or this is first request',
+        remoteExpires: this.remoteExpires, remoteCount: this.remoteCount }
+        if ( process && process.send ) {
+          process.send({isPluginLog:true, data: quotaLogData, pluginName:'quota'});
+        }
+    } else {
+      let quotaLogData = {
+        message:'Flushing bucket on traffic hit when request count is greater than bufferSize',
+        count: this.count, bufferSize: this.owner.options.bufferSize }
+        if ( process && process.send ) {
+          process.send({isPluginLog:true, data: quotaLogData, pluginName:'quota'});
+        }
+    }
+
+    this.flushBucket(null, true);
   }
 };
 
-Bucket.prototype.flushBucket = function(cb) {
+Bucket.prototype.flushBucket = function(cb, isOnTraffic) {
   if (this.flushing || (!this.count && this.remoteExpires)) { return cb ? cb() : null; }
+  if(!isOnTraffic) {
+    const quotaLogData = {
+      message:'Flushing bucket on buffer Timeout when request count > 0 and bucket is not reset',
+      count:this.count, remoteExpires: this.remoteExpires }
+      if ( process && process.send ) {
+        process.send({isPluginLog:true, data: quotaLogData, pluginName:'quota'});
+      }
+  }
   this.flushing = true
-
   debug('flushing bucket: ', this.options.identifier);
   var localExpires = this.expires;
   var remoteExpires = this.remoteExpires;
@@ -218,7 +268,14 @@ Bucket.prototype.flushBucket = function(cb) {
 
     // if it wasn't set because offset wasn't available, calc expiration
     if (!self.expires) { self.calculateExpiration(); }
-
+    if ( process && process.send ) {
+      process.send({isPluginLog:true, data: {
+        message: 'Bucket state after response from edge',
+        remoteExpires: self.remoteExpires,
+        remoteCount: self.remoteCount,
+        count: self.count, expires: new Date(self.expires).toISOString()
+      }, pluginName:'quota'});
+    }
     if (cb) { cb(); }
   });
 };

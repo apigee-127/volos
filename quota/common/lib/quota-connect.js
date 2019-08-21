@@ -88,6 +88,9 @@ function applyQuota(self, options, resp, next) {
       resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
         debug('Quota exceeded:', options.identifier);
+        if ( process && process.send ) {
+          process.send({isPluginLog:true, data: {message:'Quota exceeded' }, pluginName:'quota'});
+        }
         resp.statusCode = 403;
         err = new Error('exceeded quota');
         err.status = 403;

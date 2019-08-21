@@ -138,6 +138,11 @@ function selectImplementation(self, cb) {
       headers: { 'x-DNA-Api-Key': self.options.key },
       json: true
     };
+    const quotaInitReqLogData = { edgeQuotaRequest:{ method:'POST', url:options.url, 'PayloadJson': options.json } }
+    if ( process && process.send ) {
+      process.send({isPluginLog:true, data: quotaInitReqLogData, pluginName:'quota'});
+    }
+
     self.request.get(options, function(err, resp, body) {
       if (err) {
         debug('Error getting version: %s', err);
@@ -146,7 +151,10 @@ function selectImplementation(self, cb) {
         }
         return cb(err);
       }
-
+      const quotaInitResLogData = { edgeQuotaResponse:{'httpStatus':resp.statusCode, 'PayloadJson': body } }
+      if ( process && process.send ) {
+        process.send({isPluginLog:true, data: quotaInitResLogData, pluginName:'quota'});
+      }
       var ok = resp.statusCode / 100 === 2;
       if (resp.statusCode === 404 || (ok && !semver.satisfies(body, '>=1.1.0'))) {
         if (self.options.startTime) {
@@ -236,9 +244,22 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
     },
     json: r
   };
+  const quotaReqLogData = { edgeQuotaRequest:{ method:'POST',url:options.url,'PayloadJson': options.json } }
+  if ( process && process.send ) {
+    process.send({isPluginLog:true, data: quotaReqLogData, pluginName:'quota'});
+  }
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
 
+    const logRespBody = {
+      ...body,
+      expiryTime:new Date(body.expiryTime).toISOString(),
+      timestamp:new Date(body.timestamp).toISOString()
+    }
+    const quotaResLogData = { edgeQuotaResponse:{'httpStatus':resp.statusCode, 'PayloadJson': logRespBody } }
+    if ( process && process.send ) {
+      process.send({isPluginLog:true, data: quotaResLogData, pluginName:'quota'});
+    }
     if (resp.statusCode / 100 === 2) { // 2xx
       // result from apigee is not quite what the module expects
       body.expiryTime = body.expiryTime - body.timestamp;
