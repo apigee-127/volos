@@ -236,6 +236,13 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
     },
     json: r
   };
+  if( this.quota.options.key && this.quota.options.secret) {
+    options['auth']= {
+      user: this.quota.options.key,
+      pass: this.quota.options.secret,
+      sendImmediately: true
+    }
+  }
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
 
