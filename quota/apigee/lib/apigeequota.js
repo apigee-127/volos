@@ -138,11 +138,20 @@ function selectImplementation(self, cb) {
       headers: { 'x-DNA-Api-Key': self.options.key },
       json: true
     };
+
     const quotaInitReqLogData = { edgeQuotaRequest:{ method:'POST', url:options.url, 'PayloadJson': options.json } }
     if ( process && process.send ) {
       process.send({isPluginLog:true, data: quotaInitReqLogData, pluginName:'quota'});
     }
 
+    if( self.options.key && self.options.secret) {
+      options['auth']= {
+        user: self.options.key,
+        pass: self.options.secret,
+        sendImmediately: true
+      }
+    }
+    
     self.request.get(options, function(err, resp, body) {
       if (err) {
         debug('Error getting version: %s', err);
@@ -244,9 +253,17 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
     },
     json: r
   };
+
   const quotaReqLogData = { edgeQuotaRequest:{ method:'POST',url:options.url,'PayloadJson': options.json } }
   if ( process && process.send ) {
     process.send({isPluginLog:true, data: quotaReqLogData, pluginName:'quota'});
+
+  if( this.quota.options.key && this.quota.options.secret) {
+    options['auth']= {
+      user: this.quota.options.key,
+      pass: this.quota.options.secret,
+      sendImmediately: true
+    }
   }
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
