@@ -11,9 +11,9 @@
   ],
   "dependencies": {
     "volos-cache-common": "0.10.x",
-    "debug": "^2.2.0",
+    "debug": "^4.4.1",
     "underscore": "1.6.x",
-    "redis": "0.10.x"
+    "redis": "^2.8.0"
   },
   "devDependencies": {},
   "repository": {

@@ -13,8 +13,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "async": "^1.5.2",
-    "debug": "^2.2.0",
-    "js-yaml": "^3.5.3",
+    "debug": "^4.1.1",
+    "js-yaml": "^3.13.1",
     "underscore": "^1.8.3"
   },
   "devDependencies": {

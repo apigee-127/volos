@@ -11,16 +11,14 @@
     "node.js"
   ],
   "dependencies": {
-    "redis": "0.10.x",
-    "node-uuid": "1.4.x",
+    "redis": "^2.8.0",
     "volos-oauth-common": "^0.13.0",
     "volos-management-redis": "0.9.x",
-    "debug": "^2.2.0",
-    "underscore": "1.6.x"
+    "debug": "^4.1.1",
+    "underscore": "1.6.x",
+    "uuid": "^3.0.0"
   },
-  "devDependencies": {
-    "supertest": "^1.2.0"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"

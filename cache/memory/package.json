@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "volos-cache-common": "0.10.x",
-    "debug": "^2.2.0",
+    "debug": "^4.4.1",
     "lru-cache-plus": "2.5.x"
   },
   "devDependencies": {},

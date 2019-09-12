@@ -9,7 +9,7 @@
     "redis"
   ],
   "dependencies": {
-    "redis": "0.10.x",
+    "redis": "^2.8.0",
     "node-uuid": "1.4.x",
     "volos-management-common": "0.9.x",
     "debug": "^2.2.0",

@@ -11,13 +11,10 @@
   "dependencies": {
     "volos-cache-common": "0.10.x",
     "apigee-access": "1.0.x",
-    "debug": "^2.2.0",
+    "debug": "^4.4.1",
     "underscore": "1.6.x"
   },
-  "devDependencies": {
-    "mocha": "1.19.x",
-    "should": "3.3.x"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"

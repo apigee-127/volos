@@ -9,13 +9,11 @@
     "apigee"
   ],
   "dependencies": {
-    "debug": "^2.2.0",
+    "debug": "^4.1.1",
     "volos-management-common": "0.9.x",
     "underscore": "1.6.x"
   },
-  "devDependencies": {
-    "supertest": "^1.2.0"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/apigee/volos.git"
