@@ -58,6 +58,9 @@ var create = function(options) {
 module.exports.create = create;
 
 var ApigeeQuotaSpi = function(options) {
+  if ( options.debug && typeof options.debug === "function") {
+    debug = options.debug;
+  }
   // Allow users to override use of apigee-access
   if (options.apigeeMode === 'local') {
     debug('Using apigee-access no matter what');
@@ -145,6 +148,7 @@ function selectImplementation(self, cb) {
         sendImmediately: true
       }
     }
+    debug('version call url: %s', options.url);
     self.request.get(options, function(err, resp, body) {
       if (err) {
         debug('Error getting version: %s', err);
@@ -154,6 +158,7 @@ function selectImplementation(self, cb) {
         return cb(err);
       }
 
+      debug('version call response, statusCode: %d, body: %j', resp.statusCode, body);
       var ok = resp.statusCode / 100 === 2;
       if (resp.statusCode === 404 || (ok && !semver.satisfies(body, '>=1.1.0'))) {
         if (self.options.startTime) {
@@ -250,9 +255,16 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
       sendImmediately: true
     }
   }
+  debug('calling quotas/apply method: POST, url: %s', options.url);
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
-
+    // transforming the date format in response to make it more readable
+    const logRespBody = {
+      ...body,
+      expiryTime:new Date(body.expiryTime).toISOString(),
+      timestamp:new Date(body.timestamp).toISOString()
+    }
+    debug('quotas/apply response statusCode: %s, responseBody: %j', resp.statusCode, logRespBody);
     if (resp.statusCode / 100 === 2) { // 2xx
       // result from apigee is not quite what the module expects
       body.expiryTime = body.expiryTime - body.timestamp;

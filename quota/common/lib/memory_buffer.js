@@ -42,6 +42,10 @@ var create = function(spi, options) {
 module.exports.create = create;
 
 function MemoryBuffer(spi, options) {
+  if ( options.debug  && typeof options.debug === "function") {
+    debug = options.debug;
+  }
+  debug('Creating MemoryBuffer, timeInterval: %d, bufferTimeout: %d', options.timeInterval, options.bufferTimeout);
   this.spi = spi;
   this.options = options;
   this.buckets = {};
@@ -85,6 +89,7 @@ MemoryBuffer.prototype.apply = function(options, cb) {
   if (!bucket) {
     bucket = new Bucket(now, options, this);
     this.buckets[options.identifier] = bucket;
+    debug('current buckets:', Object.keys(this.buckets));
   }
   bucket.apply(now, options, cb);
 };
@@ -104,6 +109,7 @@ function trimTokens(self) {
   var now = _.now();
   for (var b in Object.keys(self.buckets)) {
     if (now > b.expires) {
+      debug('Bucket: %s expired at: %s in bucketTimer, deleting now.',b.options.identifier,new Date(b.expires).toISOString());
       delete self.buckets.b;
     }
   }
@@ -156,6 +162,7 @@ Bucket.prototype.apply = function(time, options, cb) {
   debug('apply: ', options.weight);
   var now = _.now();
   if (time > this.expires) {
+    debug('Bucket expired at: %s',new Date(this.expires).toISOString());
     this.reset(now); // Quota bucket has expired. The timer also runs but only periodically
   }
 
@@ -164,6 +171,7 @@ Bucket.prototype.apply = function(time, options, cb) {
   var allow = options.allow || this.options.allow;
 
   var count = this.count + this.remoteCount;
+  debug('Bucket:%s applying check,count: %d, allow: %d',this.options.identifier, count, allow);
   if (!this.expiryTime) { this.calculateExpiration(); }
   var result = {
     allowed: allow,
@@ -218,7 +226,10 @@ Bucket.prototype.flushBucket = function(cb) {
 
     // if it wasn't set because offset wasn't available, calc expiration
     if (!self.expires) { self.calculateExpiration(); }
-
+    debug('Bucket state after flushing: %j ', { 
+      remoteCount: self.remoteCount, count: self.count,
+      expires: new Date(self.expires).toISOString()
+    });
     if (cb) { cb(); }
   });
 };

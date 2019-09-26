@@ -30,7 +30,9 @@ function QuotaConnect(quota, options) {
   if (!(this instanceof QuotaConnect)) {
     return new QuotaConnect(quota, options);
   }
-
+  if ( quota.options.debug  && typeof quota.options.debug === "function") {
+    debug = quota.options.debug;
+  }
   this.quota = quota;
   this.options = options || {};
 }
