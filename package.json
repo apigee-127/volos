@@ -26,6 +26,7 @@
     "twit": "1.1.x",
     "underscore": "1.6.x",
     "uuid": "^3.0.0",
+    "volos-quota-common": "^0.11.8",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
