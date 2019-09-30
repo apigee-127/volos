@@ -27,6 +27,7 @@ var _ = require('underscore');
 var assert = require('assert');
 var Quota = require('volos-quota-common');
 var redis = require("redis");
+var debug = require('debug')('quota');
 var KEY_PREFIX = "volos:quota:";
 
 /*
@@ -46,6 +47,9 @@ module.exports.create = create;
 
 
 function RedisQuotaSpi(options) {
+  if ( options.debug  && typeof options.debug === "function") {
+    debug = options.debug;
+  }
   this.options = options;
   this.buckets = {};
 
@@ -73,7 +77,7 @@ RedisQuotaSpi.prototype.apply = function(options, cb) {
   // Atomic check for (a) if the key exists, and (b) how long until it expires.
   self.client.ttl(key, function(err, ttl) {
     if (err) { return cb(err, null); }
-
+    debug('redis ttl for key: %s is: %d', key, ttl );
     if (ttl < 0) {
       // -2 means the key does not exist.
       // -1 means the key exists but is set never to expire.
