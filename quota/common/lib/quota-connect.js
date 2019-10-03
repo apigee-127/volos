@@ -48,7 +48,7 @@ QuotaConnect.prototype.apply = function(options) {
   var self = this;
   return function(req, resp, next) {
     var opts = calcOptions(req, options);
-    applyQuota(self, opts, resp, next);
+    applyQuota(self, opts, resp, next, req);
   };
 };
 
@@ -66,7 +66,7 @@ QuotaConnect.prototype.applyPerAddress = function(options) {
     var remoteAddress = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
     opts.identifier = opts.identifier + '/' + remoteAddress;
     debug('Quota check:', opts.identifier);
-    applyQuota(self, opts, resp, next);
+    applyQuota(self, opts, resp, next, req);
   };
 };
 
@@ -79,12 +79,29 @@ function calcOptions(req, opts) {
   return options;
 }
 
-function applyQuota(self, options, resp, next) {
+function applyQuota(self, options, resp, next, req) {
   debug('Quota check:', options.identifier);
   self.quota.apply(
     options,
     function(err, reply) {
-      if (err) { return next(err); }
+      if (err) {
+        if ( self.quota.options.failOpen === true ) {
+          if ( req ) {
+            req['quota-failed-open'] = true; // pass the flag to next plugins
+            debug('bypassing quota checks and setting quota-failed-open for identifier: %s', options.key || options.identifier);
+          }
+          return next();
+        } else {
+          return next(err);
+        }
+      }
+      if ( reply.remoteApplyFailed === true ) {
+        if ( req ) {
+          req['quota-failed-open'] = true; // pass the flag to next plugins
+          debug('remote quota not available so processing locally, setting quota-failed-open for identifier: %s', options.key || options.identifier);
+        }
+      }
+      
       resp.setHeader('X-RateLimit-Limit', reply.allowed);
       resp.setHeader('X-RateLimit-Remaining', reply.allowed - reply.used);
       resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
