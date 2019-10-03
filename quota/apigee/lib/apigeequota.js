@@ -258,14 +258,15 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
   debug('calling quotas/apply method: POST, url: %s', options.url);
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
-    // transforming the date format in response to make it more readable
-    const logRespBody = {
-      ...body,
-      expiryTime:new Date(body.expiryTime).toISOString(),
-      timestamp:new Date(body.timestamp).toISOString()
-    }
-    debug('quotas/apply response statusCode: %s, responseBody: %j', resp.statusCode, logRespBody);
+    
     if (resp.statusCode / 100 === 2) { // 2xx
+      // transforming the date format in response to make it more readable
+      const logRespBody = {
+        ...body,
+        expiryTime:new Date(body.expiryTime).toISOString(),
+        timestamp:new Date(body.timestamp).toISOString()
+      }
+      debug('quotas/apply response statusCode: %s, responseBody: %j', resp.statusCode, logRespBody);
       // result from apigee is not quite what the module expects
       body.expiryTime = body.expiryTime - body.timestamp;
       body.isAllowed = (body.used <= body.allowed);

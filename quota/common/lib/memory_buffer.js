@@ -50,6 +50,7 @@ function MemoryBuffer(spi, options) {
   this.options = options;
   this.buckets = {};
   this.clockOffset = undefined;
+  this.remoteApplyFailed =  false;
 
   assert(options.timeInterval);
   if (options.startTime) {
@@ -177,7 +178,8 @@ Bucket.prototype.apply = function(time, options, cb) {
     allowed: allow,
     used: count,
     isAllowed: (count <= allow),
-    expiryTime: this.expires - now
+    expiryTime: this.expires - now,
+    remoteApplyFailed: this.owner.remoteApplyFailed 
   };
 
   cb(null, result);
@@ -201,7 +203,13 @@ Bucket.prototype.flushBucket = function(cb) {
   var self = this;
   self.owner.spi.apply(options, function(err, reply) {
     self.flushing = false;
-    if (err) { return (cb) ? cb(err) : console.error(err); }
+    if (err) {
+      if (self.owner.options.failOpen === true ) {
+        self.owner.remoteApplyFailed = true;
+      }
+      return (cb) ? cb(err) : console.error(err); 
+    }
+    self.owner.remoteApplyFailed = false;
 
     // sync time with remote if never been synced
     if (self.owner.clockOffset === undefined) {
