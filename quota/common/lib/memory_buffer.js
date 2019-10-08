@@ -131,6 +131,7 @@ Bucket.prototype.reset = function(time) {
   this.remoteCount = 0;
   this.remoteExpires = undefined;
   this.flushing = false;
+  this.remoteExpiryTimestamp =  undefined;
 };
 
 Bucket.prototype.calculateExpiration = function() {
@@ -223,6 +224,11 @@ Bucket.prototype.flushBucket = function(cb) {
 
     var sameTimeBucket = (self.expires === localExpires) &&                        // same local time bucket?
                          (!remoteExpires || remoteExpires === self.remoteExpires); // same remote time bucket?
+
+    if ( reply.expiryTimestamp ) { // filter out back dated remote expiry, these are invalid responses from remote
+      sameTimeBucket = sameTimeBucket && ( !self.remoteExpiryTimestamp || reply.expiryTimestamp >= self.remoteExpiryTimestamp );
+    }
+
     if (!sameTimeBucket) {
       debug('new time bucket');
       return cb ? cb() : null;
@@ -230,6 +236,10 @@ Bucket.prototype.flushBucket = function(cb) {
 
     self.remoteExpires = reply.expiryTime;
     self.remoteCount = reply.used;
+    if ( reply.expiryTimestamp ) {
+      self.remoteExpiryTimestamp = reply.expiryTimestamp;
+    }
+
     self.count -= options.weight; // subtract applied value
 
     // if it wasn't set because offset wasn't available, calc expiration
