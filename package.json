@@ -34,7 +34,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.3",
     "should": "^3.1.0",
-    "superagent": "^3.2.1",
+    "superagent": "^5.0.2",
     "supertest": "^1.2.0"
   },
   "scripts": {
