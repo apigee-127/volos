@@ -111,7 +111,7 @@ ApigeeQuotaSpi.prototype.apply = function(options, cb) {
     } else {
       impl.apply(options, function(err, result) {
         if (err) {
-          debug('Quota error: %j', err);
+          debug('Quota error: %s', err.message);
         } else {
           debug('Quota result: %j', result);
         }
@@ -261,22 +261,27 @@ ApigeeRemoteQuota.prototype.apply = function(opts, cb) {
   debug('calling quotas/apply method: POST, url: %s', options.url);
   this.quota.request.post(options, function(err, resp, body) {
     if (err) { return cb(err); }
-    
+
     if (resp.statusCode / 100 === 2) { // 2xx
-      // transforming the date format in response to make it more readable
-      const logRespBody = {
-        ...body,
-        expiryTime:new Date(body.expiryTime).toISOString(),
-        timestamp:new Date(body.timestamp).toISOString()
+      try {
+        // transforming the date format in response to make it more readable
+        const logRespBody = {
+          ...body,
+          expiryTime:new Date(body.expiryTime).toISOString(),
+          timestamp:new Date(body.timestamp).toISOString()
+        }
+        debug('quotas/apply response statusCode: %s, responseBody: %j', resp.statusCode, logRespBody);
+        // result from apigee is not quite what the module expects
+        body.expiryTimestamp = body.expiryTime;
+        body.expiryTime = body.expiryTime - body.timestamp;
+        body.isAllowed = (body.used <= body.allowed);
+        cb(undefined, body);
+      } catch (e) {
+        debug('Error processing remote apply response statusCode: %s, responseBody: %s', resp.statusCode, body);
+        cb(new Error(util.format('Error processing remote apply response: %d %s', resp.statusCode, body)));
       }
-      debug('quotas/apply response statusCode: %s, responseBody: %j', resp.statusCode, logRespBody);
-      // result from apigee is not quite what the module expects
-      body.expiryTimestamp = body.expiryTime;
-      body.expiryTime = body.expiryTime - body.timestamp;
-      body.isAllowed = (body.used <= body.allowed);
-      cb(undefined, body);
     } else {
-      cb(new Error(util.format('Error updating remote quota: %d %s', resp.statusCode, body)));
+      cb(new Error(util.format('Error updating remote quota, statusCode: %d , body: %s', resp.statusCode, body)));
     }
   });
 };
