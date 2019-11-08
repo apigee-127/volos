@@ -14,7 +14,7 @@
     "debug": "^2.2.0",
     "express": "^4.0.0",
     "inquirer": "0.5.x",
-    "js-yaml": "^3.5.3",
+    "js-yaml": "^3.13.1",
     "longjohn": "0.2.x",
     "lru-cache-plus": "2.5.x",
     "on-finished": "~2.2.1",
