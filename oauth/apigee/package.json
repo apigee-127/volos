@@ -10,13 +10,13 @@
     "node.js"
   ],
   "dependencies": {
-    "volos-oauth-common": "^0.13.0",
-    "debug": "^2.2.0",
     "apigee-access": ">=1.2.x",
+    "debug": "^2.2.0",
     "request": "^2.60.0",
-    "semver": "3.x.x",
+    "semver": "^6.3.0",
     "superagent": "^1.7.2",
-    "underscore": "1.6.x"
+    "underscore": "1.6.x",
+    "volos-oauth-common": "^0.13.0"
   },
   "devDependencies": {
     "supertest": "^1.2.0"
