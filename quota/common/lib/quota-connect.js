@@ -25,6 +25,7 @@
 
 var _ = require('underscore');
 var debug = require('debug')('quota');
+var logger = null;
 
 function QuotaConnect(quota, options) {
   if (!(this instanceof QuotaConnect)) {
@@ -32,6 +33,9 @@ function QuotaConnect(quota, options) {
   }
   if ( quota.options.debug  && typeof quota.options.debug === "function") {
     debug = quota.options.debug;
+  }
+  if ( quota.options.logger  && typeof quota.options.logger === "object") {
+    logger = quota.options.logger;
   }
   this.quota = quota;
   this.options = options || {};
@@ -88,6 +92,9 @@ function applyQuota(self, options, resp, next, req) {
         if ( self.quota.options.failOpen === true ) {
           if ( req ) {
             req['quota-failed-open'] = true; // pass the flag to next plugins
+            if ( logger && logger.warn && typeof logger.warn === 'function') {
+              logger.warn('bypassing quota checks and setting quota-failed-open for identifier: '+(options.key || options.identifier));
+            }
             debug('bypassing quota checks and setting quota-failed-open for identifier: %s', options.key || options.identifier);
           }
           return next();
@@ -98,6 +105,9 @@ function applyQuota(self, options, resp, next, req) {
       if ( reply.remoteApplyFailed === true ) {
         if ( req ) {
           req['quota-failed-open'] = true; // pass the flag to next plugins
+          if ( logger && logger.warn && typeof logger.warn === 'function') {
+            logger.warn('remote quota not available so processing locally, setting quota-failed-open for identifier: '+(options.key || options.identifier));
+          }
           debug('remote quota not available so processing locally, setting quota-failed-open for identifier: %s', options.key || options.identifier);
         }
       }
