@@ -54,6 +54,8 @@ function Quota(Spi, o) {
   options.rollingWindow = o.rollingWindow || false;
   options.bufferSize = checkNumber(o.bufferSize, 'bufferSize') || 0;
 
+  options.maxTimeInterval = DAY; // to handle TimeoutOverflowWarning
+
   if (TimeUnits.indexOf(options.timeUnit) < 0) {
     throw new Error(util.format('Invalid timeUnit %s', options.timeUnit));
   }
@@ -94,10 +96,8 @@ function Quota(Spi, o) {
     }
   }
 
-  if(options.timeUnit !== '30days') {
-    options.timeInterval *= options.interval;
-  }
-
+  options.timeInterval *= options.interval;
+  
   this.options = options;
   var spi = new Spi(options);
   if (options.bufferSize > 0) {

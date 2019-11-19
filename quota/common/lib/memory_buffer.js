@@ -58,16 +58,16 @@ function MemoryBuffer(spi, options) {
   }
 
   var self = this;
-  let intervalCount = 0;
-  self.bucketTimer = setInterval(function() {
-    if(options.timeUnit === '30days'){
-      if(++intervalCount === options.interval){
-        intervalCount=0;
-        trimTokens(self);
-      }
-    } else {
+  if ( options.timeInterval <= options.maxTimeInterval) {
+    self.bucketTimer = setInterval(function() {
       trimTokens(self);
-    }  }, options.timeInterval);
+    }, options.timeInterval);
+  } else {
+    this.customSetIntervalSet = true;
+    this.customSetInterval(options.timeInterval, options.maxTimeInterval, function() {
+      trimTokens(self);
+    });
+  }
 
   if (options.bufferTimeout) {
     self.flushTimer = setInterval(function() {
@@ -76,9 +76,36 @@ function MemoryBuffer(spi, options) {
   }
 }
 
+MemoryBuffer.prototype.customSetInterval = function(timeInterval, maxTimeInterval, cb){
+  if ( !this.customSetIntervalSet ) {
+    return;
+  }
+  this.customSetTimeOut(timeInterval, maxTimeInterval, () => {
+      cb();
+      this.customSetInterval(timeInterval, maxTimeInterval, cb);
+  });
+}
+
+MemoryBuffer.prototype.customSetTimeOut = function(timeInterval, maxTimeInterval, cb){
+  if ( !this.customSetIntervalSet ) {
+    return;
+  }
+  if ( timeInterval > maxTimeInterval ) {
+    this.customTimeoutRef = setTimeout(() => {
+      this.customSetTimeOut( ( timeInterval - maxTimeInterval ), maxTimeInterval, cb);
+    }, maxTimeInterval );
+  } else {
+    this.customTimeoutRef = setTimeout(function() {
+      cb();
+    }, timeInterval);
+  }
+}
+
 MemoryBuffer.prototype.destroy = function() {
-  clearTimeout(this.bucketTimer);
-  clearTimeout(this.flushTimer);
+  clearInterval(this.bucketTimer);
+  clearInterval(this.flushTimer);
+  this.customSetIntervalSet = false;
+  clearTimeout(this.customTimeoutRef);
   this.spi.destroy();
 };
 
@@ -132,32 +159,20 @@ Bucket.prototype.reset = function(time) {
   this.remoteExpires = undefined;
   this.flushing = false;
   this.remoteExpiryTimestamp =  undefined;
+  this.calculateExpiration();
 };
 
 Bucket.prototype.calculateExpiration = function() {
   var time = this.resetAt + (this.owner.clockOffset || 0);
-
   var startTime = this.owner.options.startTime;
   var timeInterval = this.owner.options.timeInterval;
-
+  let remaining = 0;
   if (startTime) {
     // "calendar" start quota -- calculate time until the end of the bucket
-    var remaining = (time - startTime) % timeInterval;
-    this.expires = time + timeInterval - remaining;
-
-  } else {
-
-    if ('month' === this.options.timeUnit) {
-
-      var date = new Date(time);
-      return new Date(date.getFullYear(), date.getMonth() + 1, 1) - 1 + this.owner.clockOffset; // last ms of this month
-
-    } else {
-
-      // Default quota type -- start counting from now
-      this.expires = time + timeInterval;
-    }
+    remaining = (time - startTime) % timeInterval;
   }
+  this.expires = time + timeInterval - remaining;
+  debug('Bucket: %s expires set to: %s', this.options.identifier, new Date(this.expires).toISOString());
 };
 
 Bucket.prototype.apply = function(time, options, cb) {
@@ -174,7 +189,6 @@ Bucket.prototype.apply = function(time, options, cb) {
 
   var count = this.count + this.remoteCount;
   debug('Bucket:%s applying check,count: %d, allow: %d',this.options.identifier, count, allow);
-  if (!this.expiryTime) { this.calculateExpiration(); }
   var result = {
     allowed: allow,
     used: count,
