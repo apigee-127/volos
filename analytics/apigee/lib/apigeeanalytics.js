@@ -40,9 +40,7 @@ var ApigeeAnalyticsSpi = function(options) {
   if (!options.uri) {
     throw new Error('uri parameter must be specified');
   }
-  if (!options.key) {
-    throw new Error('key parameter must be specified');
-  }
+
   if (!options.proxy) {
     throw new Error('Proxy parameter must be specified');
   }
@@ -108,7 +106,7 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
   var now = Date.now();
   var record = {
     client_received_start_timestamp:  now,
-    client_received_end_timestamp:    now + 1, // hack to avoid error in server calculations    
+    client_received_end_timestamp:    now + 1, // hack to avoid error in server calculations
     recordType:                       'APIAnalytics',
     apiproxy:                         this.proxy,
     request_uri:                      (req.protocol || 'http') + '://' + req.headers.host + req.url,
@@ -159,8 +157,6 @@ ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
       user: this.key,
       pass: this.secret
     }
-  } else {
-    options.headers['x-DNA-Api-Key'] = this.key;
   }
 
   if (this.compress) {

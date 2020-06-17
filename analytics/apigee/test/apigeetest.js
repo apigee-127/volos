@@ -60,7 +60,7 @@ describe('Apigee', function() {
       flushInterval: 100,
       uploadLength : 100
     });
-    
+
     record = {
       client_received_start_timestamp : Date.now(),
       recordType   : 'APIAnalytics',
@@ -81,7 +81,7 @@ describe('Apigee', function() {
       bufferSize: 10,
       proxy: 'testAnalytics',
       flushInterval: 5,
-      batchSize : 5 
+      batchSize : 5
     };
     assert.throws(function() {
       Spi.create(options);
@@ -89,19 +89,19 @@ describe('Apigee', function() {
     done();
   });
 
-  it('should have a key', function(done) {
+  it('should not require a key', function(done) {
     var options = {
       uri: "uri",
       bufferSize: 10,
       proxy: 'testAnalytics',
       flushInterval: 5,
-      batchSize : 5 
+      batchSize : 5
     };
-    assert.throws(function() {
+    assert.doesNotThrow(function() {
       Spi.create(options);
     });
     done();
-  }); 
+  });
 
   it('should have a proxy', function(done) {
     var options = extend(config, {
@@ -109,7 +109,7 @@ describe('Apigee', function() {
       key: "key",
       bufferSize: 10,
       flushInterval: 5,
-      batchSize : 5 
+      batchSize : 5
     });
     assert.throws(function() {
       Spi.create(options);
@@ -123,15 +123,15 @@ describe('Apigee', function() {
     let postBody;
 
     beforeEach(() => {
-      scope = nock('https://api.fakeapigee.com')
+      scope = nock('https://api.fakeapigee.com', { badheaders: ['x-dna-api-key'] })
         .post('/v2/analytics/accept', function(body) {
           postBody = body;
           return true;
         })
         .reply(200, {});
       });
-      
-      it('should callback without an error', function(done) {  
+
+      it('should callback without an error', function(done) {
         var recordsQueue = [record, record, record];
         analytics.spi.flush(recordsQueue, function(err, retryRecords) {
           should.not.exist(err);
@@ -142,17 +142,20 @@ describe('Apigee', function() {
         });
       });
 
-      it('should send expected payload to analytics endpoint', function(done) {  
+      it('should send expected payload to analytics endpoint', function(done) {
         var recordsQueue = [record, record, record];
         analytics.spi.flush(recordsQueue, function(err, retryRecords) {
           postBody.should.eql({
             records: recordsQueue
           });
+
+          assert(scope.isDone());
+
           done();
         });
       });
   });
-  
+
   it('should compress before sending if so configured', function(done) {
     var options = extend(config, {
       recordLimit: 10000,
@@ -175,7 +178,7 @@ describe('Apigee', function() {
 
     analytics.spi.flush(recordsQueue);
   });
-  
+
   describe('Common', function() {
     commonTest.testAnalytics(config, Spi);
   });
