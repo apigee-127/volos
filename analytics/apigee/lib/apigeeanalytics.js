@@ -83,9 +83,11 @@ ApigeeAnalyticsSpi.prototype.flush = function(recordsQueue, cb) {
 
   function sendResponse(err, resp) {
     if (err || resp.statusCode !== 200) {
-      cb(err || new Error('error from server: ' + resp.statusCode), recordsToBeUploaded);
-    } else {
+      cb(err || new Error('error from server: ' + resp.statusCode), recordsQueue);
+    } else if( resp.body ) {
       resp.body.rejected > 0 ? cb(undefined, recordsQueue.slice(recordsQueue.length - resp.body.rejected)) : cb();
+    } else {
+      cb(new Error('Empty response from server: ' + resp.statusCode));
     }
   }
 
@@ -147,7 +149,9 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
 };
 
 ApigeeAnalyticsSpi.prototype.send = function send(data, cb) {
-
+  if ( !data ) { // add null check to payload
+    return;
+  }
   var options = {
     url: this.uri,
     headers: {},
