@@ -58,12 +58,16 @@ function RedisQuotaSpi(options) {
     assert.equal(typeof options.startTime, 'number');
   }
 
-  var host = options.host || '127.0.0.1';
-  var port = options.port || 6379;
-  var db = options.db || 0;
-  var ropts = _.extend({}, options.options) || {};
-  this.client = redis.createClient(port, host, ropts);
-  this.client.select(db);
+  if ( options.client ) { // reuse redis connection
+    this.client = options.client;
+  } else {
+    const host = options.host || '127.0.0.1';
+    const port = options.port || 6379;
+    const db = options.db || 0;
+    const ropts = _.extend({}, options.options) || {};
+    this.client = redis.createClient(port, host, ropts);
+    this.client.select(db);
+  }
 }
 
 RedisQuotaSpi.prototype.destroy = function() {
