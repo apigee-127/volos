@@ -100,7 +100,7 @@ Analytics.prototype.flush = function() {
         if (slotsInBuffer < retryRecords.length) {
           retryRecords = retryRecords.slice(0, slotsInBuffer - 1);
         }
-        self.buffer.concat(retryRecords);
+        self.buffer.unshift(...retryRecords);
         debug('returned %d records to buffer', retryRecords.length);
       }
     });
