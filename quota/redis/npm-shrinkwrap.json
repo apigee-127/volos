@@ -1,6 +1,6 @@
 {
   "name": "volos-quota-redis",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -28,9 +28,9 @@
       "integrity": "sha1-izixDKze9jM3uLJOT/htRa6lKag="
     },
     "volos-quota-common": {
-      "version": "0.11.9",
-      "resolved": "https://registry.npmjs.org/volos-quota-common/-/volos-quota-common-0.11.9.tgz",
-      "integrity": "sha512-hkbUbKLCvltHFIoW37YUz7vkp0GxsjeDBWq7xxmoHpwgtooQ1xdy4ftbVEhGrD+LiGkLf+DQjgrPRu1vZmUV7g==",
+      "version": "0.11.10",
+      "resolved": "https://registry.npmjs.org/volos-quota-common/-/volos-quota-common-0.11.10.tgz",
+      "integrity": "sha512-mj7biAXstfyYDXIWNzVUunyETIoREWSBTxu1pZv3II+hmfy9MYJ6Sp9JREKXLAkpZWanZaPrnf5qELF9alDY1g==",
       "requires": {
         "debug": "^2.2.0",
         "underscore": "1.6.x"

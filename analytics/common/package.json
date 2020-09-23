@@ -1,6 +1,6 @@
 {
   "name": "volos-analytics-common",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "main": "lib/analytics.js",
   "license": "MIT",
   "description": "Common module for Analytics in the Volos system.",
