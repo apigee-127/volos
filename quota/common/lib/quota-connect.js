@@ -117,9 +117,9 @@ function applyQuota(self, options, resp, next, req) {
       resp.setHeader('X-RateLimit-Reset', (reply.expiryTime / 1000) >> 0);
       if (!reply.isAllowed) {
         debug('Quota exceeded:', options.identifier);
-        resp.statusCode = 403;
+        resp.statusCode = self.quota.options.isHTTPStatusTooManyRequestEnabled ? 429 : 403;
         err = new Error('exceeded quota');
-        err.status = 403;
+        err.status = resp.statusCode;
       }
       next(err);
     }
