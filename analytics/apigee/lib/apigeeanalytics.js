@@ -29,6 +29,7 @@ var request = require('request');
 
 var MICROGATEWAY = 'microgateway';
 var REMOTE_PROXY_PATH = '/v2/analytics/accept';
+const clientClosedRequestErrCode = 499;
 
 var create = function(options) {
   var spi = new ApigeeAnalyticsSpi(options);
@@ -123,6 +124,9 @@ ApigeeAnalyticsSpi.prototype.makeRecord = function(req, resp, cb) {
 
   var self = this;
   onFinished(resp, function() {
+    if(req.aborted ){
+      resp.statusCode = clientClosedRequestErrCode;
+    }
     var now = Date.now();
     record.response_status_code      = resp.statusCode;
     record.client_sent_start_timestamp = now;
