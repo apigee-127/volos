@@ -12,7 +12,7 @@
     "commander": "2.2.x",
     "connect": "^3.3.5",
     "debug": "^2.2.0",
-    "express": "^4.0.0",
+    "express": "^4.17.3",
     "inquirer": "0.5.x",
     "js-yaml": "^3.5.3",
     "longjohn": "0.2.x",
