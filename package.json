@@ -22,7 +22,7 @@
     "redis": "0.10.x",
     "request": "^2.60.0",
     "semver": "3.x.x",
-    "swagger-tools": "^0.8.0",
+    "swagger-tools": "^0.10.4",
     "twit": "1.1.x",
     "underscore": "1.12.1",
     "uuid": "^3.0.0",
@@ -35,7 +35,7 @@
     "mocha": "^3.5.3",
     "should": "^3.1.0",
     "superagent": "^3.2.1",
-    "supertest": "^1.2.0"
+    "supertest": "^6.3.3"
   },
   "scripts": {
     "test": "bin/link;node_modules/mocha/bin/mocha -u exports -R spec cache/memory/test cache/redis/test cache/test/middlewaretest.js management/redis/test oauth/redis/test quota/memory/test quota/redis/test quota/test/middlewaretest.js swagger/test analytics/memory/test analytics/test/middlewaretest.js spikearrest/memory/test spikearrest/test/middlewaretest.js",
