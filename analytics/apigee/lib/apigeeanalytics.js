@@ -25,7 +25,7 @@
 
 var Analytics = require('volos-analytics-common');
 var onFinished = require('on-finished');
-var request = require('request');
+var request = require('postman-request');
 
 var MICROGATEWAY = 'microgateway';
 var REMOTE_PROXY_PATH = '/v2/analytics/accept';
