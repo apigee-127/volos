@@ -18,7 +18,7 @@
     "longjohn": "0.2.x",
     "lru-cache-plus": "2.5.x",
     "on-finished": "~2.2.1",
-    "proxy": "^0.2.4",
+    "proxy": "^2.1.1",
     "redis": "0.10.x",
     "request": "^2.60.0",
     "semver": "3.x.x",
