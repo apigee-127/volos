@@ -36,7 +36,7 @@ var https = require('https');
 var Quota = require('volos-quota-common');
 var querystring = require('querystring');
 var semver = require('semver');
-var request = require('request');
+var request = require('postman-request');
 var util = require('util');
 var url = require('url');
 

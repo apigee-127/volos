@@ -13,7 +13,7 @@
     "volos-oauth-common": "^0.13.0",
     "debug": "^2.2.0",
     "apigee-access": ">=1.2.x",
-    "request": "^2.60.0",
+    "postman-request": "^2.88.1-postman.33",
     "semver": "3.x.x",
     "superagent": "^1.7.2",
     "underscore": "1.6.x"

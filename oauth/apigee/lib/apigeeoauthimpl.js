@@ -38,7 +38,7 @@ var https = require('https');
 var querystring = require('querystring');
 var apigee = require('apigee-access');
 var debug = require('debug')('apigee');
-var request = require('request');
+var request = require('postman-request');
 var util = require('util');
 var _ = require('underscore');
 
