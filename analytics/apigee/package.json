@@ -12,7 +12,7 @@
   "dependencies": {
     "debug": "^2.2.0",
     "on-finished": "~2.2.1",
-    "request": "^2.6.0",
+    "postman-request": "^2.88.1-postman.33",
     "volos-analytics-common": "^0.2.5"
   },
   "devDependencies": {},

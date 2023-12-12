@@ -20,7 +20,7 @@
     "on-finished": "~2.2.1",
     "proxy": "^0.2.4",
     "redis": "0.10.x",
-    "request": "^2.60.0",
+    "postman-request": "^2.88.1-postman.33",
     "semver": "3.x.x",
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
