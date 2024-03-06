@@ -21,7 +21,7 @@
     "proxy": "^0.2.4",
     "redis": "0.10.x",
     "postman-request": "^2.88.1-postman.33",
-    "semver": "3.x.x",
+    "semver": "7.x.x",
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
     "underscore": "1.12.1",

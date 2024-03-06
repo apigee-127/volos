@@ -14,7 +14,7 @@
     "debug": "^2.2.0",
     "apigee-access": ">=1.2.x",
     "postman-request": "^2.88.1-postman.33",
-    "semver": "3.x.x",
+    "semver": "7.x.x",
     "superagent": "^1.7.2",
     "underscore": "1.6.x"
   },
