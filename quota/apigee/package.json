@@ -13,7 +13,7 @@
     "apigee-access": ">=1.2.x",
     "debug": "^2.2.0",
     "postman-request": "^2.88.1-postman.33",
-    "semver": "6.x.x",
+    "semver": "7.x.x",
     "volos-quota-common": "^0.11.12"
   },
   "devDependencies": {
