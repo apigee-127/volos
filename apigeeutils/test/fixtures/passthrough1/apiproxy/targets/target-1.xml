@@ -1,0 +1,25 @@
+<TargetEndpoint name="target-1">
+    <Description/>
+    <FaultRules/>
+    <PreFlow name="PreFlow">
+        <Request/>
+        <Response/>
+    </PreFlow>
+    <PostFlow name="PostFlow">
+      <Request>
+        <Step>
+          <Name>Java-Inquire</Name>
+        </Step>
+      </Request>
+        <Response/>
+    </PostFlow>
+    <Flows/>
+    <HTTPTargetConnection>
+      <SSLInfo>
+        <Enabled>true</Enabled>
+        <IgnoreValidationErrors>false</IgnoreValidationErrors>
+      </SSLInfo>
+        <Properties/>
+        <URL>https://echo.dinochiesa.net/</URL>
+    </HTTPTargetConnection>
+</TargetEndpoint>

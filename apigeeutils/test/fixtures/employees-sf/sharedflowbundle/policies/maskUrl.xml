@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="maskUrl">
+    <DisplayName>maskUrl</DisplayName>
+    <Properties/>
+    <AssignVariable>
+        <Name>request.uri</Name>
+        <Value>****************</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

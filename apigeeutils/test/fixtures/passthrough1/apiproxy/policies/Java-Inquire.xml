@@ -1,0 +1,7 @@
+<JavaCallout name='Java-Inquire'>
+  <Properties>
+    <Property name='varnames'>target.ip</Property>
+  </Properties>
+  <ClassName>com.google.apigee.callouts.InquireVarType</ClassName>
+  <ResourceURL>java://apigee-java-inquire-var-type-20211005.jar</ResourceURL>
+</JavaCallout>
