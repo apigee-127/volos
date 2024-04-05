@@ -1,0 +1,24 @@
+<ServiceCallout name='SC-FormParams'>
+  <Request variable='serviceCalloutRequest'>
+    <Set>
+      <FormParams>
+      <FormParam name='a'>alpha=7&amp;beta=9</FormParam>
+      <FormParam name='b'>beta=8/</FormParam>
+      <FormParam name='c'>&quot;charlie&quot;</FormParam>
+      </FormParams>
+      <Verb>POST</Verb>
+      <!-- <Path>/additional/path/here/if/desired</Path> -->
+    </Set>
+  </Request>
+  <Response>precallResponse</Response>
+  <HTTPTargetConnection>
+    <SSLInfo>
+      <Enabled>true</Enabled>
+      <IgnoreValidationErrors>true</IgnoreValidationErrors>
+    </SSLInfo>
+    <Properties>
+      <Property name='success.codes'>2xx, 4xx, 5xx</Property>
+    </Properties>
+    <URL>https://echo.dinochiesa.net/</URL>
+  </HTTPTargetConnection>
+</ServiceCallout>

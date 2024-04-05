@@ -1,0 +1,20 @@
+<ServiceCallout name='SC-PreCall'>
+  <Request variable='authenticationRequest'>
+    <Set>
+      <Payload contentType="text/plain">{request.content}</Payload>
+      <Verb>POST</Verb>
+      <!-- <Path>/additional/path/here/if/desired</Path> -->
+    </Set>
+  </Request>
+  <Response>precallResponse</Response>
+  <HTTPTargetConnection>
+    <SSLInfo>
+      <Enabled>true</Enabled>
+      <IgnoreValidationErrors>true</IgnoreValidationErrors>
+    </SSLInfo>
+    <Properties>
+      <Property name='success.codes'>2xx, 4xx, 5xx</Property>
+    </Properties>
+    <URL>https://echo.dinochiesa.net/</URL>
+  </HTTPTargetConnection>
+</ServiceCallout>

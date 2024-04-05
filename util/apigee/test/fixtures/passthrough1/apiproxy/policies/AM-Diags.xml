@@ -1,0 +1,6 @@
+<AssignMessage name='AM-Diags'>
+  <AssignVariable>
+    <Name>diags</Name>
+    <Ref>precallResponse.content</Ref>
+  </AssignVariable>
+</AssignMessage>
