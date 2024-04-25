@@ -1,5 +1,5 @@
 {
-  "name": "Volos",
+  "name": "volos",
   "version": "1.0.1",
   "comments": "This package.json is here so we can get dependencies installed to run tests. Install mocha and istanbul globally.",
   "private": true,

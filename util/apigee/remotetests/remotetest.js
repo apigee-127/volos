@@ -5,7 +5,6 @@ const apigeeutils = require('..'),
       fs = require('fs'),
       request = require('postman-request'),
       util = require('util'),
-      stream = require('stream'),
       faker = require('faker');
 
 const config = require('./testconfig');

@@ -23,5 +23,4 @@ ApigeeUtils.defaults = (newDefaults) => new ApigeeUtils(newDefaults);
 fns.forEach(fnName => {
   ApigeeUtils[fnName] = (opts, cb) => runCommand(require(`./commands/${fnName}`), opts, cb);
 });
-
 module.exports = ApigeeUtils;

@@ -1,8 +1,7 @@
 /* jshint node: true  */
 'use strict';
 
-const constants = require('constants'),
-      util = require('util'),
+const util = require('util'),
       path = require('path'),
       async = require('async'),
       fs = require('fs'),
@@ -19,8 +18,7 @@ var cleanResults = require('../utils').cleanResults;
 
 const ProxyBase = 'apiproxy',
       XmlExp = /(.+)\.xml$/i,
-      DeploymentDelay = 60,
-      BASE_PATH_REGEXP = /<BasePath[^>]*>(.*?)<\/BasePath>/;
+      DeploymentDelay = 60;
 
 // By default, do not run NPM remotely
 const DefaultResolveModules = false;
