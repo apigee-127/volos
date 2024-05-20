@@ -1,0 +1,18 @@
+<APIProxy name="passthrough1">
+  <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+  <CreatedAt>1491498008040</CreatedAt>
+  <Description/>
+  <DisplayName>passthrough1</DisplayName>
+  <LastModifiedAt>1491517153495</LastModifiedAt>
+  <Policies/>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <Resources/>
+  <Spec/>
+  <TargetServers/>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+  <validate>false</validate>
+</APIProxy>

@@ -1,0 +1,13 @@
+{
+  "name": "employees",
+  "version": "0.0.1",
+  "description": "Employee Database API",
+  "main": "server.js",
+  "private": true,
+  "dependencies":  {
+    "express": "3.x.x",
+    "usergrid": "0.10.x",
+    "volos-oauth-apigee": "0.9.x"
+  }
+}
+

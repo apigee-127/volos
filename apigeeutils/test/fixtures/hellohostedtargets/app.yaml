@@ -1,0 +1,7 @@
+runtime: node
+runtimeVersion: 6
+env:
+  - name: NODE_ENV
+    value: production
+  - name: LOG_LEVEL
+    value: 3

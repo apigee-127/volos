@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SharedFlowBundle revision="1"  name="jsError">
+    <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+    <Policies>
+        <Policy>maskUrl</Policy>
+    </Policies>
+</SharedFlowBundle>

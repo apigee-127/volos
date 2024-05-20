@@ -1,0 +1,11 @@
+{
+  "esversion": 9,
+  "node" : true,
+  "strict" : "implied",
+  "globals" : {
+    "describe": true,
+    "it": true,
+    "beforeAll": true,
+    "afterAll": true
+  }
+}

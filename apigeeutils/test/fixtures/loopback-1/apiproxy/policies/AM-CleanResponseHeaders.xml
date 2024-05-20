@@ -1,0 +1,11 @@
+<AssignMessage name='AM-CleanResponseHeaders'>
+  <AssignTo createNew='false' transport='http' type='response'/>
+  <Remove>
+    <Headers/>
+  </Remove>
+  <Set>
+    <Headers>
+      <Header name='APIProxy'>{apiproxy.name} v{apiproxy.revision}</Header>
+    </Headers>
+  </Set>
+</AssignMessage>

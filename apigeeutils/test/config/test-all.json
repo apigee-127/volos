@@ -1,0 +1,14 @@
+{
+  "note1": "path relative to the CWD when jasmine is invoked.",
+  "spec_dir": "test",
+
+  "note2":"filepaths (and globs) relative to spec_dir to include or exclude",
+  "spec_files": [
+    "./test*.js"
+  ],
+
+  "env": {
+    "random": false,
+    "note": "non-random is required for testbackend.js"
+  }
+}
