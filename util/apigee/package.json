@@ -17,9 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "async": "^3.2.3",
-    "body-parser": "^1.20.0",
+    "body-parser": "^1.20.3",
     "cli-table": "^0.3.11",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.2.0",
     "jszip": "^3.7.1",
     "mustache": "^4.2.0",
     "netrc": "^0.1.3",
