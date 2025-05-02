@@ -26,7 +26,7 @@
     "node-unzip-2": "^0.2.7",
     "read": "^1.0.7",
     "postman-request": "^2.88.1-postman.33",
-    "tar-fs": "^2.1.1",
+    "tar-fs": "^2.1.2",
     "tmp": "^0.0.27"
   },
   "devDependencies": {
