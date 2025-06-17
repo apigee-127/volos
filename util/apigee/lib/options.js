@@ -135,3 +135,115 @@ SecureValue.prototype.toString = function() {
 SecureValue.prototype.getValue = function () {
   return this.value;
 };
+
+/*
+ * Validate the options as if they came from a command line.
+ * This will not fill in missing options -- "validate" may be used
+ * to do that later.
+ */
+module.exports.getopts = function(argv, start, descriptor) {
+  var opts = {};
+  for (var i = start; i < argv.length; i++) {
+    var longArg = /^--(.+)/.exec(argv[i]);
+    if (longArg) {
+      var longArgName = longArg[1];
+      var ld = descriptor[longArgName];
+      if (ld) {
+        if (ld.toggle) {
+          opts[longArgName] = true;
+        } else if (i < (argv.length - 1)) {
+          i++;
+          opts[longArgName] = argv[i];
+
+          if (ld.type === 'int') {
+            opts[longArgName] = parseInt(opts[longArgName], 10);
+          }
+
+          // Set prompt
+          if(ld.prompt == false){
+            opts.prompt = true;
+          }
+        } else {
+          badArg(argv[i]);
+        }
+      } else {
+        badArg(argv[i]);
+      }
+    }
+    else {
+      var shortArg = /^-([A-Za-z])/.exec(argv[i]);
+      if (shortArg) {
+        var shortArgName = shortArg[1];
+        var longName = undefined;
+        var des;
+        for (var sd in descriptor) {
+          des = descriptor[sd];
+          if (des.shortOption === shortArgName) {
+            longName = sd;
+            break;
+          }
+        }
+
+        if (longName) {
+          if  (des.toggle) {
+            opts[longName] = true;
+          } else if (i < (argv.length - 1)) {
+            i++;
+            if (des.type === 'int') {
+              argv[i] = parseInt(argv[i], 10);
+            }
+
+            // add ability to support multiple instances of an option, e.g. headers
+            if (des.multiple) {
+              if (!opts[longName]) {
+                opts[longName] = [];
+              }
+              opts[longName].push(argv[i]);
+            } else {
+              opts[longName] = argv[i];
+
+              // Set prompt - only makes sense for singletons (not multiples)
+              if(des.prompt == false){
+                opts.prompt = true;
+              }
+            }
+          } else {
+            badArg(argv[i]);
+          }
+        } else {
+          badArg(argv[i])
+        }
+
+      } else {
+        badArg(argv[i]);
+      }
+    }
+  }
+  return opts;
+};
+
+function badArg(arg) {
+  throw new Error(util.format('Unknown argument %s', arg));
+}
+
+/*
+ * Produce some "help" text based on the descriptor.
+ */
+module.exports.getHelp = function(descriptor) {
+  var tab = new Table(TableFormat);
+
+  Object.keys(descriptor)
+    .sort()
+    .forEach( key => {
+      let d = descriptor[key];
+      tab.push([
+        key,
+        (d.shortOption ? '-' + d.shortOption : ''),
+        ((d.required) ? '(required)': '(optional)'),
+        ((d.name ? d.name : 'undefined')),
+        ((d.scope == 'default') ? ((d.shortOption == 't' || d.shortOption == 'N') ? '(overrides -p/-u)' : '') : '(command specific)')
+      ]);
+    });
+
+  return tab.toString();
+};

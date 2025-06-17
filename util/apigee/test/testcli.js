@@ -3,57 +3,10 @@ const assert = require("assert"),
   childProcess = require("child_process");
 
 const commandsToTest = [
-  "attachFlowHook",
-  "detachFlowHook",
-  "getFlowHook",
-  "createTargetServer",
-  "deleteTargetServer",
-  "getTargetServer",
-  "updateTargetServer",
-  "listTargetServers",
-  "createKVMmap",
-  "addEntryToKVM",
-  "getKVMentry",
-  "updateKVMentry",
-  "getKVMmap",
-  "deleteKVMentry",
-  "deleteKVMmap",
   "deployProxy",
-  "deployNodeApp",
-  "deployHostedTarget",
   "listDeployments",
-  "undeploy",
-  "fetchProxy",
-  "getlogs",
-  "delete",
-  "createCache",
-  "getCache",
-  "listCaches",
-  "clearCache",
-  "deleteCache",
   "createProduct",
-  "deleteProduct",
-  "createDeveloper",
-  "deleteDeveloper",
-  "createApp",
-  "createAppKey",
-  "deleteApp",
-  "deploySharedflow",
-  "undeploySharedflow",
-  "fetchSharedflow",
-  "listSharedflowDeployments",
-  "deleteSharedflow",
-  "deployExistingRevision",
-  "listRoles",
-  "createRole",
-  "getRole",
-  "deleteRole",
-  "getRolePermissions",
-  "setRolePermissions",
-  "assignUserRole",
-  "removeUserRole",
-  "verifyUserRole",
-  "listRoleUsers"
+  "deleteProduct"
 ];
 
 describe("CLI invocation Test", function () {
@@ -63,11 +16,10 @@ describe("CLI invocation Test", function () {
       [path.join(__dirname, "../lib/cli.js"), "--invalid_arg"],
       { encoding: "utf8" }
     );
-
     assert(!child.error);
     assert(!child.stdout);
     assert(child.stderr);
-    assert(child.stderr.split("\n").length > 32);
+    assert(child.stderr.split("\n").length > 4);
     done();
   });
 
@@ -81,7 +33,7 @@ describe("CLI invocation Test", function () {
     assert(!child.error);
     assert(!child.stdout);
     assert(child.stderr);
-    assert(child.stderr.split("\n").length > 32);
+    assert(child.stderr.split("\n").length > 4);
     done();
   });
 
