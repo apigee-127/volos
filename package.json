@@ -18,7 +18,7 @@
     "longjohn": "0.2.x",
     "lru-cache-plus": "2.5.x",
     "on-finished": "~2.2.1",
-    "proxy": "^0.2.4",
+    "proxy": "^2.2.0",
     "redis": "0.10.x",
     "postman-request": "^2.88.1-postman.33",
     "semver": "7.x.x",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "coveralls": "^3.0.6",
     "istanbul": "^0.4.5",
-    "mocha": "^3.5.3",
+    "mocha": "^10.7.3",
     "should": "^3.1.0",
     "superagent": "^3.2.1",
     "supertest": "^1.2.0"
