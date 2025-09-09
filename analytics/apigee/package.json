@@ -1,6 +1,6 @@
 {
   "name": "volos-analytics-apigee",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "lib/apigeeanalytics.js",
   "license": "MIT",
   "description": "Apigee provider for Analytics in the Volos system.",
@@ -12,7 +12,7 @@
   "dependencies": {
     "debug": "^2.2.0",
     "on-finished": "~2.2.1",
-    "postman-request": "^2.88.1-postman.33",
+    "postman-request": "^2.88.1-postman.43",
     "volos-analytics-common": "^0.2.5"
   },
   "devDependencies": {},

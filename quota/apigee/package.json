@@ -1,6 +1,6 @@
 {
   "name": "volos-quota-apigee",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "main": "lib/apigeequota.js",
   "license": "MIT",
   "description": "Apigee provider for Quota enforcement in the Volos system.",
@@ -12,7 +12,7 @@
   "dependencies": {
     "apigee-access": ">=1.2.x",
     "debug": "^2.2.0",
-    "postman-request": "^2.88.1-postman.33",
+    "postman-request": "^2.88.1-postman.43",
     "semver": "7.x.x",
     "volos-quota-common": "^0.11.12"
   },
