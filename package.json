@@ -24,9 +24,9 @@
     "semver": "7.x.x",
     "swagger-tools": "^0.8.0",
     "twit": "1.1.x",
-    "underscore": "1.12.1",
+    "underscore": "1.13.8",
     "uuid": "^3.0.0",
-    "volos-quota-common": "^0.11.12",
+    "volos-quota-common": "^0.11.14",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
